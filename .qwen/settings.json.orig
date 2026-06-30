@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Agent(Explore)",
+      "Bash(php *)",
+      "Bash(composer *)",
+      "Bash(curl *)",
+      "Bash(findstr *)",
+      "Bash(type *)",
+      "Bash(powershell *)",
+      "Bash(\"c:\\xampp\\mysql\\bin\\mysql.exe\" *)",
+      "Bash(c:\\xampp\\mysql\\bin\\mysql.exe *)",
+      "Bash(del *)",
+      "Bash(f *)",
+      "Bash('php -r \"$secret='zzy5m0pydk9mnm05y0v3uxpsdlpxbkz3y0d4dmrysxznaluztmpjne5evxpnemn6'; $h=json_encode(['alg'=>'hs256','typ'=>'jwt']); $p=json_encode(['user_id'=>7,'role'=>'client','email'=>'lauracortes@gmail.com','iat'=>time(),'exp'=>time()+7200]); $bh=rtrim(strtr(base64_encode($h),'+/','-_'),'='); $bp=rtrim(strtr(base64_encode($p),'+/','-_'),'='); $sig=rtrim(strtr(base64_encode(hash_hmac('sha256',$bh.'.'.$bp,$secret,true)),'+/','-_'),'='); echo $bh.'.'.$bp.'.'.$sig;\"')"
+    ]
+  },
+  "$version": 4
+}

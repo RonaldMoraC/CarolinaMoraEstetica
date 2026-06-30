@@ -1,0 +1,8 @@
+/vendor/
+/logs/*.log
+/.env
+/public/storage/pdfs/*.pdf
+/public/storage/vouchers/*
+*.lock
+.DS_Store
+Thumbs.db

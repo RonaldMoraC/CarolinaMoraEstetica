@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carolina Mora - Micropigmentación & Estética | Alta Gama</title>
+    <!-- Tailwind CSS for high fidelity responsive layout -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for data insights visualizer -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <!-- Premium Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Montserrat:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            gold: '#D4AF37',      /* Oro Clásico */
+                            goldDark: '#B8860B',  /* Oro Profundo (Mejor contraste en fondo claro) */
+                            goldLight: '#F1D37E', /* Oro Brillante (Mejor contraste en fondo oscuro) */
+                            silver: '#F1F5F9',    /* Gris Plata Base */
+                            charcoal: '#0F172A',  /* Carbón Oscuro para textos en modo claro */
+                            pureBlack: '#050505', /* Negro Absoluto para modo oscuro */
+                        }
+                    },
+                    fontFamily: {
+                        serif: ['Playfair Display', 'serif'],
+                        sans: ['Montserrat', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Smooth transitions for high-fidelity interactive switching */
+        * {
+            transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease;
+        }
+
+        /* Gold Gradient Text */
+        .gold-text-gradient-light {
+            background: linear-gradient(135deg, #B8860B 0%, #D4AF37 50%, #B8860B 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .gold-text-gradient-dark {
+            background: linear-gradient(135deg, #F1D37E 0%, #D4AF37 50%, #F1D37E 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Luxury Gold Border Glow */
+        .gold-border-glow {
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.1);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0F172A;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D4AF37;
+            border-radius: 4px;
+        }
+
+        /* Custom animation for luxury sparkles inspired by estetica carolina.jpeg */
+        @keyframes sparkle {
+            0%, 100% { transform: scale(0.8); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
+        .sparkle-icon {
+            animation: sparkle 3s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased text-slate-800 dark:text-slate-100 bg-slate-100 dark:bg-brand-pureBlack overflow-x-hidden">
+
+    <nav class="fixed top-0 w-full z-50 transition-all duration-300 bg-white/90 dark:bg-brand-pureBlack/95 backdrop-blur-md border-b border-slate-200 dark:border-brand-gold/25">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <!-- Brand Logo - CAROLINA gets dark gold on light, light gold on dark to preserve supreme contrast -->
+            <div class="flex items-center space-x-2">
+                <div class="w-9 h-9 rounded-full border border-brand-gold/60 flex items-center justify-center font-serif text-sm font-semibold tracking-wider text-brand-gold">
+                    CM
+                </div>
+                <div class="text-xl font-bold tracking-[0.2em] font-sans">
+                    <!-- Dynamic coloring to match color theory precisely -->
+                    <span class="text-brand-goldDark dark:text-brand-goldLight">CAROLINA</span> 
+                    <span class="text-slate-950 dark:text-white font-light">MORA</span>
+                </div>
+            </div>
+
+            <!-- Main Desktop Navigation links (Refactored to remove "Por Qué" and add "Equipo") -->
+            <div class="hidden md:flex space-x-10 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-900 dark:text-slate-200">
+                <a href="#inicio" class="hover:text-brand-gold transition duration-300">Inicio</a>
+                <a href="#servicios" class="hover:text-brand-gold transition duration-300">Servicios</a>
+                <a href="#faq" class="hover:text-brand-gold transition duration-300">Consultas</a>
+                <a href="#equipo" class="hover:text-brand-gold transition duration-300">Equipo</a>
+            </div>
+
+            <!-- CTA Actions & Mode Switcher -->
+            <div class="flex items-center space-x-4">
+                <!-- Advanced Toggle Mode Button -->
+                <button id="theme-toggle" onclick="toggleTheme()" class="p-2.5 rounded-full border border-slate-300 dark:border-brand-gold/30 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition duration-300" aria-label="Cambiar Tema">
+                    <!-- Sun Icon (Visible in Dark Mode) -->
+                    <svg id="sun-icon" class="w-5 h-5 text-brand-goldLight hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 9h-1m14.072-4.072l-.707.707M6.343 17.657l-.707.707M16.243 17.657l.707.707M6.343 6.343l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+                    </svg>
+                    <!-- Moon Icon (Visible in Light Mode) -->
+                    <svg id="moon-icon" class="w-5 h-5 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                </button>
+
+                <!-- Gold CTA Button -->
+                <a href="https://wa.me/573000000000?text=Hola%20Carolina,%20me%20gustar%C3%ADa%20agendar%20una%20valoraci%C3%B3n%20personalizada" target="_blank" class="bg-gradient-to-r from-brand-goldDark to-brand-gold text-white px-5 py-2.5 rounded-sm text-[10px] font-bold uppercase tracking-widest shadow-lg hover:brightness-110 hover:-translate-y-0.5 transform transition duration-300">
+                    Agendar Cita
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <section id="inicio" class="relative pt-32 pb-24 md:py-40 px-6 min-h-screen flex items-center overflow-hidden bg-gradient-to-tr from-slate-100 via-slate-200 to-slate-100 dark:from-slate-900 dark:via-[#0c0f16] dark:to-brand-pureBlack">
+        <!-- Visual background grids and abstract premium elements -->
+        <div class="absolute inset-0 bg-grid-slate-200 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] dark:bg-grid-slate-800 dark:[mask-image:linear-gradient(0deg,transparent,rgba(0,0,0,0.8))] z-0"></div>
+        <div class="absolute top-0 right-0 w-1/2 h-full bg-slate-200/40 dark:bg-[#0f121a]/60 skew-x-[-12deg] translate-x-24 z-0 hidden md:block"></div>
+
+        <!-- Star Sparkles in top right as represented in estetica carolina.jpeg -->
+        <div class="absolute top-28 right-[10%] opacity-60 dark:opacity-80 sparkle-icon hidden md:block">
+            <svg class="w-8 h-8 text-brand-gold" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 0l3 9 9 3-9 3-3 9-3-9-9-3 9-3z"/>
+            </svg>
+        </div>
+        <div class="absolute top-44 right-[15%] opacity-40 dark:opacity-60 sparkle-icon [animation-delay:1.5s] hidden md:block">
+            <svg class="w-5 h-5 text-brand-goldDark" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 0l3 9 9 3-9 3-3 9-3-9-9-3 9-3z"/>
+            </svg>
+        </div>
+
+        <div class="container mx-auto grid md:grid-cols-2 gap-12 items-center relative z-10">
+            <!-- Left Text Content Column - Fully corrected for Contrast Theory -->
+            <div class="text-left">
+                <div class="w-16 h-1 bg-gradient-to-r from-brand-goldDark to-brand-gold mb-8"></div>
+                <span class="text-brand-goldDark dark:text-brand-gold font-bold tracking-[0.3em] uppercase text-xs mb-4 block">
+                    Estudio de Estética Facial & Corporal
+                </span>
+                
+                <!-- Title text is slate-950 in light mode and white in dark mode -->
+                <h1 class="text-4xl sm:text-6xl md:text-7xl font-bold leading-tight mb-6 font-serif text-slate-950 dark:text-white">
+                    El arte de la <br>
+                    <span class="italic font-light gold-text-gradient-light dark:gold-text-gradient-dark">perfección</span> <br>
+                    facial.
+                </h1>
+                
+                <p class="text-base sm:text-lg mb-10 max-w-lg leading-relaxed font-light text-slate-700 dark:text-slate-300">
+                    Transforma tu mirada con técnicas profesionales de alta fidelidad. Diseños exclusivos diseñados meticulosamente en Llorente, Nariño para mujeres que valoran la elegancia, la seguridad y la naturalidad eterna.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6">
+                    <button onclick="scrollToSection('servicios')" class="bg-gradient-to-r from-brand-goldDark to-brand-gold text-white px-10 py-5 rounded-sm shadow-xl font-bold text-xs tracking-[0.2em] uppercase hover:scale-[1.03] transition-all duration-300">
+                        Explorar Servicios
+                    </button>
+                    <!-- Correction: Outlined button gets solid slate-900 border and text in light mode, and gold/white in dark mode -->
+                    <button onclick="window.open('https://wa.me/573000000000?text=Hola%20Carolina,%20quiero%20solicitar%20mi%20valoraci%C3%B3n%20facial%20gratuita')" class="border-2 border-slate-900 dark:border-brand-gold/40 text-slate-950 dark:text-white px-10 py-5 rounded-sm hover:bg-slate-900/5 dark:hover:bg-white/5 transition-all duration-300 font-bold text-xs tracking-[0.2em] uppercase">
+                        Valoración Gratis
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Visual Image Frame -->
+            <div class="relative flex justify-center">
+                <div class="absolute -inset-4 border-2 border-brand-gold/30 translate-x-4 translate-y-4 z-0 rounded-sm"></div>
+                <div class="relative z-10 bg-slate-300 dark:bg-slate-800 w-full max-w-[450px] h-[500px] overflow-hidden shadow-2xl rounded-sm">
+                    <div class="w-full h-full bg-cover bg-center grayscale hover:grayscale-0 transition-all duration-1000 transform hover:scale-105" 
+                         style="background-image: url('estetica_carolina.jpeg');">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="servicios" class="py-24 transition-colors duration-500 bg-slate-100 dark:bg-brand-pureBlack border-t border-slate-200 dark:border-slate-900">
+        <div class="container mx-auto px-6">
+            
+            <div class="flex flex-col items-center text-center mb-16">
+                <div class="flex items-center space-x-1 mb-2">
+                    <div class="text-brand-gold">✦</div>
+                    <span class="text-brand-goldDark dark:text-brand-gold font-bold text-xs uppercase tracking-[0.25em]">Estudio de Autor</span>
+                    <div class="text-brand-gold">✦</div>
+                </div>
+                <h2 class="text-4xl font-bold text-slate-950 dark:text-white font-serif">Nuestros Servicios Profesionales</h2>
+                <p class="text-slate-700 dark:text-slate-300 max-w-xl text-sm font-light mt-3">
+                    Estructura oficial de tratamientos diseñados meticulosamente por Carolina Mora para realzar tu belleza (basado en el catálogo oficial de WhatsApp de Carolina Mora Estética).
+                </p>
+            </div>
+
+            <!-- Services Nav tabs - 5 Columns for the exact 5 services from image_e4ae02.jpg / estetica carolina.jpeg -->
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-12 border-b border-slate-300 dark:border-slate-800">
+                <button onclick="updateService('micropigmentacion')" id="btn-micropigmentacion" class="service-tab pb-4 text-center border-b-2 border-transparent hover:border-brand-gold transition duration-300 group">
+                    <span class="block text-[9px] text-slate-500 dark:text-slate-400 group-hover:text-brand-gold tracking-widest uppercase mb-1">Especialidad 01</span>
+                    <span class="text-xs sm:text-sm font-bold tracking-wider uppercase text-slate-800 dark:text-white">Micropigmentación</span>
+                </button>
+                <button onclick="updateService('pestanas')" id="btn-pestanas" class="service-tab pb-4 text-center border-b-2 border-transparent hover:border-brand-gold transition duration-300 group">
+                    <span class="block text-[9px] text-slate-500 dark:text-slate-400 group-hover:text-brand-gold tracking-widest uppercase mb-1">Especialidad 02</span>
+                    <span class="text-xs sm:text-sm font-bold tracking-wider uppercase text-slate-800 dark:text-white">Pestañas</span>
+                </button>
+                <button onclick="updateService('tratamientos')" id="btn-tratamientos" class="service-tab pb-4 text-center border-b-2 border-transparent hover:border-brand-gold transition duration-300 group">
+                    <span class="block text-[9px] text-slate-500 dark:text-slate-400 group-hover:text-brand-gold tracking-widest uppercase mb-1">Especialidad 03</span>
+                    <span class="text-xs sm:text-sm font-bold tracking-wider uppercase text-slate-800 dark:text-white">Tratamientos</span>
+                </button>
+                <button onclick="updateService('depilacion')" id="btn-depilacion" class="service-tab pb-4 text-center border-b-2 border-transparent hover:border-brand-gold transition duration-300 group">
+                    <span class="block text-[9px] text-slate-500 dark:text-slate-400 group-hover:text-brand-gold tracking-widest uppercase mb-1">Especialidad 04</span>
+                    <span class="text-xs sm:text-sm font-bold tracking-wider uppercase text-slate-800 dark:text-white">Depilación Cera</span>
+                </button>
+                <button onclick="updateService('cabello')" id="btn-cabello" class="service-tab pb-4 text-center border-b-2 border-transparent hover:border-brand-gold transition duration-300 group col-span-2 md:col-span-1">
+                    <span class="block text-[9px] text-slate-500 dark:text-slate-400 group-hover:text-brand-gold tracking-widest uppercase mb-1">Especialidad 05</span>
+                    <span class="text-xs sm:text-sm font-bold tracking-wider uppercase text-slate-800 dark:text-white">Cabello</span>
+                </button>
+            </div>
+
+            <!-- Dynamic Tab Content Panel -->
+            <div id="service-panel" class="grid md:grid-cols-2 gap-12 items-center opacity-0 translate-y-4 transition-all duration-500">
+                <!-- Left Details Info -->
+                <div>
+                    <h3 id="s-title" class="text-3xl md:text-4xl font-bold mb-6 text-slate-900 dark:text-white font-serif italic">
+                        Cargando servicio...
+                    </h3>
+                    <p id="s-desc" class="text-slate-700 dark:text-slate-300 font-light leading-relaxed mb-8 text-base">
+                        Detalle interactivo de los procedimientos y especialidades estéticas.
+                    </p>
+                    
+                    <!-- Meta info Grid -->
+                    <div class="grid grid-cols-2 gap-6 mb-8 border-y border-slate-300 dark:border-slate-800 py-6">
+                        <div>
+                            <span class="block text-brand-goldDark dark:text-brand-gold font-bold text-[9px] uppercase tracking-widest mb-1">Sugerencia retoque</span>
+                            <span id="s-freq" class="text-xs font-semibold text-slate-900 dark:text-slate-200 uppercase tracking-wider">Cargando...</span>
+                        </div>
+                        <div>
+                            <span class="block text-brand-goldDark dark:text-brand-gold font-bold text-[9px] uppercase tracking-widest mb-1">Duración Aproximada</span>
+                            <span id="s-time" class="text-xs font-semibold text-slate-900 dark:text-slate-200 uppercase tracking-wider">Cargando...</span>
+                        </div>
+                    </div>
+
+                    <!-- Unique Bullets list -->
+                    <ul id="s-list" class="space-y-3.5 mb-8">
+                        <!-- Instantiated dynamically -->
+                    </ul>
+
+                    <!-- CTA Button inside Panel -->
+                    <a id="s-cta" href="#" target="_blank" class="bg-gradient-to-r from-brand-goldDark to-brand-gold text-white inline-block px-10 py-4 font-bold text-xs tracking-widest uppercase rounded-sm shadow-xl hover:brightness-110 transform transition-all duration-300">
+                        Consultar Cita Vía WhatsApp
+                    </a>
+                </div>
+
+                <!-- Right Dynamic Image Showcase -->
+                <div class="relative">
+                    <div class="absolute inset-0 bg-brand-gold/10 dark:bg-brand-gold/5 translate-x-4 translate-y-4 rounded-sm"></div>
+                    <div class="relative h-[440px] overflow-hidden grayscale hover:grayscale-0 transition-all duration-700 rounded-sm shadow-xl border border-slate-300 dark:border-slate-800">
+                        <img id="s-img" src="" alt="Servicio Oficial de Carolina Mora Estética" class="w-full h-full object-cover">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="faq" class="py-24 bg-white dark:bg-[#0c0f16] transition-colors duration-500">
+        <div class="container mx-auto px-6">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-16">
+                    <span class="text-brand-goldDark dark:text-brand-gold font-bold text-xs uppercase tracking-[0.25em] mb-2 block">Dudas Resueltas</span>
+                    <h2 class="text-4xl font-bold text-slate-950 dark:text-white font-serif italic">Preguntas & Certezas</h2>
+                    <div class="w-16 h-1 bg-gradient-to-r from-brand-goldDark to-brand-gold mx-auto mt-4"></div>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- FAQ Question 1 -->
+                    <div class="border border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-6 rounded-sm hover:shadow-md transition cursor-pointer" onclick="toggleFaq(1)">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-bold uppercase tracking-widest text-xs sm:text-sm text-slate-950 dark:text-slate-100">¿El procedimiento de micropigmentación genera dolor?</h4>
+                            <span id="icon-1" class="text-brand-gold text-2xl font-light">+</span>
+                        </div>
+                        <div id="faq-1" class="hidden mt-4 text-slate-700 dark:text-slate-300 text-sm font-light leading-relaxed border-t border-slate-300 dark:border-slate-800/80 pt-4">
+                            Garantizamos confort absoluto. Hacemos uso de anestésicos tópicos de última generación formulados dermatológicamente para mitigar cualquier molestia física. La gran mayoría de nuestras clientas en Llorente relatan que la experiencia se asimila a una vibración muy leve o cosquilleo en la zona trabajada.
+                        </div>
+                    </div>
+
+                    <!-- FAQ Question 2 -->
+                    <div class="border border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-6 rounded-sm hover:shadow-md transition cursor-pointer" onclick="toggleFaq(2)">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-bold uppercase tracking-widest text-xs sm:text-sm text-slate-950 dark:text-slate-100">¿Cuánto tiempo toma la cicatrización de cejas o labios?</h4>
+                            <span id="icon-2" class="text-brand-gold text-2xl font-light">+</span>
+                        </div>
+                        <div id="faq-2" class="hidden mt-4 text-slate-700 dark:text-slate-300 text-sm font-light leading-relaxed border-t border-slate-300 dark:border-slate-800/80 pt-4">
+                            La primera fase de recuperación externa toma aproximadamente de 7 a 10 días, durante la cual entregamos instrucciones específicas de cuidado. El color definitivo se asienta de manera molecular en la epidermis a las 4 semanas, momento en el cual procedemos con una sesión rápida de retoque si es necesario.
+                        </div>
+                    </div>
+
+                    <!-- FAQ Question 3 -->
+                    <div class="border border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-6 rounded-sm hover:shadow-md transition cursor-pointer" onclick="toggleFaq(3)">
+                        <div class="flex justify-between items-center">
+                            <h4 class="font-bold uppercase tracking-widest text-xs sm:text-sm text-slate-950 dark:text-slate-100">¿Qué tipo de queratinas y tintes capilares utilizan?</h4>
+                            <span id="icon-3" class="text-brand-gold text-2xl font-light">+</span>
+                        </div>
+                        <div id="faq-3" class="hidden mt-4 text-slate-700 dark:text-slate-300 text-sm font-light leading-relaxed border-t border-slate-300 dark:border-slate-800/80 pt-4">
+                            Utilizamos productos capilares de grado profesional, libres de químicos abrasivos y enriquecidos con aminoácidos y aceites naturales. Nuestras queratinas de alta calidad garantizan un cabello liso, hidratado y sin frizz ideal para combatir la humedad de la región de Tumaco.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="equipo" class="py-24 bg-slate-100 dark:bg-brand-pureBlack transition-colors duration-500 border-t border-slate-200 dark:border-slate-900">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col items-center text-center mb-16">
+                <div class="flex items-center space-x-1 mb-2">
+                    <div class="text-brand-gold">✦</div>
+                    <span class="text-brand-goldDark dark:text-brand-gold font-bold text-xs uppercase tracking-[0.25em]">Estudio Clínico</span>
+                    <div class="text-brand-gold">✦</div>
+                </div>
+                <h2 class="text-4xl font-bold text-slate-950 dark:text-white font-serif">Nuestro Equipo de Especialistas</h2>
+                <div class="w-16 h-1 bg-gradient-to-r from-brand-goldDark to-brand-gold mx-auto mt-4 mb-4"></div>
+                <p class="text-slate-700 dark:text-slate-300 max-w-2xl text-sm font-light">
+                    Liderado por Carolina Mora, nuestro personal especializado combina arte, ciencia cosmetológica y bioseguridad para garantizar una experiencia de alta gama en Llorente, Nariño.
+                </p>
+            </div>
+
+            <!-- Team Grid layout -->
+            <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                <!-- Team Member 1: Carolina Mora -->
+                <div class="bg-white dark:bg-slate-900/60 p-6 rounded-sm shadow-lg gold-border-glow transition duration-300 hover:scale-[1.02] flex flex-col justify-between">
+                    <div>
+                        <div class="w-full h-64 overflow-hidden mb-6 rounded-sm relative">
+                            <!-- High quality clinic photography placeholder representing a professional cosmetologist -->
+                            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" alt="Carolina Mora - Especialista Principal" class="w-full h-full object-cover">
+                            <span class="absolute bottom-2 left-2 bg-brand-gold text-white text-[9px] uppercase tracking-widest px-3 py-1 font-semibold rounded-sm">Directora</span>
+                        </div>
+                        <h4 class="text-lg font-bold tracking-wider text-slate-950 dark:text-slate-50 uppercase mb-1">Carolina Mora</h4>
+                        <span class="text-[10px] text-brand-goldDark dark:text-brand-gold font-bold uppercase tracking-widest block mb-4">Master en Micropigmentación & Estética</span>
+                        <p class="text-slate-700 dark:text-slate-300 text-xs font-light leading-relaxed mb-6">
+                            Fundadora del estudio. Especializada en técnicas europeas avanzadas de diseño de cejas hiperrealistas y micropigmentación de labios (Lip Blush) adaptadas a climas cálidos.
+                        </p>
+                    </div>
+                    <div class="border-t border-slate-200 dark:border-slate-800 pt-4 text-[10px] text-slate-500 dark:text-slate-400 font-semibold tracking-widest uppercase">
+                        Certificación Internacional
+                    </div>
+                </div>
+
+                <!-- Team Member 2: Valentina Ramos -->
+                <div class="bg-white dark:bg-slate-900/60 p-6 rounded-sm shadow-lg border border-slate-200 dark:border-slate-800 transition duration-300 hover:scale-[1.02] flex flex-col justify-between">
+                    <div>
+                        <div class="w-full h-64 overflow-hidden mb-6 rounded-sm relative">
+                            <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" alt="Valentina Ramos - Lashista & Cejas" class="w-full h-full object-cover">
+                            <span class="absolute bottom-2 left-2 bg-slate-900 text-white text-[9px] uppercase tracking-widest px-3 py-1 font-semibold rounded-sm">Técnico Principal</span>
+                        </div>
+                        <h4 class="text-lg font-bold tracking-wider text-slate-950 dark:text-slate-50 uppercase mb-1">Valentina Ramos</h4>
+                        <span class="text-[10px] text-brand-goldDark dark:text-brand-gold font-bold uppercase tracking-widest block mb-4">Especialista en Pestañas & Cejas</span>
+                        <p class="text-slate-700 dark:text-slate-300 text-xs font-light leading-relaxed mb-6">
+                            Especialista técnica de precisión en colocación de extensiones de pestañas pelo a pelo, volumen ruso y lifting de queratina nutritiva.
+                        </p>
+                    </div>
+                    <div class="border-t border-slate-200 dark:border-slate-800 pt-4 text-[10px] text-slate-500 dark:text-slate-400 font-semibold tracking-widest uppercase">
+                        Visagismo Certificado
+                    </div>
+                </div>
+
+                <!-- Team Member 3: Dra. Camila Noguera -->
+                <div class="bg-white dark:bg-slate-900/60 p-6 rounded-sm shadow-lg border border-slate-200 dark:border-slate-800 transition duration-300 hover:scale-[1.02] flex flex-col justify-between">
+                    <div>
+                        <div class="w-full h-64 overflow-hidden mb-6 rounded-sm relative">
+                            <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80" alt="Dra. Camila Noguera - Cosmetóloga" class="w-full h-full object-cover">
+                            <span class="absolute bottom-2 left-2 bg-slate-900 text-white text-[9px] uppercase tracking-widest px-3 py-1 font-semibold rounded-sm">Asesora Clínica</span>
+                        </div>
+                        <h4 class="text-lg font-bold tracking-wider text-slate-950 dark:text-slate-50 uppercase mb-1">Dra. Camila Noguera</h4>
+                        <span class="text-[10px] text-brand-goldDark dark:text-brand-gold font-bold uppercase tracking-widest block mb-4">Cosmetóloga & Tratamientos Faciales</span>
+                        <p class="text-slate-700 dark:text-slate-300 text-xs font-light leading-relaxed mb-6">
+                            Especialista en salud capilar y dermocosmética avanzada. Responsable de tratamientos de hidratación celular profunda y reestructuración química capilar.
+                        </p>
+                    </div>
+                    <div class="border-t border-slate-200 dark:border-slate-800 pt-4 text-[10px] text-slate-500 dark:text-slate-400 font-semibold tracking-widest uppercase">
+                        Química Cosmética
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-24 transition-colors duration-500 bg-white dark:bg-[#0c0f16] border-t border-slate-200 dark:border-slate-900">
+        <div class="container mx-auto px-6">
+            <div class="max-w-4xl mx-auto bg-slate-50 dark:bg-slate-900/40 p-8 md:p-10 rounded-sm gold-border-glow">
+                <h3 class="text-base font-bold mb-6 uppercase tracking-widest text-slate-950 dark:text-slate-50 text-center font-sans">
+                    Retención De Color & Brillo tras 12 Meses
+                </h3>
+                <!-- Chart.js Container -->
+                <div class="chart-container h-64 relative">
+                    <canvas id="luxuryChart"></canvas>
+                </div>
+                <p class="mt-6 text-[10px] text-slate-600 dark:text-slate-400 italic text-center leading-relaxed uppercase tracking-widest">
+                    Análisis de retención molecular de pigmentos y tratamientos de autor vs. procedimientos convencionales expuestos al clima de Nariño.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-28 relative overflow-hidden bg-slate-900 dark:bg-black transition-colors duration-500">
+        <div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-brand-gold to-transparent"></div>
+        <div class="container mx-auto px-6 text-center relative z-10">
+            <h2 class="text-4xl md:text-6xl font-bold text-white mb-8 tracking-tight font-serif italic">
+                La sofisticación que tu rostro <br><span class="text-brand-goldLight dark:text-brand-gold">merece experimentar</span>.
+            </h2>
+            <p class="text-slate-300 text-base md:text-lg mb-12 max-w-xl mx-auto font-light">
+                Reserva hoy mismo tu espacio exclusivo en nuestro estudio de Llorente, Nariño, y despierta perfecta cada mañana.
+            </p>
+            <div class="inline-flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6">
+                <a href="https://wa.me/573000000000?text=Hola%20Carolina,%20quiero%20reservar%20mi%20cupo%20con%20el%20bono%20de%20visagismo%20gratuito" target="_blank" class="bg-gradient-to-r from-brand-goldDark to-brand-gold text-white px-12 py-6 rounded-sm font-bold text-sm tracking-[0.25em] uppercase shadow-2xl hover:brightness-110 transform hover:scale-[1.03] transition-all duration-300">
+                    RESERVAR VALORACIÓN GRATUITA
+                </a>
+            </div>
+            
+            <div class="mt-20 flex justify-center space-x-8 opacity-60">
+                <span class="text-white text-[9px] sm:text-[10px] tracking-widest border border-white/20 px-4 py-2 font-semibold">TÉCNICAS EUROPEAS</span>
+                <span class="text-white text-[9px] sm:text-[10px] tracking-widest border border-white/20 px-4 py-2 font-semibold">SEGURIDAD CLÍNICA</span>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-12 bg-slate-100 dark:bg-black border-t border-slate-300 dark:border-slate-900 text-slate-700 dark:text-slate-400 transition-colors duration-500">
+        <div class="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center text-[10px] tracking-widest uppercase font-bold">
+            <div class="mb-4 md:mb-0">
+                CAROLINA MORA &copy; <span id="current-year">2026</span> | Todos los derechos reservados.
+            </div>
+            <div class="flex space-x-6">
+                <a href="https://www.instagram.com/carolinamora_estetica/" target="_blank" class="hover:text-brand-gold transition duration-300">Instagram</a>
+                <a href="#" class="hover:text-brand-gold transition duration-300">Facebook</a>
+                <a href="https://wa.me/573000000000" class="hover:text-brand-gold transition duration-300">WhatsApp</a>
+            </div>
+            <div class="mt-4 md:mt-0">
+                Llorente, Nariño, Colombia
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Set dynamic current year in footer
+        document.getElementById('current-year').innerText = new Date().getFullYear();
+
+        // Global Chart Instance representation
+        let luxuryChartInstance = null;
+
+        /**
+         * Dynamic Chart.js Instantiation Engine
+         * Recalculates colors and labels adaptively depending on active Theme
+         */
+        function renderLuxuryChart(isDarkMode) {
+            const ctx = document.getElementById('luxuryChart').getContext('2d');
+            
+            // Destroy existing chart to prevent canvas overlays
+            if (luxuryChartInstance) {
+                luxuryChartInstance.destroy();
+            }
+
+            // Theme adaptation parameters
+            const labelColor = isDarkMode ? '#CBD5E1' : '#0F172A';
+            const gridColor = isDarkMode ? 'rgba(212, 175, 55, 0.15)' : 'rgba(15, 23, 42, 0.08)';
+
+            luxuryChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Humedad Extrema', 'Exposición Solar', 'Post-Lavado'],
+                    datasets: [
+                        {
+                            label: 'Maquillaje convencional',
+                            data: [35, 15, 10],
+                            backgroundColor: isDarkMode ? '#334155' : '#CBD5E1',
+                            borderColor: isDarkMode ? '#475569' : '#94A3B8',
+                            borderWidth: 1,
+                            borderRadius: 2
+                        },
+                        {
+                            label: 'Tratamientos de Autor',
+                            data: [100, 95, 98],
+                            backgroundColor: '#D4AF37',
+                            borderColor: '#B8860B',
+                            borderWidth: 1,
+                            borderRadius: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 110,
+                            ticks: {
+                                color: labelColor,
+                                font: { family: 'Montserrat', size: 9, weight: 'semibold' }
+                            },
+                            grid: { color: gridColor }
+                        },
+                        x: {
+                            ticks: {
+                                color: labelColor,
+                                font: { family: 'Montserrat', size: 9, weight: 'semibold' }
+                            },
+                            grid: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: labelColor,
+                                font: { family: 'Montserrat', size: 10, weight: '600' }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Service Repository Data Model
+        const servicesData = {
+            micropigmentacion: {
+                title: 'Micropigmentación Cejas y Labios',
+                desc: 'Técnicas de sombreado y realce semipermanente con visagismo previo. Diseñamos cejas simétricas perfectas y definimos el tono de tus labios aportando volumen visual y frescura, ideal para lucir impecable bajo el calor de Llorente.',
+                freq: '12 a 24 meses',
+                time: '120 - 180 Minutos',
+                img: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+                bullets: [
+                    'Estudio de visagismo y simetría facial personalizada',
+                    'Pigmentos de alta fidelidad con cero viraje de color',
+                    'Procedimiento higiénico y anestesia tópica de confort'
+                ],
+                waText: 'Hola Carolina Mora Estética, me interesa el servicio de Micropigmentación de cejas y labios. ¿Me das información de tarifas y agenda?'
+            },
+            pestanas: {
+                title: 'Extensiones y Lifting de Pestañas',
+                desc: 'Realza la fuerza de tu mirada. Ofrecemos colocación de pestañas Pelo a Pelo para máxima naturalidad, Punto a Punto para mayor volumen, y Lifting de Pestañas para curvar tus pestañas naturales desde la raíz.',
+                freq: '2 a 3 semanas (Extensiones) / 6 a 8 semanas (Lifting)',
+                time: '60 - 120 Minutos',
+                img: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+                bullets: [
+                    'Técnica Pelo a Pelo clásica e hiperrealista',
+                    'Técnica Punto a Punto para mayor densidad y volumen',
+                    'Lifting nutritivo con queratina y tinte integrado'
+                ],
+                waText: 'Hola Carolina Mora Estética, me interesa cotizar un servicio de Pestañas (Pelo a pelo / Punto a punto / Lifting).'
+            },
+            tratamientos: {
+                title: 'Tratamientos Faciales y Corporales',
+                desc: 'Protocolos estéticos diseñados para purificar, hidratar y moldear tu cuerpo. Ofrecemos limpiezas faciales profundas para eliminar impurezas, masajes estéticos y tratamientos corporales reductores y reafirmantes avanzados.',
+                freq: 'Sugerido Mensualmente',
+                time: '60 - 90 Minutos',
+                img: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+                bullets: [
+                    'Limpiezas faciales profundas y desintoxicación celular',
+                    'Tratamientos corporales reductores y moldeadores personalizados',
+                    'Protocolos hidratantes contra el fotodaño solar'
+                ],
+                waText: 'Hola Carolina Mora Estética, deseo consultar por los Tratamientos Faciales y Corporales que ofreces.'
+            },
+            depilacion: {
+                title: 'Depilación Profesional con Cera',
+                desc: 'Procedimientos higiénicos y rápidos para una piel tersa y suave. Depilación precisa en zonas delicadas como diseño y limpieza de cejas, bozo (área superior del labio), axilas, piernas completas y área de bikini.',
+                freq: '3 a 4 semanas',
+                time: '15 - 45 Minutos',
+                img: 'https://images.unsplash.com/photo-1586771107445-d3ca888129ff?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+                bullets: [
+                    'Cera elástica hipoalergénica para minimizar el dolor',
+                    'Depilación de áreas sensibles (bozo, axilas, bikini)',
+                    'Diseño limpio y perfilado impecable de cejas'
+                ],
+                waText: 'Hola Carolina Mora Estética, me gustaría agendar un servicio de Depilación con Cera. ¿Qué disponibilidad tienes?'
+            },
+            cabello: {
+                title: 'Salud y Cuidado Capilar',
+                desc: 'Tratamientos de alta gama para recuperar la vitalidad, brillo y estructura de tu cabello. Realizamos aplicaciones de Keratina alisadora de larga duración, Repolarización capilar profunda e hidratante, y tintes profesionales.',
+                freq: 'Según tratamiento (Keratina cada 3 - 5 meses)',
+                time: '90 - 180 Minutos',
+                img: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+                bullets: [
+                    'Keratina termoactiva termo-reparadora (liso sedoso)',
+                    'Repolarización intensiva para cabellos dañados o secos',
+                    'Aplicación de tintes con alta fijación de color y brillo'
+                ],
+                waText: 'Hola Carolina Mora Estética, deseo cotizar un tratamiento capilar (Keratina / Repolarización / Tinte) para mi cabello.'
+            }
+        };
+
+        /**
+         * Update and Animate Service Tab Panels
+         */
+        function updateService(serviceId) {
+            const panel = document.getElementById('service-panel');
+            
+            // Apply quick fade out transition
+            panel.classList.add('opacity-0', 'translate-y-4');
+            
+            setTimeout(() => {
+                const s = servicesData[serviceId];
+                
+                // Update text elements
+                document.getElementById('s-title').innerText = s.title;
+                document.getElementById('s-desc').innerText = s.desc;
+                document.getElementById('s-freq').innerText = s.freq;
+                document.getElementById('s-time').innerText = s.time;
+                document.getElementById('s-img').src = s.img;
+                
+                // Update CTA link with specific WhatsApp customized messages
+                document.getElementById('s-cta').href = `https://wa.me/573000000000?text=${encodeURIComponent(s.waText)}`;
+
+                // Generate bullet list points
+                const list = document.getElementById('s-list');
+                list.innerHTML = '';
+                s.bullets.forEach(bullet => {
+                    const li = document.createElement('li');
+                    li.className = 'flex items-center space-x-3 text-sm font-light text-slate-700 dark:text-slate-300';
+                    li.innerHTML = `<span class="text-brand-gold text-base">✦</span> <span>${bullet}</span>`;
+                    list.appendChild(li);
+                });
+
+                // Standardize tab navigation buttons highlights
+                document.querySelectorAll('.service-tab').forEach(tab => {
+                    tab.classList.remove('border-brand-gold');
+                    tab.querySelector('span:last-child').classList.remove('text-brand-gold', 'dark:text-brand-gold');
+                    tab.querySelector('span:last-child').classList.add('text-slate-800', 'dark:text-white');
+                });
+
+                const activeTab = document.getElementById(`btn-${serviceId}`);
+                if (activeTab) {
+                    activeTab.classList.add('border-brand-gold');
+                    activeTab.querySelector('span:last-child').classList.add('text-brand-gold');
+                }
+
+                // Fade back in with smoothness
+                panel.classList.remove('opacity-0', 'translate-y-4');
+            }, 300);
+        }
+
+        /**
+         * Accordion Toggle engine
+         */
+        function toggleFaq(id) {
+            const answer = document.getElementById(`faq-${id}`);
+            const icon = document.getElementById(`icon-${id}`);
+            
+            if (answer.classList.contains('hidden')) {
+                answer.classList.remove('hidden');
+                icon.innerText = '−';
+            } else {
+                answer.classList.add('hidden');
+                icon.innerText = '+';
+            }
+        }
+
+        /**
+         * Theme Toggle Logic
+         * Switches classes and completely re-renders the Chart.js visual canvas with native Tailwind
+         */
+        function toggleTheme() {
+            const html = document.documentElement;
+            const sunIcon = document.getElementById('sun-icon');
+            const moonIcon = document.getElementById('moon-icon');
+
+            if (html.classList.contains('dark')) {
+                // Switch to light mode
+                html.classList.remove('dark');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+                localStorage.setItem('theme', 'light');
+                renderLuxuryChart(false);
+            } else {
+                // Switch to dark mode
+                html.classList.add('dark');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+                localStorage.setItem('theme', 'dark');
+                renderLuxuryChart(true);
+            }
+        }
+
+        /**
+         * Assist Navigation scroll physics
+         */
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Initialize App State
+        window.onload = function() {
+            // Check default user theme preference in system or storage
+            const savedTheme = localStorage.getItem('theme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            const isDark = savedTheme === 'dark' || (!savedTheme && systemPrefersDark);
+            
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+                document.getElementById('sun-icon').classList.remove('hidden');
+                document.getElementById('moon-icon').classList.add('hidden');
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('sun-icon').classList.add('hidden');
+                document.getElementById('moon-icon').classList.remove('hidden');
+            }
+
+            // Init Dynamic Subsections with the first official service
+            updateService('micropigmentacion');
+            renderLuxuryChart(isDark);
+        }
+    </script>
+</body>
+</html>

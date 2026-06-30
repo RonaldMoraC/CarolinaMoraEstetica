@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Citas - Estética Carolina Mora</title>
+    <link rel="stylesheet" href="global.css">
+</head>
+
+<body>
+
+    <div class="container" style="padding-top: 20px; padding-bottom: 40px; max-width: 600px;">
+
+        <header class="app-header">
+            <div class="d-flex align-center gap-1">
+                <button class="icon-btn" onclick="window.location.href='catalogo.html'"
+                    title="Volver al catálogo">⬅️</button>
+                <h1 class="fw-bold" style="font-size: 1.4rem; margin: 0;">Mis Citas</h1>
+            </div>
+            <small class="text-muted" style="font-weight: 600;">Carolina Mora</small>
+        </header>
+
+        <nav class="tab-container">
+            <button class="tab-btn active" id="tabProximas" onclick="cambiarPestaña('proximas')">Próximas</button>
+            <button class="tab-btn" id="tabPasadas" onclick="cambiarPestaña('pasadas')">Pasadas</button>
+        </nav>
+
+        <div id="appointment-status" class="badge badge-info"
+            style="display: none; width: 100%; margin-bottom: 20px; padding: 12px; border-radius: 8px; text-transform: none; font-size: 0.9rem;">
+        </div>
+
+        <main class="d-flex" style="flex-direction: column; gap: 16px;" id="citasContainer">
+
+            <article class="card appointment-card" data-estado="proximas">
+                <div class="d-flex justify-between align-center mb-1">
+                    <h3 class="fw-bold" style="font-size: 1.2rem; margin: 0;">Corte de Cabello</h3>
+                    <span class="badge badge-info">Confirmada</span>
+                </div>
+
+                <div class="text-muted" style="font-size: 0.9rem; font-weight: 600; margin-bottom: 16px;">
+                    <p style="margin-bottom: 4px;">📅 25 de Mayo, 2026</p>
+                    <p style="margin-bottom: 4px;">⏰ 10:00 AM</p>
+                    <p style="margin-bottom: 0; color: var(--color-text-dark);">💰 Costo: $25.00</p>
+                </div>
+
+                <div class="d-flex gap-1"
+                    style="border-top: 1px solid var(--color-border); padding-top: 12px; justify-content: flex-end;">
+                    <button class="btn btn-danger-outline" style="padding: 8px 16px; font-size: 0.85rem;"
+                        onclick="cancelarCita(101)">Cancelar</button>
+                    <button class="btn btn-primary" style="padding: 8px 16px; font-size: 0.85rem;"
+                        onclick="reprogramarCita(101)">Reprogramar</button>
+                </div>
+            </article>
+
+            <article class="card appointment-card" data-estado="proximas">
+                <div class="d-flex justify-between align-center mb-1">
+                    <h3 class="fw-bold" style="font-size: 1.2rem; margin: 0;">Manicure</h3>
+                    <span class="badge badge-info">Confirmada</span>
+                </div>
+
+                <div class="text-muted" style="font-size: 0.9rem; font-weight: 600; margin-bottom: 16px;">
+                    <p style="margin-bottom: 4px;">📅 28 de Mayo, 2026</p>
+                    <p style="margin-bottom: 4px;">⏰ 03:00 PM</p>
+                    <p style="margin-bottom: 0; color: var(--color-text-dark);">💰 Costo: $15.00</p>
+                </div>
+
+                <div class="d-flex gap-1"
+                    style="border-top: 1px solid var(--color-border); padding-top: 12px; justify-content: flex-end;">
+                    <button class="btn btn-danger-outline" style="padding: 8px 16px; font-size: 0.85rem;"
+                        onclick="cancelarCita(102)">Cancelar</button>
+                    <button class="btn btn-primary" style="padding: 8px 16px; font-size: 0.85rem;"
+                        onclick="reprogramarCita(102)">Reprogramar</button>
+                </div>
+            </article>
+
+            <article class="card appointment-card" data-estado="pasadas" style="display: none; opacity: 0.8;">
+                <div class="d-flex justify-between align-center mb-1">
+                    <h3 class="fw-bold" style="font-size: 1.2rem; margin: 0;">Pedicure</h3>
+                    <span class="badge badge-success"
+                        style="background-color: rgba(46, 204, 113, 0.1); color: var(--color-success);">Completada</span>
+                </div>
+
+                <div class="text-muted" style="font-size: 0.9rem; font-weight: 600;">
+                    <p style="margin-bottom: 4px;">📅 10 de Mayo, 2026</p>
+                    <p style="margin-bottom: 4px;">⏰ 11:30 AM</p>
+                    <p style="margin-bottom: 0; color: var(--color-text-dark);">💰 Costo: $20.00</p>
+                </div>
+            </article>
+
+        </main>
+    </div>
+
+    <script>
+        // Alternar visualización entre Próximas y Pasadas de forma reactiva y local
+        function cambiarPestaña(tipo) {
+            const btnProximas = document.getElementById('tabProximas');
+            const btnPasadas = document.getElementById('tabPasadas');
+            const tarjetas = document.querySelectorAll('.appointment-card');
+
+            if (tipo === 'proximas') {
+                btnProximas.classList.add('active');
+                btnPasadas.classList.remove('active');
+            } else {
+                btnPasadas.classList.add('active');
+                btnProximas.classList.remove('active');
+            }
+
+            // Filtrado inmediato por atributo
+            tarjetas.forEach(tarjeta => {
+                if (tarjeta.getAttribute('data-estado') === tipo) {
+                    tarjeta.style.display = 'block';
+                } else {
+                    tarjeta.style.display = 'none';
+                }
+            });
+        }
+
+        // Simulación de flujos del prototipo
+        function cancelarCita(id) {
+            if (confirm('¿Está seguro de que desea cancelar esta cita programada?')) {
+                const statusDiv = document.getElementById('appointment-status');
+                statusDiv.innerText = `Procesando la cancelación de la cita #${id}...`;
+                statusDiv.style.display = 'block';
+
+                setTimeout(() => {
+                    statusDiv.innerText = `Cita #${id} cancelada exitosamente. El espacio ha sido liberado.`;
+                }, 400); // RNF-06: Respuesta en menos de 500ms
+            }
+        }
+
+        function reprogramarCita(id) {
+            sessionStorage.setItem('reprogramar_cita_id', id);
+            // Redirige al catálogo/calendario para seleccionar una nueva fecha
+            window.location.href = 'catalogo.html';
+        }
+    </script>
+
+    <script>
+        /*
+        document.addEventListener('DOMContentLoaded', () => {
+            // Cargar el listado asíncronamente desde la base de datos MySQL mediante PHP
+            cargarHistorialCitas();
+        });
+
+        async function cargarHistorialCitas() {
+            const container = document.getElementById('citasContainer');
+            const token = localStorage.getItem('user_token'); // RNF-08: Acceso protegido por token
+
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                container.innerHTML = '<p class="text-muted text-center">Consultando su historial de citas...</p>';
+
+                // Llamada desacoplada al endpoint de consulta
+                const response = await fetch('api/get_citas.php', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const citas = await response.json();
+                container.innerHTML = ''; // Limpiar contenedor temporal
+
+                if(citas.length === 0) {
+                    container.innerHTML = '<p class="text-muted text-center">No registra ninguna cita en el sistema.</p>';
+                    return;
+                }
+
+                // Renderizar y clasificar condicionalmente según el estado que venga en el JSON
+                citas.forEach(cita => {
+                    const esPasada = cita.estado === 'completada' || cita.estado === 'cancelada';
+                    const tarjetaHtml = `
+                        <article class="card appointment-card" data-estado="${esPasada ? 'pasadas' : 'proximas'}" style="${esPasada ? 'display:none; opacity:0.8;' : ''}">
+                            <div class="d-flex justify-between align-center mb-1">
+                                <h3 class="fw-bold" style="font-size: 1.2rem; margin: 0;">${cita.servicio_nombre}</h3>
+                                <span class="badge ${cita.estado === 'confirmada' ? 'badge-info' : 'badge-success'}">${cita.estado}</span>
+                            </div>
+                            <div class="text-muted" style="font-size: 0.9rem; font-weight: 600; ${!esPasada ? 'margin-bottom: 16px;' : ''}">
+                                <p style="margin-bottom: 4px;">📅 ${cita.fecha_formateada}</p>
+                                <p style="margin-bottom: 4px;">⏰ ${cita.hora}</p>
+                                <p style="margin-bottom: 0; color: var(--color-text-dark);">💰 Costo: $${parseFloat(cita.precio).toFixed(2)}</p>
+                            </div>
+                            ${!esPasada ? `
+                                <div class="d-flex gap-1" style="border-top: 1px solid var(--color-border); padding-top: 12px; justify-content: flex-end;">
+                                    <button class="btn btn-danger-outline" style="padding: 8px 16px; font-size: 0.85rem;" onclick="cancelarCitaAPI(${cita.id})">Cancelar</button>
+                                    <button class="btn btn-primary" style="padding: 8px 16px; font-size: 0.85rem;" onclick="reprogramarCita(${cita.id})">Reprogramar</button>
+                                </div>
+                            ` : ''}
+                        </article>
+                    `;
+                    container.insertAdjacentHTML('beforeend', tarjetaHtml);
+                });
+
+            } catch (error) {
+                console.error('Error al mapear historial:', error);
+                container.innerHTML = '<p class="text-muted text-center" style="color:var(--color-danger);">Error de conexión al cargar las citas.</p>';
+            }
+        }
+
+        // Envío asíncrono real de cancelación de cita a la API de backend
+        async function cancelarCitaAPI(idCita) {
+            const token = localStorage.getItem('user_token');
+            const statusDiv = document.getElementById('appointment-status');
+
+            try {
+                const response = await fetch('api/cancelar_cita.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ id_cita: idCita })
+                });
+
+                const resultado = await response.json();
+                
+                if(response.ok && resultado.success) {
+                    statusDiv.innerText = "Cita cancelada con éxito de la base de datos.";
+                    statusDiv.style.display = 'block';
+                    cargarHistorialCitas(); // Refrescar el DOM de inmediato
+                }
+            } catch (error) {
+                console.error('Error de red al cancelar:', error);
+            }
+        }
+        */
+    </script>
+</body>
+
+</html>

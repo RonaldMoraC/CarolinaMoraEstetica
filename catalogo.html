@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de Servicios - Estética Carolina Mora</title>
+    <link rel="stylesheet" href="global.css">
+</head>
+
+<body>
+
+    <div class="container" style="padding-top: 10px; padding-bottom: 40px;">
+
+        <header class="app-header">
+            <div>
+                <h1 class="fw-bold" style="font-size: 1.6rem; margin: 0;">Servicios</h1>
+                <small class="text-muted" style="font-weight: 600;">Estética Carolina Mora</small>
+            </div>
+            <div class="header-icons">
+                <a href="mis-citas.html" class="icon-btn" title="Mis Citas">📅</a>
+                <a href="perfil.html" class="icon-btn" title="Mi Perfil">👤</a>
+            </div>
+        </header>
+
+        <section class="search-container">
+            <span style="font-size: 1.1rem; color: var(--color-text-muted);">🔍</span>
+            <input type="text" id="searchService" placeholder="Buscar servicios...">
+        </section>
+
+        <nav class="category-filters" id="categoriesContainer">
+            <button class="filter-btn active" data-categoria="todos">Todos</button>
+            <button class="filter-btn" data-categoria="cabello">Cabello</button>
+            <button class="filter-btn" data-categoria="unas">Uñas</button>
+            <button class="filter-btn" data-categoria="facial">Facial</button>
+            <button class="filter-btn" data-categoria="cuidado">Cuidado</button>
+        </nav>
+
+        <main class="grid grid-services" id="servicesGrid">
+
+            <article class="card d-flex align-center justify-between gap-2" style="flex-direction: row; padding: 16px;">
+                <div class="d-flex align-center gap-2">
+                    <div class="service-icon">💇‍♀️</div>
+                    <div>
+                        <h3 class="fw-bold" style="font-size: 1.1rem; margin-bottom: 4px;">Corte de Cabello</h3>
+                        <p class="text-muted m-0" style="font-size: 0.9rem; font-weight: 600;">$25.00</p>
+                    </div>
+                </div>
+                <button class="btn btn-primary"
+                    onclick="seleccionarServicio(1, 'Corte de Cabello', 25.00)">Reservar</button>
+            </article>
+
+            <article class="card d-flex align-center justify-between gap-2" style="flex-direction: row; padding: 16px;">
+                <div class="d-flex align-center gap-2">
+                    <div class="service-icon">💅</div>
+                    <div>
+                        <h3 class="fw-bold" style="font-size: 1.1rem; margin-bottom: 4px;">Manicure</h3>
+                        <p class="text-muted m-0" style="font-size: 0.9rem; font-weight: 600;">$15.00</p>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="seleccionarServicio(2, 'Manicure', 15.00)">Reservar</button>
+            </article>
+
+            <article class="card d-flex align-center justify-between gap-2" style="flex-direction: row; padding: 16px;">
+                <div class="d-flex align-center gap-2">
+                    <div class="service-icon">🦶</div>
+                    <div>
+                        <h3 class="fw-bold" style="font-size: 1.1rem; margin-bottom: 4px;">Pedicure</h3>
+                        <p class="text-muted m-0" style="font-size: 0.9rem; font-weight: 600;">$20.00</p>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="seleccionarServicio(3, 'Pedicure', 20.00)">Reservar</button>
+            </article>
+
+        </main>
+    </div>
+
+    <script>
+        function seleccionarServicio(id, nombre, precio) {
+            // Guardamos temporalmente el servicio elegido en sessionStorage para que la siguiente pantalla lo sepa
+            sessionStorage.setItem('servicio_seleccionado_id', id);
+            sessionStorage.setItem('servicio_seleccionado_nombre', nombre);
+            sessionStorage.setItem('servicio_seleccionado_precio', precio);
+            // Avanzar al flujo de agendamiento de fecha y hora
+            window.location.href = 'agendamiento.html'; // (Esta será la pantalla de calendario que crearemos después si aplica, o redirecciona según desees)
+        }
+    </script>
+
+    <script>
+        // 1. Guardar servicio elegido y avanzar en el flujo
+        function seleccionarServicio(id, nombre, precio) {
+            sessionStorage.setItem('servicio_seleccionado_id', id);
+            sessionStorage.setItem('servicio_seleccionado_nombre', nombre);
+            sessionStorage.setItem('servicio_seleccionado_precio', precio);
+            window.location.href = 'agendamiento.html';
+        }
+
+        // 2. Inicializar la carga asíncrona al cargar el DOM
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarCatalogoServicios();
+            configurarFiltros();
+        });
+
+        // 3. Consumir el catálogo general desde la API
+        async function cargarCatalogoServicios() {
+            const gridContainer = document.getElementById('servicesGrid');
+            
+            try {
+                gridContainer.innerHTML = '<p class="text-muted text-center" style="grid-column: 1/-1;">Cargando catálogo disponible...</p>';
+
+                const response = await fetch('api/get_servicios.php');
+                const servicios = await response.json();
+
+                gridContainer.innerHTML = ''; // Limpiar contenedor temporal
+
+                if (servicios.length === 0) {
+                    gridContainer.innerHTML = '<p class="text-muted text-center" style="grid-column: 1/-1;">No hay servicios disponibles en este momento.</p>';
+                    return;
+                }
+
+                // 4. Iterar y renderizar dinámicamente con las clases limpias de tu global.css
+                servicios.forEach(servicio => {
+                    const cardHtml = `
+                        <article class="card d-flex align-center justify-between gap-2" data-categoria="${servicio.categoria}">
+                            <div class="d-flex align-center gap-2">
+                                <div class="service-icon">${servicio.icono || '✨'}</div>
+                                <div>
+                                    <h3 class="fw-bold m-0" style="font-size: 1.1rem;">${servicio.nombre}</h3>
+                                    <p class="text-muted m-0" style="font-size: 0.9rem; font-weight: 600;">$${parseFloat(servicio.precio).toFixed(2)}</p>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" onclick="seleccionarServicio(${servicio.id}, '${servicio.nombre}', ${servicio.precio})">Reservar</button>
+                        </article>
+                    `;
+                    gridContainer.insertAdjacentHTML('beforeend', cardHtml);
+                });
+
+            } catch (error) {
+                console.error('Error al cargar servicios:', error);
+                gridContainer.innerHTML = '<p class="text-muted text-center" style="grid-column: 1/-1; color: var(--color-danger);">Error al conectar con el servidor de catálogo.</p>';
+            }
+        }
+
+        // 5. Filtrado reactivo en el lado del cliente (Categorías y Buscador)
+        function configurarFiltros() {
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            
+            filterButtons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    // Alternar clase .active visualmente
+                    document.querySelector('.filter-btn.active').classList.remove('active');
+                    e.target.classList.add('active');
+
+                    const categoriaSeleccionada = e.target.getAttribute('data-categoria');
+                    const tarjetas = document.querySelectorAll('#servicesGrid article');
+
+                    tarjetas.forEach(tarjeta => {
+                        const catTarjeta = tarjeta.getAttribute('data-categoria');
+                        if (categoriaSeleccionada === 'todos' || catTarjeta === categoriaSeleccionada) {
+                            tarjeta.style.display = 'flex';
+                        } else {
+                            tarjeta.style.display = 'none';
+                        }
+                    });
+                });
+            });
+
+            // Buscador en tiempo real por texto
+            document.getElementById('searchService').addEventListener('input', (e) => {
+                const busqueda = e.target.value.toLowerCase().trim();
+                const tarjetas = document.querySelectorAll('#servicesGrid article');
+
+                tarjetas.forEach(tarjeta => {
+                    const textoServicio = tarjeta.querySelector('h3').innerText.toLowerCase();
+                    if (textoServicio.includes(busqueda)) {
+                        tarjeta.style.display = 'flex';
+                    } else {
+                        tarjeta.style.display = 'none';
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+
+</html>

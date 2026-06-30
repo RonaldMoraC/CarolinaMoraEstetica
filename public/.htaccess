@@ -1,0 +1,14 @@
+RewriteEngine On
+
+# Pasar Authorization y X-Authorization headers a PHP (requerido para JWT API auth)
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%1]
+RewriteCond %{HTTP:X-Authorization} ^(.*)
+RewriteRule .* - [E=HTTP_X_AUTHORIZATION:%1]
+
+# Si el archivo o directorio no existe físicamente, enviar a index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [L]
+
+DirectoryIndex index.php

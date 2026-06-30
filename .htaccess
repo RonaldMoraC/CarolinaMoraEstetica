@@ -1,0 +1,46 @@
+# Configuración Perimetral - Carolina Mora Estética
+RewriteEngine On
+RewriteBase /CarolinaMoraEstetica
+
+# Pasar Authorization header a PHP (requerido para JWT API auth)
+RewriteCond %{HTTP:Authorization} ^(.*)
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%1]
+
+# Deshabilitar listado de directorios
+Options -Indexes
+
+# Denegar acceso a carpetas sensibles
+RewriteRule ^(src|vendor|logs|database|docs|tests)($|/) - [F,L]
+
+# Denegar acceso a archivos de configuración y arranque
+RewriteRule ^(\.env|composer\.json|composer\.lock|bootstrap\.php|generar_esqueleto\.php|phpunit\.xml|skills\.md|dirs\.txt) - [F,L]
+
+# ── Archivos estáticos: /assets/ → /public/assets/ ────────────────
+RewriteRule ^assets/(.*)$ public/assets/$1 [L]
+
+# ── Archivos estáticos: /storage/ → /public/storage/ ──────────────
+RewriteRule ^storage/(.*)$ public/storage/$1 [L]
+
+# ── Archivos estáticos dentro de /public/ que existen ─────────────
+# Si el archivo existe físicamente en /public/, servirlo directamente (CSS, JS, imágenes)
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^public/(.*)$ - [L]
+
+# ── Raíz del proyecto → Front Controller ────────────────────────
+# La URI "/" (raíz) debe ir a public/index.php para que Router sirva landing.php
+RewriteRule ^$ public/index.php [L,QSA]
+
+# ── Todo lo demás → Front Controller ────────────────────────────
+# API, vistas admin, vistas app, login, etc.
+# NOTA: No usamos !-f ni !-d porque eso permite que la raíz (que es un directorio)
+#       se muestre como index de directorios en Apache.
+# Solo los archivos físicos dentro de /public/ se sirven directamente (regla anterior).
+RewriteRule ^(.*)$ public/index.php [L,QSA]
+
+# Headers de seguridad básicos
+<IfModule mod_headers.c>
+Header set X-Content-Type-Options "nosniff"
+Header set X-Frame-Options "DENY"
+Header set X-XSS-Protection "1; mode=block"
+Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>

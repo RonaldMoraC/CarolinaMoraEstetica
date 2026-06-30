@@ -1,0 +1,330 @@
+/**
+ * Sistema de Diseño Global - Panel Cliente (PWA)
+ * Estética Carolina Mora - Antigravity v2.0
+ *
+ * CSS modular, reutiliza variables de admin-global.css donde aplica.
+ * Separado completamente del backend PHP y del JS.
+ */
+
+/* ============================================================
+   1. VARIABLES Y TOKENS (compartidos con admin)
+   ============================================================ */
+:root {
+    --color-primary: #00d0ff;
+    --color-primary-light: rgba(0, 208, 255, 0.1);
+    --color-primary-dark: #00a3cc;
+    --color-accent: #00d0ff;
+    --color-accent-hover: #00b8e6;
+
+    --color-success: #2ecc71;
+    --color-success-light: rgba(46, 204, 113, 0.1);
+    --color-danger: #e74c3c;
+    --color-danger-light: rgba(231, 76, 60, 0.1);
+    --color-warning: #f1c40f;
+    --color-warning-light: rgba(241, 196, 15, 0.1);
+
+    --color-bg-card: #ffffff;
+    --color-bg-main: #f5f7fa;
+    --color-border: #e2e8f0;
+    --color-border-light: #f1f5f9;
+
+    --color-text-dark: #1e293b;
+    --color-text-body: #475569;
+    --color-text-muted: #94a3b8;
+
+    --font-primary: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-heading: 'Playfair Display', Georgia, serif;
+
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --radius-full: 50px;
+
+    --transition-fast: 150ms ease-in-out;
+    --transition-base: 250ms ease-in-out;
+}
+
+/* ============================================================
+   2. SECTION TRANSITIONS
+   ============================================================ */
+.section-view {
+    transition: opacity 0.25s ease-in-out;
+}
+
+.section-view.hidden {
+    display: none;
+    opacity: 0;
+}
+
+.section-view.visible {
+    display: block;
+    opacity: 1;
+}
+
+/* ============================================================
+   3. BOTTOM NAVIGATION
+   ============================================================ */
+.nav-item.active .nav-icon {
+    transform: translateY(-2px);
+}
+
+.nav-item.active .nav-label {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.nav-item.active .nav-dot {
+    opacity: 1;
+}
+
+/* ============================================================
+   4. SERVICE CATALOG
+   ============================================================ */
+.service-card {
+    transition: all 0.25s ease;
+}
+
+.service-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Category filter pill */
+.cat-filter {
+    transition: all 0.2s ease;
+}
+
+.cat-filter.active {
+    background-color: var(--color-primary);
+    color: #fff;
+    border-color: var(--color-primary);
+}
+
+/* Hide scrollbar on category filters */
+.cat-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.cat-scroll {
+    scrollbar-width: none;
+}
+
+/* ============================================================
+   5. APPOINTMENTS
+   ============================================================ */
+.appointment-card {
+    transition: all 0.2s ease;
+}
+
+.tab-btn {
+    transition: all 0.2s ease;
+}
+
+.tab-btn.active {
+    background: #fff;
+    color: var(--color-text-dark);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* ============================================================
+   6. ALERTAS / TOAST NOTIFICATIONS
+   ============================================================ */
+.app-alert {
+    display: none;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    border-radius: var(--radius-xl);
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: var(--font-primary);
+    animation: alertSlideIn 0.3s ease-out;
+}
+
+.app-alert--visible {
+    display: block;
+}
+
+.app-alert--success {
+    background-color: var(--color-success-light);
+    color: var(--color-success);
+}
+
+.app-alert--warning {
+    background-color: var(--color-warning-light);
+    color: #b7950b;
+}
+
+.app-alert--danger {
+    background-color: var(--color-danger-light);
+    color: var(--color-danger);
+}
+
+.app-alert--info {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary);
+}
+
+@keyframes alertSlideIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   7. SPINNER / LOADER
+   ============================================================ */
+.app-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 32px 0;
+}
+
+.app-spinner svg {
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+.app-spinner svg circle {
+    stroke: var(--color-primary);
+    stroke-width: 4;
+    fill: none;
+    stroke-dasharray: 60 40;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   8. OFFLINE INDICATOR
+   ============================================================ */
+.app-offline-bar {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    background-color: var(--color-danger);
+    color: #fff;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: var(--font-primary);
+    padding: 6px 0;
+}
+
+.app-offline-bar--visible {
+    display: block;
+}
+
+/* ============================================================
+   9. MODAL (Booking confirmation)
+   ============================================================ */
+.app-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.app-modal-overlay--visible {
+    display: flex;
+}
+
+.app-modal {
+    background-color: var(--color-bg-card);
+    border-radius: var(--radius-xl);
+    padding: 24px;
+    max-width: 420px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    animation: slideUp 0.3s ease-out;
+}
+
+.app-modal__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.app-modal__title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    font-family: var(--font-heading);
+    margin: 0;
+}
+
+.app-modal__close {
+    background: none;
+    border: none;
+    font-size: 1.4rem;
+    cursor: pointer;
+    color: var(--color-text-muted);
+    padding: 4px;
+}
+
+.app-modal__close:hover {
+    color: var(--color-text-dark);
+}
+
+.app-modal__body {
+    margin-bottom: 16px;
+}
+
+.app-modal__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   10. FORM INPUT FOCUS
+   ============================================================ */
+.app-input:focus {
+    outline: none;
+}
+
+/* ============================================================
+   11. RESPONSIVE
+   ============================================================ */
+@media (max-width: 640px) {
+    .app-modal {
+        width: 95%;
+        border-radius: var(--radius-lg);
+    }
+}
+
+/* Dark mode overrides */
+.dark .tab-btn.active {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--color-primary);
+}
+
+.dark .app-modal {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark .app-modal__close:hover {
+    color: #fff;
+}

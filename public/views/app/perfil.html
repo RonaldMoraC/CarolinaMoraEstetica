@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - Estética Carolina Mora</title>
+    <link rel="stylesheet" href="global.css">
+</head>
+
+<body>
+
+    <div class="container" style="padding-top: 20px; padding-bottom: 40px; max-width: 600px;">
+
+        <header class="app-header">
+            <div class="d-flex align-center gap-1">
+                <button class="icon-btn" onclick="window.location.href='catalogo.html'"
+                    title="Volver al catálogo">⬅️</button>
+                <h1 class="fw-bold" style="font-size: 1.4rem; margin: 0;">Mi Perfil</h1>
+            </div>
+            <small class="text-muted" style="font-weight: 600;">Carolina Mora</small>
+        </header>
+
+        <main class="card">
+
+            <div class="text-center" style="margin-bottom: 24px;">
+                <div class="service-icon"
+                    style="width: 90px; height: 90px; border-radius: 50%; margin: 0 auto 12px; font-size: 2.5rem; background-color: rgba(0, 208, 255, 0.1);">
+                    👤
+                </div>
+                <h2 id="lblNombreUsuario" class="fw-bold" style="font-size: 1.3rem; margin-bottom: 4px;">Cargando...
+                </h2>
+                <p class="text-muted" style="font-size: 0.85rem; font-weight: 600;">Cliente Registrado</p>
+            </div>
+
+            <div id="profile-status" class="badge badge-success"
+                style="display: none; width: 100%; margin-bottom: 20px; padding: 10px; border-radius: 8px; text-transform: none;">
+            </div>
+
+            <form id="profileForm" autocomplete="off">
+
+                <div class="form-group">
+                    <label for="nombre">Nombre Completo</label>
+                    <input type="text" id="nombre" name="nombre" class="form-control" placeholder="Su nombre" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="telefono">Teléfono</label>
+                    <input type="tel" id="telefono" name="telefono" class="form-control"
+                        placeholder="Ingrese su teléfono">
+                </div>
+
+                <div class="form-group mb-4">
+                    <label for="correo">Correo Electrónico</label>
+                    <input type="email" id="correo" name="correo" class="form-control"
+                        placeholder="Ingrese su correo electrónico" required>
+                </div>
+
+                <button type="submit" id="btnGuardarPerfil" class="btn btn-primary btn-block">
+                    Guardar Cambios
+                </button>
+            </form>
+
+            <div style="margin-top: 16px; border-top: 1px solid var(--color-border); padding-top: 16px;">
+                <button class="btn btn-danger-outline btn-block" onclick="cerrarSesion()">
+                    Cerrar Sesión
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Función auxiliar de deslogueo en cliente
+        function cerrarSesion() {
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = 'login.html';
+        }
+    </script>
+
+    <script>
+        /*
+        document.addEventListener('DOMContentLoaded', () => {
+            // Al cargar la vista, extraemos la info actual del cliente
+            obtenerDatosPerfil();
+        });
+
+        // 1. Petición GET para poblar los campos del usuario actualmente autenticado
+        async function obtenerDatosPerfil() {
+            const token = localStorage.getItem('user_token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const response = await fetch('api/get_perfil.php', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const usuario = await response.json();
+
+                if (response.ok && usuario.success) {
+                    // Inyectar datos en el formulario
+                    document.getElementById('nombre').value = `${usuario.data.nombres} ${usuario.data.apellidos}`;
+                    document.getElementById('telefono').value = usuario.data.telefono || '';
+                    document.getElementById('correo').value = usuario.data.correo || '';
+                    
+                    // Actualizar etiqueta del encabezado de la tarjeta
+                    document.getElementById('lblNombreUsuario').innerText = `${usuario.data.nombres}`;
+                }
+            } catch (error) {
+                console.error('Error al recuperar información de perfil:', error);
+            }
+        }
+
+        // 2. Petición PUT/POST para guardar las modificaciones del formulario
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const token = localStorage.getItem('user_token');
+            const statusDiv = document.getElementById('profile-status');
+            const btnGuardar = document.getElementById('btnGuardarPerfil');
+
+            // Preparar estado visual de carga
+            statusDiv.style.display = 'none';
+            btnGuardar.disabled = true;
+            btnGuardar.innerText = 'Actualizando...';
+
+            const payload = {
+                nombre: document.getElementById('nombre').value.trim(),
+                telefono: document.getElementById('telefono').value.trim(),
+                correo: document.getElementById('correo').value.trim()
+            };
+
+            try {
+                const response = await fetch('api/update_perfil.php', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                statusDiv.style.display = 'block';
+                statusDiv.className = 'badge'; // Reset
+
+                if (response.ok && data.success) {
+                    statusDiv.innerText = '¡Perfil actualizado con éxito!';
+                    statusDiv.classList.add('badge-success');
+                    document.getElementById('lblNombreUsuario').innerText = payload.nombre.split(' ')[0];
+                } else {
+                    statusDiv.innerText = data.message || 'Ocurrió un error al guardar.';
+                    statusDiv.classList.add('badge-warning');
+                }
+
+            } catch (error) {
+                console.error('Error de comunicación:', error);
+                statusDiv.innerText = 'Error de red con el servidor remoto.';
+                statusDiv.classList.add('badge-warning');
+                statusDiv.style.display = 'block';
+            } finally {
+                btnGuardar.disabled = false;
+                btnGuardar.innerText = 'Guardar Cambios';
+            }
+        });
+        */
+    </script>
+</body>
+
+</html>
