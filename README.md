@@ -24,12 +24,12 @@ SUPER_ADMIN: Acceso total a analíticas, gestión de usuarios, horarios y config
 CLIENT: Acceso a perfil personal, historial de citas y reserva de servicios.
 
 📁 Estructura del Proyecto
-Plaintext
 /src                # Lógica de negocio (Core, Aplicación, Infraestructura)
 /public             # Punto de entrada y Vistas (HTML/PHP)
 /database           # Migraciones y Seeders
 /docs               # Documentación técnica detallada
 /vendor             # Dependencias de Composer
+
 📦 Instalación y Configuración
 Clonar el repositorio:
 git clone https://github.com/tu-usuario/nombre-del-repo.git
