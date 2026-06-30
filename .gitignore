@@ -1,8 +1,29 @@
+# --- Seguridad y Entorno ---
+.env
+.env.example
+# Nota: Si el .env.example es una plantilla que sí debe ir al repo, 
+# quita la línea anterior.
+
+# --- Carpetas de dependencias y temporales ---
 /vendor/
 /logs/*.log
-/.env
-/public/storage/pdfs/*.pdf
-/public/storage/vouchers/*
-*.lock
+!/logs/app.log  # Si quieres mantener el archivo de log base, quita esta línea
+/tmp/
+
+# --- IDE y Sistema Operativo ---
+.vscode/
+.idea/
 .DS_Store
 Thumbs.db
+
+# --- Archivos de pruebas y caché ---
+/.phpunit.result.cache
+*.sql.bak
+*.log
+
+# --- Archivos de configuración locales ---
+config.php.bak
+
+# --- Otros archivos de sistema/desarrollo ---
+# Si no quieres versionar la documentación de herramientas de IA
+.qwen/
