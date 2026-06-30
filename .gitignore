@@ -1,6 +1,7 @@
 # --- Seguridad y Entorno ---
 .env
 .env.example
+skills.md
 # Nota: Si el .env.example es una plantilla que sí debe ir al repo, 
 # quita la línea anterior.
 
@@ -9,6 +10,9 @@
 /logs/*.log
 !/logs/app.log  # Si quieres mantener el archivo de log base, quita esta línea
 /tmp/
+AI_DEVELOPMENT_PROMPTS.md
+generar_esqueleto.php
+PROJECT_STATUS_AND_ROADMAP.md
 
 # --- IDE y Sistema Operativo ---
 .vscode/
