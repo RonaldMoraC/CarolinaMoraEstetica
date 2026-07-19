@@ -7,6 +7,7 @@ interface AppointmentRepositoryInterface
 {
     public function findById(int $appointmentId): ?array;
     public function create(array $data): int;
+    public function hasConflictingAppointment(int $professionalId, string $startTimestamp, string $endTimestamp): bool;
     public function updateStatus(int $appointmentId, string $newStatus, int $actorId, string $reason): bool;
     public function checkIn(int $appointmentId, int $actorId): bool;
     public function complete(int $appointmentId, int $actorId): bool;

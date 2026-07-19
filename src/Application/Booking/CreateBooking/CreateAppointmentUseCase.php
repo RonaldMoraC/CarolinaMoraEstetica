@@ -2,11 +2,12 @@
 
 namespace App\Application\Booking\CreateBooking;
 
+use App\Application\Staffing\GetAvailableSlots\GetAvailableSlotsUseCase;
 use App\Domain\Booking\Entities\Appointment;
 use App\Domain\Booking\Repositories\AppointmentRepositoryInterface;
 use App\Domain\Catalog\Repositories\ServiceRepositoryInterface;
-use App\Infrastructure\Staffing\Persistence\PdoStaffingRepository;
-use App\Infrastructure\Shared\Audit\SystemAuditLogRepository;
+use App\Domain\Staffing\Repositories\StaffingRepositoryInterface;
+use App\Infrastructure\Shared\Audit\AuditLogRepositoryInterface;
 use App\Application\Booking\Validators\CreateAppointmentValidator;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -28,19 +29,22 @@ class CreateAppointmentUseCase
 {
     private AppointmentRepositoryInterface $appointmentRepo;
     private ServiceRepositoryInterface $serviceRepo;
-    private PdoStaffingRepository $staffingRepo;
-    private SystemAuditLogRepository $auditRepo;
+    private StaffingRepositoryInterface $staffingRepo;
+    private AuditLogRepositoryInterface $auditRepo;
+    private GetAvailableSlotsUseCase $getAvailableSlotsUseCase;
 
     public function __construct(
         AppointmentRepositoryInterface $appointmentRepo,
         ServiceRepositoryInterface     $serviceRepo,
-        PdoStaffingRepository          $staffingRepo,
-        SystemAuditLogRepository       $auditRepo
+        StaffingRepositoryInterface     $staffingRepo,
+        AuditLogRepositoryInterface    $auditRepo,
+        GetAvailableSlotsUseCase       $getAvailableSlotsUseCase
     ) {
         $this->appointmentRepo = $appointmentRepo;
         $this->serviceRepo     = $serviceRepo;
         $this->staffingRepo    = $staffingRepo;
         $this->auditRepo       = $auditRepo;
+        $this->getAvailableSlotsUseCase = $getAvailableSlotsUseCase;
     }
 
     /**
@@ -73,10 +77,41 @@ class CreateAppointmentUseCase
         $basePrice = (float) ($service['base_price'] ?? 0);
         $durationMinutes = (int) ($service['duration_minutes'] ?? 60);
 
-        // 3. Calcular timestamp de fin
+        // 3. Validar disponibilidad real de Staffing antes de reservar
+        $slots = $this->getAvailableSlotsUseCase->execute(
+            professionalId: $dto->professionalProfileId,
+            branchId: $dto->branchId,
+            date: $scheduledTs->format('Y-m-d'),
+            slotDurationMinutes: $durationMinutes
+        );
+
+        $requestedSlot = null;
+        foreach ($slots as $slot) {
+            if ($slot['start'] === $scheduledTs->format('H:i')) {
+                $requestedSlot = $slot;
+                break;
+            }
+        }
+
+        if ($requestedSlot === null || !$requestedSlot['available']) {
+            throw new \App\Domain\Shared\Exceptions\DomainException('El profesional no tiene disponibilidad para ese horario. Elija otro turno.', 'Booking');
+        }
+
+        // 4. Calcular timestamp de fin
         $estimatedEndTs = $scheduledTs->modify("+{$durationMinutes} minutes");
 
-        // 4. Construir entidad Appointment
+        // 4b. Validar conflictos con otras citas existentes del profesional
+        $hasConflict = $this->appointmentRepo->hasConflictingAppointment(
+            $dto->professionalProfileId,
+            $scheduledTs->format('Y-m-d H:i:s'),
+            $estimatedEndTs->format('Y-m-d H:i:s')
+        );
+
+        if ($hasConflict) {
+            throw new \App\Domain\Shared\Exceptions\DomainException('Ya existe una cita en ese rango para el profesional.', 'Booking');
+        }
+
+        // 5. Construir entidad Appointment
         $appointment = new Appointment(
             clientProfileId: $dto->clientProfileId,
             professionalProfileId: $dto->professionalProfileId,
@@ -90,10 +125,21 @@ class CreateAppointmentUseCase
             appointmentStatus: 'PENDING'
         );
 
-        // 5. Persistir
-        $appointmentId = $this->appointmentRepo->save($appointment);
+        // 6. Persistir
+        $appointmentId = $this->appointmentRepo->create([
+            'client_profile_id' => $dto->clientProfileId,
+            'professional_profile_id' => $dto->professionalProfileId,
+            'branch_id' => $dto->branchId,
+            'promotion_id' => $dto->promotionId,
+            'scheduled_timestamp' => $scheduledTs->format('Y-m-d H:i:s'),
+            'estimated_end_timestamp' => $estimatedEndTs->format('Y-m-d H:i:s'),
+            'appointment_status' => 'PENDING',
+            'total_price' => $basePrice,
+            'final_price' => $basePrice,
+            'notes' => $dto->notes,
+        ]);
 
-        // 6. Auditoría
+        // 7. Auditoría
         $this->auditRepo->insert(
             actorId: (string) $dto->clientProfileId,
             action: 'APPOINTMENT_CREATED',

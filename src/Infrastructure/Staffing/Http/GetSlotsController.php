@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Staffing\Http;
 
+use App\Application\Staffing\GetAvailableSlots\GetAvailableSlotsUseCase;
 use App\Domain\Staffing\Entities\WorkSchedule;
 use App\Infrastructure\Staffing\Persistence\PdoStaffingRepository;
 use App\Infrastructure\Shared\Helpers\ResponseHelper;
@@ -11,13 +12,13 @@ use App\Infrastructure\Shared\Errors\GlobalExceptionHandler;
 /**
  * GetSlotsController
  *
- * Retorna los horarios semanales guardados de un profesional.
- * Usado por admin-horarios.php para cargar la configuración existente.
+ * Retorna la malla horaria de un profesional y, si se solicita, sus ranuras disponibles.
  */
 final class GetSlotsController
 {
     public function __construct(
-        private readonly PdoStaffingRepository $staffingRepository
+        private readonly PdoStaffingRepository $staffingRepository,
+        private readonly ?GetAvailableSlotsUseCase $getAvailableSlotsUseCase = null
     ) {}
 
     public function handle(array $params = []): void
@@ -25,13 +26,11 @@ final class GetSlotsController
         try {
             $professionalId = (int) ($params['id'] ?? 0);
             $branchId       = (int) ($_GET['branch_id'] ?? 1);
+            $date           = (string) ($_GET['date'] ?? '');
+            $includeSlots   = (bool) ($_GET['include_slots'] ?? false);
 
             if ($professionalId <= 0) {
-                ResponseHelper::json(
-                    statusCode: 400,
-                    success: false,
-                    message: 'ID de profesional inválido.'
-                );
+                ResponseHelper::json(statusCode: 400, success: false, message: 'ID de profesional inválido.');
             }
 
             /** @var WorkSchedule[] $schedules */
@@ -44,6 +43,10 @@ final class GetSlotsController
                     'end_time'    => $s->getEndTime(),
                 ];
             }, $schedules);
+
+            if ($includeSlots && $date !== '' && $this->getAvailableSlotsUseCase !== null) {
+                $data['available_slots'] = $this->getAvailableSlotsUseCase->execute($professionalId, $branchId, $date);
+            }
 
             ResponseHelper::json(
                 statusCode: 200,
