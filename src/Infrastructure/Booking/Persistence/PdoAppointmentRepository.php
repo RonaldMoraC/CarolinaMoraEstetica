@@ -90,6 +90,26 @@ final class PdoAppointmentRepository implements AppointmentRepositoryInterface /
     /**
      * @inheritDoc
      */
+    public function hasConflictingAppointment(int $professionalId, string $startTimestamp, string $endTimestamp): bool
+    {
+        $sql = "SELECT COUNT(*)
+                FROM appointment
+                WHERE professional_profile_id = :professionalId
+                  AND appointment_status NOT IN ('CANCELLED', 'NOSHOW')
+                  AND (
+                        scheduled_timestamp < :endTimestamp
+                        AND estimated_end_timestamp > :startTimestamp
+                  )";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':professionalId', $professionalId, PDO::PARAM_INT);
+        $stmt->bindValue(':startTimestamp', $startTimestamp, PDO::PARAM_STR);
+        $stmt->bindValue(':endTimestamp', $endTimestamp, PDO::PARAM_STR);
+        $stmt->execute();
+
+        return (int) $stmt->fetchColumn() > 0;
+    }
+
     public function create(array $data): int
     {
         $sql = "INSERT INTO appointment (

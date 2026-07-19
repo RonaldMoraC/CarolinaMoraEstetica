@@ -22,7 +22,7 @@ use PDO;
  *  - Skill 10 → Prepared statements con bindValue en cada campo
  *  - Skill 1  → strict_types, inyección PDO por constructor
  */
-final class SystemAuditLogRepository
+final class SystemAuditLogRepository implements AuditLogRepositoryInterface
 {
     public function __construct(private readonly PDO $pdo) {}
 
