@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function cargarMetricas() {
         try {
             if (api) {
-                const res = await api.get('/admin/metrics');
+                const res = await api.get('/admin/analytics');
                 if (res.success && res.data) {
                     renderKPIS(res.data.kpis);
                     renderChartCategorias(res.data.categorias);
@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         } catch (error) {
-            console.warn('[Analiticas] API no disponible:', error.message);
+            console.warn('[Analiticas] API no disponible, usando fallback simulado:', error.message);
         }
 
         // Datos simulados
@@ -189,13 +189,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderKPIS(kpis) {
-        document.getElementById('kpiIngresos').textContent = \`$\${(kpis.ingresos_mensuales ?? 0).toLocaleString('en-US', {minimumFractionDigits:2})}\`;
+        document.getElementById('kpiIngresos').textContent = new Intl.NumberFormat('es-CO', {style: 'currency', currency: 'COP', minimumFractionDigits: 0}).format(kpis.ingresos_mensuales ?? 0);
         document.getElementById('kpiIngresosTrend').textContent = kpis.ingresos_trend || '—';
         document.getElementById('kpiCitas').textContent = (kpis.citas_mes ?? 0).toLocaleString();
         document.getElementById('kpiCitasTrend').textContent = kpis.citas_trend || '—';
-        document.getElementById('kpiRecurrentes').textContent = \`\${kpis.clientes_recurrentes_pct ?? 0}%\`;
+        document.getElementById('kpiRecurrentes').textContent = (kpis.clientes_recurrentes_pct ?? 0) + '%';
         document.getElementById('kpiRecurrentesTrend').textContent = kpis.clientes_trend || '—';
-        document.getElementById('kpiTicket').textContent = \`$\${(kpis.ticket_promedio ?? 0).toFixed(2)}\`;
+        document.getElementById('kpiTicket').textContent = new Intl.NumberFormat('es-CO', {style: 'currency', currency: 'COP', minimumFractionDigits: 0}).format(kpis.ticket_promedio ?? 0);
         document.getElementById('kpiTicketTrend').textContent = kpis.ticket_trend || '—';
     }
 
@@ -214,39 +214,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderChartMetodosPago(data) {
         const container = document.getElementById('chartMetodosPago');
-        container.innerHTML = data.map(item => \`
+        container.innerHTML = data.map(item => `
             <div class="chart-row">
-                <div class="bar-label">\${escapeHtml(item.nombre)}</div>
+                <div class="bar-label">${escapeHtml(item.nombre)}</div>
                 <div class="bar-track">
-                    <div class="bar-fill" style="width:\${item.porcentaje}%; \${item.color ? 'background-color:' + item.color : ''}"></div>
+                    <div class="bar-fill" style="width:${item.porcentaje}%; ${item.color ? 'background-color:' + item.color : ''}"></div>
                 </div>
-                <div class="bar-value">$\${item.monto.toFixed(0)}</div>
+                <div class="bar-value">${new Intl.NumberFormat('es-CO', {style: 'currency', currency: 'COP', minimumFractionDigits: 0}).format(item.monto)}</div>
             </div>
-        \`).join('');
+        `).join('');
     }
 
     function renderTopServicios(data) {
         const tbody = document.getElementById('tablaTopServicios');
-        tbody.innerHTML = data.map((s, i) => \`
+        tbody.innerHTML = data.map((s, i) => `
             <tr>
-                <td class="fw-bold">\${i + 1}</td>
-                <td>\${escapeHtml(s.nombre)}</td>
-                <td style="text-align:right;">\${s.citas}</td>
-                <td style="text-align:right;" class="text-success fw-bold">$\${s.ingreso.toFixed(2)}</td>
+                <td class="fw-bold">${i + 1}</td>
+                <td>${escapeHtml(s.nombre)}</td>
+                <td style="text-align:right;">${s.citas}</td>
+                <td style="text-align:right;" class="text-success fw-bold">${new Intl.NumberFormat('es-CO', {style: 'currency', currency: 'COP', minimumFractionDigits: 0}).format(s.ingreso)}</td>
             </tr>
-        \`).join('');
+        `).join('');
     }
 
     function renderProfesionales(data) {
         const tbody = document.getElementById('tablaProfesionales');
-        tbody.innerHTML = data.map(p => \`
+        tbody.innerHTML = data.map(p => `
             <tr>
-                <td>\${escapeHtml(p.nombre)}</td>
-                <td style="text-align:right;">\${p.citas}</td>
-                <td style="text-align:right;" class="text-success fw-bold">$\${p.ingreso.toFixed(2)}</td>
-                <td style="text-align:right;"><span class="stars">★</span> \${p.rating}</td>
+                <td>${escapeHtml(p.nombre)}</td>
+                <td style="text-align:right;">${p.citas}</td>
+                <td style="text-align:right;" class="text-success fw-bold">${new Intl.NumberFormat('es-CO', {style: 'currency', currency: 'COP', minimumFractionDigits: 0}).format(p.ingreso)}</td>
+                <td style="text-align:right;"><span class="stars">★</span> ${p.rating}</td>
             </tr>
-        \`).join('');
+        `).join('');
     }
 
     function escapeHtml(str) {

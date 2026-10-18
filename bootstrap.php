@@ -215,6 +215,9 @@ $lazyContainer = new class($logFilePath) {
             \App\Infrastructure\Booking\Persistence\PdoClientProfileRepository::class =>
                 new \App\Infrastructure\Booking\Persistence\PdoClientProfileRepository($this->getPdo()),
 
+            \App\Infrastructure\Booking\Persistence\PdoRatingRepository::class =>
+                new \App\Infrastructure\Booking\Persistence\PdoRatingRepository($this->getPdo()),
+
             \App\Infrastructure\Billing\Persistence\PdoPaymentRepository::class =>
                 new \App\Infrastructure\Billing\Persistence\PdoPaymentRepository($this->getPdo()),
 
@@ -232,6 +235,11 @@ $lazyContainer = new class($logFilePath) {
 
             \App\Infrastructure\Shared\Audit\SystemAuditLogRepository::class =>
                 new \App\Infrastructure\Shared\Audit\SystemAuditLogRepository($this->getPdo()),
+
+            \App\Application\Shared\Audit\AuditService::class =>
+                new \App\Application\Shared\Audit\AuditService(
+                    $this->get(\App\Infrastructure\Shared\Audit\SystemAuditLogRepository::class)
+                ),
 
             // ── Dashboard (Métricas del Panel Administrativo) ────────────
             \App\Infrastructure\Dashboard\Persistence\PdoDashboardMetricsRepository::class =>
@@ -341,31 +349,43 @@ $lazyContainer = new class($logFilePath) {
                     $this->get(\App\Infrastructure\Booking\Persistence\PdoAppointmentRepository::class),
                     $this->get(\App\Infrastructure\Catalog\Persistence\PdoServiceRepository::class),
                     $this->get(\App\Infrastructure\Staffing\Persistence\PdoStaffingRepository::class),
-                    $this->get(\App\Infrastructure\Shared\Audit\SystemAuditLogRepository::class)
+                    $this->get(\App\Application\Shared\Audit\AuditService::class),
+                    $this->getPdo()
                 ),
 
             \App\Application\Booking\CancelBooking\CancelAppointmentUseCase::class =>
                 new \App\Application\Booking\CancelBooking\CancelAppointmentUseCase(
                     $this->get(\App\Infrastructure\Booking\Persistence\PdoAppointmentRepository::class),
-                    $this->get(\App\Infrastructure\Shared\Audit\SystemAuditLogRepository::class)
+                    $this->get(\App\Application\Shared\Audit\AuditService::class)
                 ),
 
             \App\Application\Booking\Operation\ExecuteCheckInUseCase::class =>
                 new \App\Application\Booking\Operation\ExecuteCheckInUseCase(
                     $this->get(\App\Infrastructure\Booking\Persistence\PdoAppointmentRepository::class),
-                    $this->get(\App\Infrastructure\Shared\Audit\SystemAuditLogRepository::class)
+                    $this->get(\App\Application\Shared\Audit\AuditService::class)
                 ),
 
             \App\Application\Booking\Operation\CompleteServiceUseCase::class =>
                 new \App\Application\Booking\Operation\CompleteServiceUseCase(
                     $this->get(\App\Infrastructure\Booking\Persistence\PdoAppointmentRepository::class),
-                    $this->get(\App\Infrastructure\Shared\Audit\SystemAuditLogRepository::class)
+                    $this->get(\App\Application\Shared\Audit\AuditService::class)
                 ),
 
             \App\Application\Booking\Operation\MarkNoShowUseCase::class =>
                 new \App\Application\Booking\Operation\MarkNoShowUseCase(
                     $this->get(\App\Infrastructure\Booking\Persistence\PdoAppointmentRepository::class),
-                    $this->get(\App\Infrastructure\Shared\Audit\SystemAuditLogRepository::class)
+                    $this->get(\App\Application\Shared\Audit\AuditService::class)
+                ),
+
+            \App\Application\Booking\Ratings\GetRatingsUseCase::class =>
+                new \App\Application\Booking\Ratings\GetRatingsUseCase(
+                    $this->get(\App\Infrastructure\Booking\Persistence\PdoRatingRepository::class)
+                ),
+
+            \App\Application\Booking\Ratings\RegisterRatingUseCase::class =>
+                new \App\Application\Booking\Ratings\RegisterRatingUseCase(
+                    $this->get(\App\Infrastructure\Booking\Persistence\PdoRatingRepository::class),
+                    $this->get(\App\Infrastructure\Booking\Persistence\PdoAppointmentRepository::class)
                 ),
 
             \App\Application\Billing\ProcessWebhook\ProcessOnlinePaymentWebhookUseCase::class =>
@@ -399,6 +419,11 @@ $lazyContainer = new class($logFilePath) {
             // ── Dashboard ────────────────────────────────────────────────
             \App\Application\Dashboard\GetMetrics\GetDashboardMetricsUseCase::class =>
                 new \App\Application\Dashboard\GetMetrics\GetDashboardMetricsUseCase(
+                    $this->get(\App\Infrastructure\Dashboard\Persistence\PdoDashboardMetricsRepository::class)
+                ),
+
+            \App\Application\Dashboard\GetAnalytics\GetBusinessAnalyticsUseCase::class =>
+                new \App\Application\Dashboard\GetAnalytics\GetBusinessAnalyticsUseCase(
                     $this->get(\App\Infrastructure\Dashboard\Persistence\PdoDashboardMetricsRepository::class)
                 ),
 
@@ -518,10 +543,23 @@ $lazyContainer = new class($logFilePath) {
                     $this->get(\App\Infrastructure\Booking\Persistence\PdoAppointmentRepository::class)
                 ),
 
+            \App\Infrastructure\Booking\Http\RatingController::class =>
+                new \App\Infrastructure\Booking\Http\RatingController(
+                    $this->get(\App\Application\Booking\Ratings\GetRatingsUseCase::class),
+                    $this->get(\App\Application\Booking\Ratings\RegisterRatingUseCase::class),
+                    $this->get(\App\Infrastructure\Booking\Persistence\PdoRatingRepository::class)
+                ),
+
             // ── Dashboard Controllers ─────────────────────────────────────
             \App\Infrastructure\Dashboard\Http\AdminMetricsController::class =>
                 new \App\Infrastructure\Dashboard\Http\AdminMetricsController(
                     $this->get(\App\Application\Dashboard\GetMetrics\GetDashboardMetricsUseCase::class),
+                    $this->get(\App\Infrastructure\Shared\Logging\AppLogger::class)
+                ),
+
+            \App\Infrastructure\Dashboard\Http\AdminAnalyticsController::class =>
+                new \App\Infrastructure\Dashboard\Http\AdminAnalyticsController(
+                    $this->get(\App\Application\Dashboard\GetAnalytics\GetBusinessAnalyticsUseCase::class),
                     $this->get(\App\Infrastructure\Shared\Logging\AppLogger::class)
                 ),
 

@@ -15,6 +15,7 @@ use App\Infrastructure\Booking\Http\GetAppointmentsController;
 use App\Infrastructure\Booking\Http\CancelAppointmentController;
 use App\Infrastructure\Booking\Http\CreateAppointmentController;
 use App\Infrastructure\Booking\Http\OperationsController;
+use App\Infrastructure\Booking\Http\RatingController;
 use App\Infrastructure\Dashboard\Http\AdminMetricsController;
 use App\Infrastructure\Catalog\Http\BrowseCatalogController;
 use App\Infrastructure\Catalog\Http\AdminServicesController;
@@ -138,8 +139,9 @@ $router->group('/api/v1/booking', function(Router $r) {
 }, [AuthMiddleware::class]);
 
 // Rutas Protegidas para Administración (/admin/*)
-// Metrics: público para desarrollo, proteger con AuthMiddleware cuando login esté completo
+// Metrics y Analytics: público para desarrollo, proteger con AuthMiddleware cuando login esté completo
 $router->get('/api/v1/admin/metrics', [AdminMetricsController::class, 'handle']);
+$router->get('/api/v1/admin/analytics', [AdminAnalyticsController::class, 'handle']);
 
 // Rutas del Catálogo — Listado público (PWA + Admin), mutaciones protegidas
 $router->get('/api/v1/catalog/services', [BrowseCatalogController::class, 'handle']);
@@ -154,3 +156,8 @@ $router->group('/api/v1/catalog/services', function(Router $r) {
 }, [AuthMiddleware::class]);
 
 $router->get('/api/v1/catalog/categories', [GetCategoriesController::class, 'handle']);
+
+// --- RUTAS CRM / RATINGS ---
+$router->get('/api/v1/crm/ratings', [RatingController::class, 'getRatings']);
+$router->post('/api/v1/crm/ratings', [RatingController::class, 'registerRating']);
+$router->patch('/api/v1/crm/ratings/{id}/hide', [RatingController::class, 'hideRating']);
