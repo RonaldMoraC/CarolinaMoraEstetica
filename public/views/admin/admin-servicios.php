@@ -268,20 +268,38 @@ document.addEventListener('DOMContentLoaded', () => {
             }).format(s.base_price ?? 0);
             const dur = (s.duration_minutes ?? 0) + ' min';
             const catName = escapeHtml(s.category_name ?? '—');
+            const isActive = !!s.is_active;
 
-            return '<tr id="service-row-' + s.service_id + '">' +
-                '<td class="fw-bold">' + escapeHtml(s.name ?? '') + '</td>' +
-                '<td>' + catName + '</td>' +
-                '<td>' + price + '</td>' +
-                '<td>' + dur + '</td>' +
-                '<td><span class="badge ' + status.class + '">' + status.label + '</span></td>' +
-                '<td style="text-align: center;">' +
-                    '<button class="btn btn--ghost btn--sm" onclick="editarServicio(' + s.service_id + ')" title="Editar">✏️</button>' +
-                    '<button class="btn btn--ghost btn--sm" onclick="toggleEstadoServicio(' + s.service_id + ', ' + (s.is_active ? 0 : 1) + ')" title="Cambiar estado">' + (s.is_active ? '⏸️' : '▶️') + '</button>' +
-                '</td>' +
-            '</tr>';
+            return `<tr id="service-row-${s.service_id}">
+                <td class="fw-bold">${escapeHtml(s.name ?? '')}</td>
+                <td>${catName}</td>
+                <td>${price}</td>
+                <td>${dur}</td>
+                <td><span class="badge ${status.class}">${status.label}</span></td>
+                <td style="text-align: center;">
+                    <button class="btn btn--ghost btn--sm" title="Editar" aria-label="Editar">✏️</button>
+                    <button class="btn btn--ghost btn--sm" title="Cambiar estado" aria-label="Cambiar estado">${isActive ? '⏸️' : '▶️'}</button>
+                </td>
+            </tr>`;
         }).join('');
     }
+
+    // Listener delegado para las acciones de la tabla
+    document.getElementById('serviciosTbody').addEventListener('click', (e) => {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+
+        const row = btn.closest('tr');
+        const id = row.id.split('-')[2];
+        const title = btn.getAttribute('title');
+
+        if (title === 'Editar') {
+            editarServicio(id);
+        } else if (title === 'Cambiar estado') {
+            const isActive = btn.textContent.trim() === '⏸️';
+            toggleEstadoServicio(id, isActive ? 0 : 1);
+        }
+    });
 
     function renderPaginacion() {
         const info = document.getElementById('pageInfo');
