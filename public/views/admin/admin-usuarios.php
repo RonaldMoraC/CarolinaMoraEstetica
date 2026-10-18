@@ -9,7 +9,7 @@
 define('ADMIN_LAYOUT_LOADED', true);
 
 // Verificación de acceso estricta para Admin
-$isAdmin = isset($userRole) && ($userRole === 'SUPER_ADMIN' || $userRole === 'BRANCH_ADMIN');
+$isAdmin = isset($userRole) && ($userRole === 'SUPER_ADMIN' || $userRole === 'MANAGER');
 if (!$isAdmin) {
     header('Location: ' . $basePath . '/admin/dashboard');
     exit;

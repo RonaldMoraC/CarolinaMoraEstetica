@@ -41,7 +41,7 @@
 
         const token = localStorage.getItem('auth_token');
         const role = (localStorage.getItem('user_role') || '').toUpperCase().trim();
-        const staffRoles = ['SUPER_ADMIN', 'BRANCH_ADMIN', 'RECEPCIONIST'];
+        const staffRoles = ['SUPER_ADMIN', 'MANAGER', 'RECEPCIONIST'];
 
         if (!token || !staffRoles.includes(role)) {
             window.location.href = window.fullBaseUrl + '/login';

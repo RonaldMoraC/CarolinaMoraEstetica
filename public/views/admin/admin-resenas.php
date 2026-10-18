@@ -4,10 +4,19 @@
  * Estética Carolina Mora - Antigravity v2.0
  *
  * Visualización y moderación de calificaciones y comentarios de clientes.
- * Consume: /api/v1/crm/ratings
  */
 
 define('ADMIN_LAYOUT_LOADED', true);
+
+// Autorización: Tanto ADMIN como RECEPCIONIST pueden ver reseñas.
+$canView = isset($userRole) && in_array($userRole, ['SUPER_ADMIN', 'MANAGER', 'RECEPCIONIST']);
+if (!$canView) {
+    header('Location: ' . $basePath . '/admin/dashboard');
+    exit;
+}
+
+// Acción de moderación limitada a roles administrativos
+$canModerate = isset($userRole) && in_array($userRole, ['SUPER_ADMIN', 'MANAGER']);
 
 $pageTitle = 'Reseñas de Clientes';
 $pageSubtitle = 'Revise los testimonios, comentarios y el puntaje de satisfacción asignado por sus usuarios.';

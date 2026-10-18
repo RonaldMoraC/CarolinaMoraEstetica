@@ -7,16 +7,17 @@ final class Role
 {
     public const CLIENT = 'CLIENT';
     public const ADMIN = 'ADMIN';
-    public const PROFESSIONAL = 'PROFESSIONAL';
+    public const ESPECIALIST = 'ESPECIALIST';
     public const RECEPTIONIST = 'RECEPTIONIST';
     public const SUPER_ADMIN = 'SUPER_ADMIN';
+    public const MANAGER = 'MANAGER';
     public const WHATSAPP_BOT_AGENT = 'WHATSAPP_BOT_AGENT';
 
     private string $name;
 
     public function __construct(string $name)
     {
-        if (!in_array($name, [self::CLIENT, self::ADMIN, self::PROFESSIONAL, self::RECEPTIONIST, self::SUPER_ADMIN, self::WHATSAPP_BOT_AGENT], true)) {
+        if (!in_array($name, [self::CLIENT, self::ADMIN, self::ESPECIALIST, self::RECEPTIONIST, self::SUPER_ADMIN, self::MANAGER, self::WHATSAPP_BOT_AGENT], true)) {
             throw new \InvalidArgumentException("Invalid role name: {$name}");
         }
         $this->name = $name;

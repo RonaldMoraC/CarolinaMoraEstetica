@@ -21,7 +21,7 @@ if (!defined('ADMIN_LAYOUT_LOADED')) {
     $token = $_COOKIE['auth_token'] ?? '';
     $userRole = $_COOKIE['user_role'] ?? '';
 
-    $staffRoles = ['SUPER_ADMIN', 'BRANCH_ADMIN', 'RECEPCIONIST', '1'];
+    $staffRoles = ['SUPER_ADMIN', 'MANAGER', 'RECEPCIONIST', '1'];
 
     if (empty($token) || !in_array($userRole, $staffRoles, true)) {
         // Redirigir al login si no hay sesión válida
