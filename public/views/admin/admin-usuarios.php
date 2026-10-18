@@ -4,11 +4,16 @@
  * Estética Carolina Mora - Antigravity v2.0
  *
  * Administración de niveles de autorización y RBAC para el personal.
- * Consume: /api/v1/iam/users
- *          /api/v1/iam/roles
  */
 
 define('ADMIN_LAYOUT_LOADED', true);
+
+// Verificación de acceso estricta para Admin
+$isAdmin = isset($userRole) && ($userRole === 'SUPER_ADMIN' || $userRole === 'BRANCH_ADMIN');
+if (!$isAdmin) {
+    header('Location: ' . $basePath . '/admin/dashboard');
+    exit;
+}
 
 $pageTitle = 'Control de Usuarios y Roles';
 $pageSubtitle = 'Administre los niveles de autorización y el acceso a módulos para el personal de la estética.';
