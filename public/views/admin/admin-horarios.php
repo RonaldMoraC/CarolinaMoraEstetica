@@ -77,7 +77,7 @@ ob_start();
         </div>
 
         <div class="text-center">
-            <button type="button" class="btn btn--primary" style="min-width: 200px;" onclick="guardarHorarios()">
+            <button type="button" class="btn btn--primary" style="min-width: 200px;" id="btnGuardarHorarios" onclick="guardarHorarios(this)">
                 Guardar Horario
             </button>
         </div>
@@ -234,13 +234,19 @@ function initHorarios() {
                 console.log('[Horarios] Respuesta API profesionales:', res);
                 if (res.success && Array.isArray(res.data) && res.data.length > 0) {
                     profesionales = res.data;
-                    profesionales.forEach(function(p) {
+                    profesionales.forEach(function(p, index) {
                         var opt = document.createElement('option');
                         opt.value       = p.professional_profile_id;
                         opt.textContent = p.first_name + ' ' + p.last_name
                                         + ' — ' + (p.public_biography || 'Esteticista');
                         select.appendChild(opt);
                     });
+
+                    // Seleccionar automáticamente el primer profesional para mejorar la UX inicial
+                    if (profesionales.length > 0) {
+                        select.value = profesionales[0].professional_profile_id;
+                        cargarHorariosProfesional(select.value);
+                    }
                 } else {
                     console.warn('[Horarios] API sin profesionales. Activando fallback.');
                     usarProfesionalesFallback(select);
@@ -264,6 +270,12 @@ function initHorarios() {
                             + ' — ' + (p.public_biography || 'Esteticista');
             select.appendChild(opt);
         });
+
+        // Seleccionar por defecto el primer fallback
+        if (profesionales.length > 0) {
+            select.value = profesionales[0].professional_profile_id;
+            cargarHorariosProfesional(select.value);
+        }
     }
 
     /* ------------------------------------------------------------------
@@ -271,6 +283,9 @@ function initHorarios() {
      * ------------------------------------------------------------------ */
     function cargarHorariosProfesional(profesionalId) {
         if (!api) { usarHorariosFallback(); return; }
+
+        var container = document.getElementById('daysList');
+        container.style.opacity = '0.5';
 
         api.get('/staffing/professionals/' + profesionalId + '/schedules')
             .then(function(res) {
@@ -283,6 +298,9 @@ function initHorarios() {
             .catch(function(err) {
                 console.warn('[Horarios] Error cargando horarios:', err.message);
                 usarHorariosFallback();
+            })
+            .finally(function() {
+                container.style.opacity = '1';
             });
     }
 
@@ -321,27 +339,39 @@ function initHorarios() {
     /* ------------------------------------------------------------------
      * guardarHorarios — Persiste la jornada semanal en el servidor
      * ------------------------------------------------------------------ */
-    window.guardarHorarios = function() {
+    window.guardarHorarios = function(btnGuardar) {
         var profesionalId = document.getElementById('profesionalSelect').value;
         if (!profesionalId) {
             alerts.error('Debe seleccionar un profesional primero.');
             return;
         }
 
-        var btnGuardar = event.target;
         btnGuardar.disabled = true;
         var textoOriginal = btnGuardar.textContent;
         btnGuardar.textContent = 'Guardando...';
 
         var agenda = DIAS_SEMANA.map(function(dia) {
             var activo = document.getElementById('check-' + dia.key).checked;
+            var inicio = document.getElementById('inicio-' + dia.key).value;
+            var fin    = document.getElementById('fin-'    + dia.key).value;
+
             return {
                 day_of_week: dia.dayOfWeek,
                 active:      activo,
-                start_time:  activo ? document.getElementById('inicio-' + dia.key).value + ':00' : null,
-                end_time:    activo ? document.getElementById('fin-'    + dia.key).value + ':00' : null,
+                start_time:  activo ? inicio + ':00' : null,
+                end_time:    activo ? fin    + ':00' : null,
             };
         });
+
+        // Validar cruce de horarios
+        for (var i = 0; i < agenda.length; i++) {
+            if (agenda[i].active && agenda[i].start_time >= agenda[i].end_time) {
+                alerts.error('El horario de inicio debe ser anterior al de fin en ' + DIAS_SEMANA[i].label + '.');
+                btnGuardar.disabled = false;
+                btnGuardar.textContent = textoOriginal;
+                return;
+            }
+        }
 
         var payload = {
             professional_profile_id: parseInt(profesionalId),
@@ -399,7 +429,7 @@ function initHorarios() {
         var payload = {
             branch_id:             1,
             holiday_date:          fecha,
-            description:           descripcion,
+            description:           escapeHtml(descripcion),
             block_entire_network:  document.getElementById('excGlobal').checked ? 1 : 0
         };
 
@@ -418,6 +448,13 @@ function initHorarios() {
                 alerts.error(err.message || 'Error al registrar la excepción.');
             });
     };
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        var div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
 }
 
 // Arrancar cuando AdminApp esté listo
