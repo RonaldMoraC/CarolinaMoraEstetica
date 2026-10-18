@@ -39,30 +39,34 @@ $extraCSS = <<<CSS
     transition: all var(--transition-fast);
     font-family: var(--font-primary);
 }
+.btn-flujo:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
 .btn-flujo--llego {
     background-color: var(--color-primary-light);
     color: var(--color-accent);
     border-color: var(--color-accent);
 }
-.btn-flujo--llego:hover { background-color: var(--color-accent); color: white; }
+.btn-flujo--llego:hover:not(:disabled) { background-color: var(--color-accent); color: white; }
 .btn-flujo--atencion {
     background-color: var(--color-warning-light);
     color: #d4a373;
     border-color: #d4a373;
 }
-.btn-flujo--atencion:hover { background-color: #d4a373; color: white; }
+.btn-flujo--atencion:hover:not(:disabled) { background-color: #d4a373; color: white; }
 .btn-flujo--completado {
     background-color: var(--color-success-light);
     color: var(--color-success);
     border-color: var(--color-success);
 }
-.btn-flujo--completado:hover { background-color: var(--color-success); color: white; }
+.btn-flujo--completado:hover:not(:disabled) { background-color: var(--color-success); color: white; }
 .btn-flujo--cancelar {
     background-color: var(--color-danger-light);
     color: var(--color-danger);
     border-color: var(--color-danger);
 }
-.btn-flujo--cancelar:hover { background-color: var(--color-danger); color: white; }
+.btn-flujo--cancelar:hover:not(:disabled) { background-color: var(--color-danger); color: white; }
 CSS;
 
 ob_start();
@@ -118,7 +122,7 @@ ob_start();
 <?php
 $pageContent = ob_get_clean();
 
-$extraJS = <<<JS
+$extraJS = <<<'JS'
 document.addEventListener('DOMContentLoaded', () => {
     const api = window.adminApi;
     const alerts = window.adminAlerts;
@@ -159,7 +163,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.warn('[Recepcion] API no disponible:', error.message);
         }
 
-        // Datos reales o estado vacío fidedigno
         citas = [];
         renderCitas();
         actualizarIndicadores();
@@ -182,39 +185,50 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let accionesHtml = '';
             if (status.flujo === 'llego') {
-                accionesHtml = \`
-                    <button class="btn-flujo btn-flujo--llego" onclick="transicionarCita(\${cita.appointment_id}, 'check-in')">
-                        Llegó
+                accionesHtml = `
+                    <button class="btn-flujo btn-flujo--llego" data-id="${cita.appointment_id}" data-action="check-in">
+                        ✅ Llegó
                     </button>
-                    <button class="btn-flujo btn-flujo--cancelar" style="margin-left:4px;" onclick="transicionarCita(\${cita.appointment_id}, 'cancel')">
-                        Cancelar
+                    <button class="btn-flujo btn-flujo--cancelar" style="margin-left:4px;" data-id="${cita.appointment_id}" data-action="cancel">
+                        ❌ Cancelar
                     </button>
-                \`;
+                `;
             } else if (status.flujo === 'completado') {
-                accionesHtml = \`
-                    <button class="btn-flujo btn-flujo--completado" onclick="transicionarCita(\${cita.appointment_id}, 'complete')">
-                        Finalizar
+                accionesHtml = `
+                    <button class="btn-flujo btn-flujo--completado" data-id="${cita.appointment_id}" data-action="complete">
+                        🏁 Finalizar
                     </button>
-                    <button class="btn-flujo btn-flujo--cancelar" style="margin-left:4px;" onclick="transicionarCita(\${cita.appointment_id}, 'noshow')">
-                        No Asistió
+                    <button class="btn-flujo btn-flujo--cancelar" style="margin-left:4px;" data-id="${cita.appointment_id}" data-action="noshow">
+                        ⚠️ No Asistió
                     </button>
-                \`;
+                `;
             } else {
                 accionesHtml = '<span class="text-muted" style="font-size:0.85rem;">✅ Atendido</span>';
             }
 
-            return \`
-                <tr id="recepcion-row-\${cita.appointment_id}">
-                    <td class="fw-bold">\${hora}</td>
-                    <td>\${escapeHtml(cita.client_name)}</td>
-                    <td>\${escapeHtml(cita.service_name)}</td>
-                    <td>\${escapeHtml(cita.professional_name)}</td>
-                    <td><span class="badge \${status.class}">\${status.label}</span></td>
-                    <td style="text-align:center;">\${accionesHtml}</td>
+            return `
+                <tr id="recepcion-row-${cita.appointment_id}">
+                    <td class="fw-bold">${hora}</td>
+                    <td>${escapeHtml(cita.client_name)}</td>
+                    <td>${escapeHtml(cita.service_name)}</td>
+                    <td>${escapeHtml(cita.professional_name)}</td>
+                    <td><span class="badge ${status.class}">${status.label}</span></td>
+                    <td style="text-align:center;">${accionesHtml}</td>
                 </tr>
-            \`;
+            `;
         }).join('');
     }
+
+    /**
+     * Listener delegado para las acciones de la tabla (Event Delegation)
+     */
+    document.getElementById('tablaRecepcion').addEventListener('click', async (e) => {
+        const btn = e.target.closest('button[data-action]');
+        if (!btn) return;
+
+        btn.disabled = true;
+        await transicionarCita(btn.dataset.id, btn.dataset.action);
+    });
 
     /**
      * Actualiza los indicadores de la parte superior
@@ -236,12 +250,12 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {number} citaId
      * @param {string} accion - check-in, complete, cancel, noshow
      */
-    window.transicionarCita = async function(citaId, accion) {
+    async function transicionarCita(citaId, accion) {
         const endpointMap = {
-            'check-in': \`/booking/appointments/\${citaId}/check-in\`,
-            'complete': \`/booking/appointments/\${citaId}/complete\`,
-            'cancel':   \`/booking/appointments/\${citaId}/cancel\`,
-            'noshow':   \`/booking/appointments/\${citaId}/noshow\`,
+            'check-in': `/booking/appointments/${citaId}/check-in`,
+            'complete': `/booking/appointments/${citaId}/complete`,
+            'cancel':   `/booking/appointments/${citaId}/cancel`,
+            'noshow':   `/booking/appointments/${citaId}/noshow`,
         };
 
         const bodyMap = {
@@ -261,16 +275,17 @@ document.addEventListener('DOMContentLoaded', () => {
                         'cancel': 'Cita cancelada exitosamente.',
                         'noshow': 'Cita marcada como No Asistió.',
                     };
-                    alerts.success(mensajes[accion]);
+                    if (alerts) alerts.success(mensajes[accion]);
                     await cargarCitasHoy();
                     return;
                 }
             }
 
-            // Sin simulación local si la API falla, para mantener integridad.
-            if (alerts) alerts.error(error.message || 'Error al actualizar el estado de la cita.');
+            if (alerts) alerts.error('Error al actualizar el estado de la cita.');
+        } catch (err) {
+            if (alerts) alerts.error(err.message || 'Error al actualizar el estado de la cita.');
         }
-    };
+    }
 
     function escapeHtml(str) {
         if (!str) return '';
