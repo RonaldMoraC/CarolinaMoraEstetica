@@ -37,7 +37,6 @@ final class PdoAppointmentRepository implements AppointmentRepositoryInterface /
         return $row !== false ? $this->hydrate($row) : null;
     }
 
-<<<<<<< Updated upstream
     /**
      * @inheritDoc
      */
@@ -97,10 +96,10 @@ final class PdoAppointmentRepository implements AppointmentRepositoryInterface /
         return (int) $stmt->fetchColumn() > 0;
     }
 
-    public function create(array $data): int
-=======
+    /**
+     * @inheritDoc
+     */
     public function save(Appointment $appointment): int
->>>>>>> Stashed changes
     {
         $sql = "INSERT INTO appointment (
                     client_profile_id, professional_profile_id, service_id, branch_id,
