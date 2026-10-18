@@ -1,52 +1,89 @@
 <?php declare(strict_types=1);
 /**
  * Dashboard Principal del Panel Administrativo
- * Estética Carolina Mora
+ * Estética Carolina Mora - Antigravity v2.0
  *
- * Todos los datos provienen de la base de datos real vía API.
- * Si la BD está vacía → muestra $0.00, 0 citas, 0 clientes — lo cual es fidedigno.
+ * Vista adaptada para supervisión operativa y del rol de Recepción.
  */
 
 define('ADMIN_LAYOUT_LOADED', true);
 
-$pageTitle = 'Dashboard';
-$pageSubtitle = 'Resumen general del negocio y accesos rápidos a los módulos del sistema.';
+$pageTitle = 'Dashboard Operativo';
+$pageSubtitle = 'Resumen de la actividad diaria y acceso rápido al control de recepción.';
 $activeModule = 'dashboard';
+
+$extraCSS = <<<CSS
+.dashboard-actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+.btn-action-quick {
+    background-color: var(--color-primary-light);
+    color: var(--color-accent);
+    padding: 10px 20px;
+    border-radius: var(--radius-md);
+    font-weight: var(--font-weight-bold);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all var(--transition-fast);
+}
+.btn-action-quick:hover {
+    background-color: var(--color-accent);
+    color: white;
+}
+CSS;
 
 ob_start();
 ?>
 
-<!-- KPIs principales -->
+<!-- Accesos Rápidos Operativos -->
+<div class="dashboard-actions">
+    <a href="/CarolinaMoraEstetica/admin/recepcion" class="btn-action-quick">
+        <span>📋 Ir al Control de Recepción y Check-in</span>
+    </a>
+    <a href="/CarolinaMoraEstetica/admin/calendario" class="btn-action-quick" style="background-color: var(--color-info-light); color: var(--color-info);">
+        <span>📅 Ver Calendario General</span>
+    </a>
+</div>
+
+<!-- KPIs Operativos y Principales -->
 <section class="metrics-grid">
     <div class="card metric-card" style="border-left-color: #2ecc71;">
         <span class="metric-card__label">Ingresos del Mes</span>
-        <div class="metric-card__value" id="kpiIngresos">$0</div>
+        <div class="metric-card__value" id="kpiIngresos">$0.00</div>
         <span class="metric-card__trend text-success" id="kpiIngresosTrend">—</span>
     </div>
 
     <div class="card metric-card" style="border-left-color: var(--color-accent);">
-        <span class="metric-card__label">Citas del Mes</span>
+        <span class="metric-card__label">Citas del Día</span>
         <div class="metric-card__value" id="kpiCitas">0</div>
-        <span class="metric-card__trend text-info" id="kpiCitasTrend">—</span>
+        <span class="metric-card__trend text-info" id="kpiCitasTrend">Programadas para hoy</span>
     </div>
 
     <div class="card metric-card" style="border-left-color: #9b59b6;">
         <span class="metric-card__label">Clientes Activos</span>
         <div class="metric-card__value" id="kpiClientes">0</div>
-        <span class="metric-card__trend" style="color: #9b59b6;" id="kpiClientesTrend">—</span>
+        <span class="metric-card__trend" style="color: #9b59b6;" id="kpiClientesTrend">Registrados</span>
     </div>
 
     <div class="card metric-card" style="border-left-color: #f1c40f;">
         <span class="metric-card__label">Calificación Promedio</span>
         <div class="metric-card__value" id="kpiRating">0.0</div>
-        <span class="metric-card__trend text-warning" id="kpiRatingTrend">—</span>
+        <span class="metric-card__trend text-warning" id="kpiRatingTrend">Estrellas</span>
     </div>
 </section>
 
-<!-- Citas de hoy -->
+<!-- Citas de hoy con acceso operativo -->
 <div class="layout-split">
     <section class="card" style="flex: 2;">
-        <h3 class="card__title">Citas Programadas para Hoy</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 class="card__title" style="margin:0; border:none; padding:0;">Citas Programadas para Hoy</h3>
+            <a href="/CarolinaMoraEstetica/admin/recepcion" style="font-size: 0.85rem; font-weight: 600; color: var(--color-accent); text-decoration: none;">Gestionar Estados →</a>
+        </div>
         <div class="table-container">
             <table class="table">
                 <thead>
@@ -61,7 +98,7 @@ ob_start();
                 <tbody id="tablaCitasHoy">
                     <tr>
                         <td colspan="5" class="text-center text-muted p-5">
-                            No hay citas programadas para hoy.
+                            Cargando citas del día...
                         </td>
                     </tr>
                 </tbody>
@@ -85,9 +122,8 @@ async function loadDashboard() {
             renderEmptyState();
             return;
         }
-        
+
         // Pausa mínima para asegurar que los headers de Auth estén inyectados
-        // tras el redireccionamiento del login.
         if (!window.dashboardInitialized) await new Promise(r => setTimeout(r, 100));
         window.dashboardInitialized = true;
 
@@ -98,90 +134,67 @@ async function loadDashboard() {
             const data = payload.metrics || {};
             const citasHoy = payload.appointments_today || [];
 
-            document.getElementById('kpiIngresos').textContent = new Intl.NumberFormat('es-CO', {
-                style: 'currency',
-                currency: 'COP',
-                minimumFractionDigits: 0
-            }).format(data.total_ingresos ?? 0);
-            document.getElementById('kpiIngresosTrend').textContent = data.ingresos_trend ?? '—';
-            document.getElementById('kpiCitas').textContent = (data.total_citas ?? 0).toLocaleString('es-CO');
-            document.getElementById('kpiCitasTrend').textContent = 'Ocupación del ' + (data.ocupacion ?? 0) + '%';
-            document.getElementById('kpiClientes').textContent = (data.total_clientes ?? 0).toLocaleString('es-CO');
-            document.getElementById('kpiClientesTrend').textContent = data.clientes_trend ?? '—';
-            document.getElementById('kpiRating').textContent = (data.rating_promedio ?? 0).toFixed(1);
-            document.getElementById('kpiRatingTrend').textContent = (data.total_resenas ?? 0) + ' reseñas';
-            renderCitasHoy(citasHoy);
-        } else {
-            renderEmptyState();
+            // Actualizar KPIs con seguridad contra XSS
+            document.getElementById('kpiIngresos').textContent = '$' + parseFloat(data.monthly_revenue || 0).toFixed(2);
+            document.getElementById('kpiCitas').textContent = data.monthly_appointments || 0;
+            document.getElementById('kpiClientes').textContent = data.active_clients || 0;
+            document.getElementById('kpiRating').textContent = parseFloat(data.average_rating || 0).toFixed(1);
+
+            // Renderizar tabla de citas de hoy
+            const tbody = document.getElementById('tablaCitasHoy');
+            tbody.innerHTML = '';
+
+            if (citasHoy.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted p-5">No hay citas programadas para hoy.</td></tr>';
+                return;
+            }
+
+            citasHoy.forEach(cita => {
+                const tr = document.createElement('tr');
+
+                const tdHora = document.createElement('td');
+                tdHora.textContent = cita.time || cita.hora || '—';
+
+                const tdCliente = document.createElement('td');
+                tdCliente.textContent = cita.client_name || cita.cliente || 'Cliente';
+
+                const tdServicio = document.createElement('td');
+                tdServicio.textContent = cita.service_name || cita.servicio || 'Servicio';
+
+                const tdEspecialista = document.createElement('td');
+                tdEspecialista.textContent = cita.professional_name || cita.especialista || 'General';
+
+                const tdEstado = document.createElement('td');
+                const badge = document.createElement('span');
+                badge.className = 'badge';
+                const status = (cita.status || cita.estado || 'pending').toLowerCase();
+                badge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+                tdEstado.appendChild(badge);
+
+                tr.appendChild(tdHora);
+                tr.appendChild(tdCliente);
+                tr.appendChild(tdServicio);
+                tr.appendChild(tdEspecialista);
+                tr.appendChild(tdEstado);
+                tbody.appendChild(tr);
+            });
         }
     } catch (error) {
-        // Si el error es 401 durante el arranque, es una sesión expirando o transicionando,
-        // no mostramos el alert ruidoso, solo el estado vacío.
-        if (error.status === 401) {
-            renderEmptyState();
-        } else {
-            console.error('[Dashboard] Error:', error);
-            if (alerts) alerts.error('Error al cargar los datos del dashboard.');
-            renderEmptyState();
-        }
+        if (alerts) alerts.error('Error al cargar métricas del dashboard: ' + error.message);
+        renderEmptyState();
     }
-}
-
-// Esperar a que AdminApp esté inicializado antes de cargar datos
-if (window.adminApi) {
-    loadDashboard();
-} else {
-    window.addEventListener('admin-app-ready', loadDashboard, { once: true });
-}
-
-function renderCitasHoy(citas) {
-    const tbody = document.getElementById('tablaCitasHoy');
-    if (!citas || !citas.length) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted p-5">No hay citas programadas para hoy.</td></tr>';
-        return;
-    }
-    const statusMap = {
-        'PENDING': { label: 'Programada', class: 'badge--info' },
-        'CONFIRMED': { label: 'Confirmada', class: 'badge--success' },
-        'IN_PROGRESS': { label: 'En Curso', class: 'badge--warning' },
-        'COMPLETED': { label: 'Completada', class: 'badge--success' },
-        'CANCELLED': { label: 'Cancelada', class: 'badge--danger' },
-        'NOSHOW': { label: 'No Asistió', class: 'badge--neutral' }
-    };
-    tbody.innerHTML = citas.map(cita => {
-        const status = statusMap[cita.appointment_status] || { label: cita.appointment_status, class: 'badge--neutral' };
-        const hora = cita.scheduled_timestamp 
-            ? new Date(cita.scheduled_timestamp).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
-            : '--:--';
-            
-        return '<tr>' +
-            '<td class="fw-bold">' + hora + '</td>' +
-            '<td>' + escapeHtml(cita.client_name ?? '—') + '</td>' +
-            '<td>' + escapeHtml(cita.service_name ?? '—') + '</td>' +
-            '<td>' + escapeHtml(cita.professional_name ?? '—') + '</td>' +
-            '<td><span class="badge ' + status.class + '">' + status.label + '</span></td>' +
-        '</tr>';
-    }).join('');
 }
 
 function renderEmptyState() {
-    document.getElementById('kpiIngresos').textContent = '$0';
-    document.getElementById('kpiIngresosTrend').textContent = '— Sin datos comparativos';
+    document.getElementById('kpiIngresos').textContent = '$0.00';
     document.getElementById('kpiCitas').textContent = '0';
-    document.getElementById('kpiCitasTrend').textContent = 'Ocupación del 0%';
     document.getElementById('kpiClientes').textContent = '0';
-    document.getElementById('kpiClientesTrend').textContent = '—';
     document.getElementById('kpiRating').textContent = '0.0';
-    document.getElementById('kpiRatingTrend').textContent = '0 reseñas';
-    document.getElementById('tablaCitasHoy').innerHTML = '<tr><td colspan="5" class="text-center text-muted p-5">No hay citas programadas para hoy.</td></tr>';
 }
 
-function escapeHtml(str) {
-    if (!str) return '';
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-}
+document.addEventListener('DOMContentLoaded', () => {
+    loadDashboard();
+});
 JS;
 
-require_once __DIR__ . '/../layouts/admin-layout.php';
+include __DIR__ . '/../layouts/admin-layout.php';
