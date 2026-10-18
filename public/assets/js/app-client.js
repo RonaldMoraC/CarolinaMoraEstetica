@@ -47,7 +47,7 @@ class ApiClient {
         return headers;
     }
 
-    async request(method, endpoint, body = null) {
+    async request(method, endpoint, body = null, isRetry = false) {
         const url = endpoint.startsWith('http') ? endpoint : this.baseUrl + endpoint;
         const config = { method: method.toUpperCase(), headers: this.buildHeaders() };
         if (body !== null && ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())) {
@@ -56,6 +56,14 @@ class ApiClient {
 
         try {
             const response = await fetch(url, config);
+
+            // Manejo de expiración o token no válido con intento de Refresh Token automático
+            if (response.status === 401 && !isRetry && !endpoint.includes('/auth/refresh') && !endpoint.includes('/login')) {
+                const refreshed = await this.tryRefreshToken();
+                if (refreshed) {
+                    return this.request(method, endpoint, body, true);
+                }
+            }
 
             if (response.status === 401) {
                 localStorage.removeItem('auth_token');
@@ -83,6 +91,27 @@ class ApiClient {
                 throw new Error('Error de conexión. Verifica tu red e intenta nuevamente.');
             }
             throw error;
+        }
+    }
+
+    async tryRefreshToken() {
+        try {
+            const response = await fetch(this.baseUrl + '/auth/refresh', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include' // Envía la cookie HTTP-Only con el Refresh Token
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data && data.access_token) {
+                    localStorage.setItem('auth_token', data.access_token);
+                    return true;
+                }
+            }
+            return false;
+        } catch (e) {
+            return false;
         }
     }
 
@@ -756,7 +785,7 @@ class CitasView {
     cancelAppointment(id) {
         this.modal.open({
             title: 'Cancelar Cita',
-            body: '<p class="text-slate-600 dark:text-slate-400">¿Está seguro de que desea cancelar esta cita? Esta acción no se puede revertir.</p>',
+            body: `<p class="text-slate-600 dark:text-slate-400">¿Está seguro de que desea cancelar la cita #${escapeHtml(String(id))}? Esta acción no se puede revertir.</p>`,
             buttons: [
                 { label: 'No, mantener', class: 'px-4 py-2 border-2 border-slate-300 text-slate-600 text-sm font-semibold rounded-xl hover:bg-slate-100 transition' },
                 {
@@ -843,10 +872,36 @@ class ProfileView {
 
     async save() {
         const btnGuardar = document.getElementById('btnGuardarPerfil');
-        const newFirstName = document.getElementById('profileFirstName').value.trim();
-        const newLastName = document.getElementById('profileLastName').value.trim();
-        const newPhone = document.getElementById('profileTelefono').value.trim();
-        const newEmail = document.getElementById('profileCorreo').value.trim();
+
+        // Función auxiliar de sanitización local
+        const sanitize = (str) => {
+            if (typeof str !== 'string') return '';
+            return str.replace(/[&<>"']/g, (m) => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+            }[m]));
+        };
+
+        const newFirstName = sanitize(document.getElementById('profileFirstName').value.trim());
+        const newLastName = sanitize(document.getElementById('profileLastName').value.trim());
+        const newPhone = sanitize(document.getElementById('profileTelefono').value.trim());
+        const newEmail = sanitize(document.getElementById('profileCorreo').value.trim());
+
+        // Validaciones robustas del lado del cliente
+        if (newFirstName.length < 2 || newLastName.length < 2) {
+            this.alerts.error('El nombre y el apellido deben tener al menos 2 caracteres.');
+            return;
+        }
+
+        if (newPhone && !/^[0-9+\-\s()]{7,20}$/.test(newPhone)) {
+            this.alerts.error('El número de teléfono ingresado no tiene un formato válido.');
+            return;
+        }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+            this.alerts.error('El correo electrónico ingresado no es válido.');
+            return;
+        }
+
         const newName = (newFirstName + ' ' + newLastName).trim();
 
         btnGuardar.disabled = true;

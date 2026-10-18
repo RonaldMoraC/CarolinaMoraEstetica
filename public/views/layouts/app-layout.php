@@ -100,6 +100,20 @@ $extraJS = $extraJS ?? '';
                 window.location.href = basePath + '/admin/dashboard';
             }
         })();
+
+        // Verificación perimetral en servidor vía fetch síncrono/asíncrono opcional o validación de rol reforzada
+        fetch(basePath + '/api/v1/auth/me', {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem('auth_token'),
+                'Content-Type': 'application/json'
+            }
+        }).then(res => {
+            if (res.status === 401 || res.status === 403) {
+                localStorage.clear();
+                window.location.href = basePath + '/login';
+            }
+        }).catch(() => {});
     </script>
 
     <!-- CSS Global del Panel Cliente -->

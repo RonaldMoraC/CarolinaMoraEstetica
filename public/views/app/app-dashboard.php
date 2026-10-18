@@ -51,26 +51,26 @@ ob_start();
         </div>
 
         <!-- Profile form -->
-        <form id="profileForm" autocomplete="off">
+        <form id="profileForm" autocomplete="off" novalidate>
             <div class="mb-4">
                 <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Nombres</label>
                 <input type="text" id="profileFirstName" class="app-input w-full px-4 py-3 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-700 dark:text-slate-300 focus:border-brand-cyan focus:ring-2 focus:ring-brand-cyan/15 transition"
-                    placeholder="Sus nombres" required>
+                    placeholder="Sus nombres" required minlength="2" maxlength="50">
             </div>
             <div class="mb-4">
                 <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Apellidos</label>
                 <input type="text" id="profileLastName" class="app-input w-full px-4 py-3 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-700 dark:text-slate-300 focus:border-brand-cyan focus:ring-2 focus:ring-brand-cyan/15 transition"
-                    placeholder="Sus apellidos" required>
+                    placeholder="Sus apellidos" required minlength="2" maxlength="50">
             </div>
             <div class="mb-4">
                 <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Teléfono</label>
                 <input type="tel" id="profileTelefono" class="app-input w-full px-4 py-3 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-700 dark:text-slate-300 focus:border-brand-cyan focus:ring-2 focus:ring-brand-cyan/15 transition"
-                    placeholder="Ingrese su teléfono">
+                    placeholder="Ingrese su teléfono" pattern="[0-9+\-\\s()]{7,20}" maxlength="20">
             </div>
             <div class="mb-5">
                 <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Correo Electrónico</label>
                 <input type="email" id="profileCorreo" class="app-input w-full px-4 py-3 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-700 dark:text-slate-300 focus:border-brand-cyan focus:ring-2 focus:ring-brand-cyan/15 transition"
-                    placeholder="Ingrese su correo electrónico" required>
+                    placeholder="Ingrese su correo electrónico" required maxlength="100">
             </div>
             <button type="submit" id="btnGuardarPerfil"
                 class="w-full py-3 bg-brand-cyan text-white font-semibold rounded-xl hover:bg-brand-cyanHover transition transform hover:-translate-y-0.5">
