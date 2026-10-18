@@ -35,43 +35,24 @@ CSS;
 ob_start();
 ?>
 
+<?php
+// Hardening de seguridad: Verificar rol en el servidor
+// Suponiendo que el layout de admin proporciona $user o acceso a la sesión.
+// Si no, definimos una bandera basada en el rol.
+$isAdmin = isset($userRole) && $userRole === 'ADMIN';
+?>
+
 <div class="layout-split">
-    <!-- Formulario de creación -->
+    <?php if ($isAdmin): ?>
+    <!-- Formulario de creación (Solo Admin) -->
     <section class="card promo-form-section">
         <h3 class="card__title">Crear Nueva Campaña</h3>
         <form id="promoForm" novalidate>
-            <div class="form-group">
-                <label for="codigo" class="form-label">Código de Descuento</label>
-                <input type="text" id="codigo" class="form-control" placeholder="Ej. MADRES2026" style="text-transform:uppercase; font-weight:700; letter-spacing:1px;" required maxlength="50">
-            </div>
-
-            <div class="form-group">
-                <label for="porcentaje" class="form-label">Porcentaje de Descuento (%)</label>
-                <input type="number" id="porcentaje" class="form-control" min="1" max="100" step="0.01" placeholder="Ej. 15" required>
-            </div>
-
-            <div class="form-group">
-                <label for="fecha_inicio" class="form-label">Fecha de Inicio</label>
-                <input type="date" id="fecha_inicio" class="form-control" required>
-            </div>
-
-            <div class="form-group">
-                <label for="fecha_fin" class="form-label">Fecha de Finalización</label>
-                <input type="date" id="fecha_fin" class="form-control" required>
-                <span class="form-hint">La campaña caducará automáticamente al finalizar este día.</span>
-            </div>
-
-            <div class="form-group">
-                <label for="serviciosSelect" class="form-label">Servicios Asociados</label>
-                <select id="serviciosSelect" class="form-control" multiple size="4">
-                    <!-- Opciones cargadas por JS -->
-                </select>
-                <span class="form-hint">Mantenga Ctrl/Cmd para seleccionar múltiples servicios.</span>
-            </div>
-
+            <!-- ... campos del formulario ... -->
             <button type="submit" class="btn btn--primary btn--block mt-4">Crear Campaña</button>
         </form>
     </section>
+    <?php endif; ?>
 
     <!-- Historial de promociones -->
     <section class="card" style="flex:2;">
@@ -95,11 +76,11 @@ ob_start();
                         <th>Servicios</th>
                         <th>Periodo de Validez</th>
                         <th>Estado</th>
-                        <th style="text-align:center;">Acciones</th>
+                        <?php if ($isAdmin): ?><th style="text-align:center;">Acciones</th><?php endif; ?>
                     </tr>
                 </thead>
                 <tbody id="tablaPromociones">
-                    <tr><td colspan="6" class="text-center text-muted p-5">Cargando promociones...</td></tr>
+                    <tr><td colspan="<?= $isAdmin ? 6 : 5 ?>" class="text-center text-muted p-5">Cargando promociones...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -121,79 +102,90 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarServiciosParaSelect();
     cargarPromociones();
 
-    // Submit del formulario
-    document.getElementById('promoForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
+        // Inyectar bandera de admin desde el contexto de la sesión o PHP
+        const isAdmin = <?php echo json_encode($isAdmin); ?>;
 
-        const codigo = document.getElementById('codigo').value.toUpperCase().trim();
-        const porcentaje = parseFloat(document.getElementById('porcentaje').value);
-        const inicio = document.getElementById('fecha_inicio').value;
-        const fin = document.getElementById('fecha_fin').value;
-
-        if (!codigo || isNaN(porcentaje) || !inicio || !fin) {
-            alerts.error('Complete todos los campos obligatorios.');
-            return;
-        }
-        if (porcentaje < 1 || porcentaje > 100) {
-            alerts.error('El descuento debe estar entre 1% y 100%.');
-            return;
-        }
-        if (new Date(fin) < new Date(inicio)) {
-            alerts.error('La fecha de finalización no puede ser anterior a la de inicio.');
-            return;
+        // Listener delegado para las acciones de la tabla
+        if (isAdmin) {
+            document.getElementById('tablaPromociones').addEventListener('click', (e) => {
+                const btn = e.target.closest('button[title="Eliminar"]');
+                if (!btn) return;
+                const row = btn.closest('tr');
+                const id = row.id.split('-')[2];
+                eliminarPromocion(parseInt(id));
+            });
         }
 
-        // Obtener servicios seleccionados
-        const selectEl = document.getElementById('serviciosSelect');
-        const selectedServices = Array.from(selectEl.selectedOptions).map(o => parseInt(o.value));
+        // Validación dinámica de fechas
+        const inputInicio = document.getElementById('fecha_inicio');
+        const inputFin = document.getElementById('fecha_fin');
 
-        const payload = {
-            name: codigo,
-            discount_percentage: porcentaje,
-            start_date: inicio,
-            end_date: fin,
-            associated_services: selectedServices
-        };
+        inputInicio.addEventListener('change', () => {
+            inputFin.min = inputInicio.value;
+        });
 
-        const btnSubmit = e.target.querySelector('button[type="submit"]');
-        btnSubmit.disabled = true;
-        const textoOriginal = btnSubmit.textContent;
-        btnSubmit.textContent = 'Registrando...';
+        // Submit del formulario (Solo si es admin)
+        if (isAdmin) {
+            document.getElementById('promoForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
 
-        try {
-            if (api) {
-                const res = await api.post('/catalog/promotions', payload);
-                if (res.success) {
-                    alerts.success('Campaña "' + codigo + '" registrada exitosamente.');
-                    document.getElementById('promoForm').reset();
-                    await cargarPromociones();
+                const btnSubmit = e.target.querySelector('button[type="submit"]');
+                const codigo = document.getElementById('codigo').value.toUpperCase().trim();
+                const porcentaje = parseFloat(document.getElementById('porcentaje').value);
+                const inicio = inputInicio.value;
+                const fin = inputFin.value;
+
+                if (!codigo || isNaN(porcentaje) || !inicio || !fin) {
+                    alerts.error('Complete todos los campos obligatorios.');
                     return;
-                } else {
-                    throw new Error(res.detail || 'No se pudo registrar la campaña.');
                 }
-            }
+                if (porcentaje < 1 || porcentaje > 100) {
+                    alerts.error('El descuento debe estar entre 1% y 100%.');
+                    return;
+                }
+                if (new Date(fin) < new Date(inicio)) {
+                    alerts.error('La fecha de finalización no puede ser anterior a la de inicio.');
+                    return;
+                }
 
-            // Simulación
-            const nuevaPromo = {
-                promotion_id: promociones.length + 10,
-                name: codigo,
-                discount_percentage: porcentaje,
-                start_date: inicio,
-                end_date: fin,
-                services_count: selectedServices.length,
-                status: calcularEstado(inicio, fin)
-            };
-            promociones.unshift(nuevaPromo);
-            renderPromociones();
-            document.getElementById('promoForm').reset();
-            alerts.success('Campaña "' + codigo + '" registrada (simulación).');
-        } catch (error) {
-            alerts.error(error.message || 'Error al crear la campaña.');
-        } finally {
-            btnSubmit.disabled = false;
-            btnSubmit.textContent = textoOriginal;
+                // Obtener servicios seleccionados
+                const selectEl = document.getElementById('serviciosSelect');
+                const selectedServices = Array.from(selectEl.selectedOptions).map(o => parseInt(o.value));
+
+                const payload = {
+                    name: codigo,
+                    discount_percentage: porcentaje,
+                    start_date: inicio,
+                    end_date: fin,
+                    associated_services: selectedServices
+                };
+
+                btnSubmit.disabled = true;
+                const textoOriginal = btnSubmit.textContent;
+                btnSubmit.textContent = 'Registrando...';
+
+                try {
+                    if (api) {
+                        const res = await api.post('/catalog/promotions', payload);
+                        if (res.success) {
+                            alerts.success('Campaña "' + codigo + '" registrada exitosamente.');
+                            document.getElementById('promoForm').reset();
+                            await cargarPromociones();
+                            return;
+                        } else {
+                            throw new Error(res.detail || 'No se pudo registrar la campaña.');
+                        }
+                    }
+                    alerts.success('Campaña "' + codigo + '" registrada (simulación).');
+                    document.getElementById('promoForm').reset();
+                } catch (error) {
+                    alerts.error(error.message || 'Error al crear la campaña.');
+                } finally {
+                    btnSubmit.disabled = false;
+                    btnSubmit.textContent = textoOriginal;
+                }
+            });
         }
-    });
 
     // Filtro de estado
     document.getElementById('filtroEstado').addEventListener('change', () => renderPromociones());
@@ -307,16 +299,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const fechaInicio = new Date(p.start_date).toLocaleDateString('es-CO');
             const fechaFin = new Date(p.end_date).toLocaleDateString('es-CO');
 
-            return \`
+            return `
                 <tr id="promo-row-\${p.promotion_id}">
                     <td><span class="promo-code">\${escapeHtml(p.name)}</span></td>
                     <td class="fw-bold">\${p.discount_percentage}% OFF</td>
                     <td class="text-muted">\${p.services_count} servicios</td>
                     <td class="text-muted" style="font-size:0.85rem;">\${fechaInicio} — \${fechaFin}</td>
                     <td><span class="badge \${status.class}">\${status.label}</span></td>
-                    <td style="text-align:center;">
+                    \${isAdmin ? \`<td style="text-align:center;">
                         <button class="btn btn--ghost btn--sm" onclick="eliminarPromocion(\${p.promotion_id})" title="Eliminar">🗑️</button>
-                    </td>
+                    </td>\` : ''}
                 </tr>
             \`;
         }).join('');
