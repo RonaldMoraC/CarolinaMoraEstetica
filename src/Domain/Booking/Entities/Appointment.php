@@ -20,6 +20,7 @@ class Appointment
     private int $appointmentId;
     private int $clientProfileId;
     private int $professionalProfileId;
+    private int $serviceId;
     private int $branchId;
     private ?int $promotionId;
     private DateTimeImmutable $scheduledTimestamp;
@@ -40,6 +41,7 @@ class Appointment
     public function __construct(
         int $clientProfileId,
         int $professionalProfileId,
+        int $serviceId,
         int $branchId,
         DateTimeImmutable $scheduledTimestamp,
         DateTimeImmutable $estimatedEndTimestamp,
@@ -51,6 +53,7 @@ class Appointment
     ) {
         $this->clientProfileId = $clientProfileId;
         $this->professionalProfileId = $professionalProfileId;
+        $this->serviceId = $serviceId;
         $this->branchId = $branchId;
         $this->scheduledTimestamp = $scheduledTimestamp;
         $this->estimatedEndTimestamp = $estimatedEndTimestamp;
@@ -69,6 +72,7 @@ class Appointment
     public function getAppointmentId(): int { return $this->appointmentId; }
     public function getClientProfileId(): int { return $this->clientProfileId; }
     public function getProfessionalProfileId(): int { return $this->professionalProfileId; }
+    public function getServiceId(): int { return $this->serviceId; }
     public function getBranchId(): int { return $this->branchId; }
     public function getPromotionId(): ?int { return $this->promotionId; }
     public function getScheduledTimestamp(): DateTimeImmutable { return $this->scheduledTimestamp; }

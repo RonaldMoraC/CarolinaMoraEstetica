@@ -75,4 +75,18 @@ interface StaffingRepositoryInterface
      * @return list<array{professional_profile_id: int, first_name: string, last_name: string, email: string, operational_status: string}>
      */
     public function findAllProfessionals(): array;
+
+    /**
+     * Crea el perfil profesional si no existe (UPSERT idémpotente).
+     * Permite que usuarios con cualquier rol puedan tener servicios asignados
+     * sin requerir una fila previa en professional_profile.
+     *
+     * @param int $userId ID del usuario (= professional_profile_id).
+     */
+    public function upsertProfessionalProfile(int $userId): void;
+
+    /**
+     * Bloquea el registro de malla horaria del profesional para evitar concurrencia.
+     */
+    public function lockProfessionalWorkSchedule(int $professionalId, int $branchId, int $dayOfWeek): void;
 }

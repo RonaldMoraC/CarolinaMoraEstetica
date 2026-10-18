@@ -3,6 +3,7 @@
 namespace App\Infrastructure\Booking\Persistence;
 
 use App\Domain\Booking\Repositories\AppointmentRepositoryInterface;
+use App\Domain\Booking\Entities\Appointment;
 use App\Infrastructure\Shared\Errors\Exceptions\ConflictException;
 use App\Domain\Shared\Exceptions\DomainException;
 use PDO;
@@ -26,31 +27,17 @@ final class PdoAppointmentRepository implements AppointmentRepositoryInterface /
     /**
      * @inheritDoc
      */
-    public function findById(int $appointmentId): ?array
-    { // Modificado para retornar array
-        $sql = "SELECT a.*, s.name AS service_name, s.base_price AS service_price,
-                       u.first_name, u.last_name, pp.public_biography,
-                       b.branch_name
-                FROM appointment a
-                LEFT JOIN service s ON s.service_id IN (
-                    SELECT ps.service_id FROM professional_service ps
-                    WHERE ps.professional_profile_id = a.professional_profile_id
-                    LIMIT 1
-                )
-                LEFT JOIN user u ON u.user_id = a.client_profile_id
-                LEFT JOIN professional_profile pp ON pp.professional_profile_id = a.professional_profile_id
-                LEFT JOIN branch b ON b.branch_id = a.branch_id
-                WHERE a.appointment_id = :id
-                LIMIT 1";
-
+    public function findById(int $appointmentId): ?Appointment
+    {
+        $sql = "SELECT a.* FROM appointment a WHERE a.appointment_id = :id LIMIT 1";
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindValue(':id', $appointmentId, PDO::PARAM_INT);
         $stmt->execute();
-
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $row !== false ? $this->hydrateToArray($row) : null; // Usa hydrateToArray
+        return $row !== false ? $this->hydrate($row) : null;
     }
 
+<<<<<<< Updated upstream
     /**
      * @inheritDoc
      */
@@ -111,33 +98,59 @@ final class PdoAppointmentRepository implements AppointmentRepositoryInterface /
     }
 
     public function create(array $data): int
+=======
+    public function save(Appointment $appointment): int
+>>>>>>> Stashed changes
     {
         $sql = "INSERT INTO appointment (
-                    client_profile_id, professional_profile_id, branch_id,
+                    client_profile_id, professional_profile_id, service_id, branch_id,
                     promotion_id, scheduled_timestamp, estimated_end_timestamp,
                     appointment_status, total_price, final_price, notes
                 ) VALUES (
-                    :clientId, :professionalId, :branchId,
+                    :clientId, :professionalId, :serviceId, :branchId,
                     :promotionId, :scheduledTs, :estimatedEndTs,
                     :status, :totalPrice, :finalPrice, :notes
                 )";
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->bindValue(':clientId', $data['client_profile_id'], PDO::PARAM_INT);
-        $stmt->bindValue(':professionalId', $data['professional_profile_id'], PDO::PARAM_INT);
-        $stmt->bindValue(':branchId', $data['branch_id'], PDO::PARAM_INT);
-        $stmt->bindValue(':promotionId', $data['promotion_id'] ?? null, $data['promotion_id'] === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
-        $stmt->bindValue(':scheduledTs', $data['scheduled_timestamp'], PDO::PARAM_STR);
-        $stmt->bindValue(':estimatedEndTs', $data['estimated_end_timestamp'], PDO::PARAM_STR);
-        $stmt->bindValue(':status', $data['appointment_status'], PDO::PARAM_STR);
-        $stmt->bindValue(':totalPrice', $data['total_price'], PDO::PARAM_STR);
-        $stmt->bindValue(':finalPrice', $data['final_price'], PDO::PARAM_STR);
-        $stmt->bindValue(':notes', $data['notes'] ?? null, $data['notes'] === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
+        $stmt->bindValue(':clientId', $appointment->getClientProfileId(), PDO::PARAM_INT);
+        $stmt->bindValue(':professionalId', $appointment->getProfessionalProfileId(), PDO::PARAM_INT);
+        $stmt->bindValue(':serviceId', $appointment->getServiceId(), PDO::PARAM_INT);
+        $stmt->bindValue(':branchId', $appointment->getBranchId(), PDO::PARAM_INT);
+        $stmt->bindValue(':promotionId', $appointment->getPromotionId(), $appointment->getPromotionId() === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+        $stmt->bindValue(':scheduledTs', $appointment->getScheduledTimestamp()->format('Y-m-d H:i:s'), PDO::PARAM_STR);
+        $stmt->bindValue(':estimatedEndTs', $appointment->getEstimatedEndTimestamp()->format('Y-m-d H:i:s'), PDO::PARAM_STR);
+        $stmt->bindValue(':status', $appointment->getAppointmentStatus(), PDO::PARAM_STR);
+        $stmt->bindValue(':totalPrice', $appointment->getTotalPrice(), PDO::PARAM_STR);
+        $stmt->bindValue(':finalPrice', $appointment->getFinalPrice(), PDO::PARAM_STR);
+        $stmt->bindValue(':notes', $appointment->getNotes(), $appointment->getNotes() === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
 
         $stmt->execute();
-
         $id = (int) $this->pdo->lastInsertId();
+        $appointment->setAppointmentId($id);
         return $id;
+    }
+
+    private function hydrate(array $row): Appointment
+    {
+        $scheduled = new \DateTimeImmutable($row['scheduled_timestamp'], new \DateTimeZone('America/Bogota'));
+        $estimated = new \DateTimeImmutable($row['estimated_end_timestamp'], new \DateTimeZone('America/Bogota'));
+
+        $appointment = new Appointment(
+            (int)$row['client_profile_id'],
+            (int)$row['professional_profile_id'],
+            (int)$row['service_id'],
+            (int)$row['branch_id'],
+            $scheduled,
+            $estimated,
+            (float)$row['total_price'],
+            (float)$row['final_price'],
+            isset($row['promotion_id']) ? (int)$row['promotion_id'] : null,
+            $row['notes'],
+            $row['appointment_status']
+        );
+        $appointment->setAppointmentId((int)$row['appointment_id']);
+        return $appointment;
     }
 
     /**
@@ -233,6 +246,28 @@ final class PdoAppointmentRepository implements AppointmentRepositoryInterface /
     /**
      * @inheritDoc
      */
+    public function hasOverlappingAppointment(int $professionalId, string $startTimestamp, string $endTimestamp): bool
+    {
+        // Dos citas se solapan si A_start < B_end Y B_start < A_end
+        // Solo consideramos citas activas (no canceladas ni inasistencias).
+        $sql = "SELECT COUNT(*) FROM appointment
+                WHERE professional_profile_id = :prof_id
+                  AND scheduled_timestamp < :endTs
+                  AND estimated_end_timestamp > :startTs
+                  AND appointment_status NOT IN ('CANCELLED', 'NOSHOW')";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':prof_id', $professionalId, PDO::PARAM_INT);
+        $stmt->bindValue(':startTs', $startTimestamp, PDO::PARAM_STR);
+        $stmt->bindValue(':endTs', $endTimestamp, PDO::PARAM_STR);
+        $stmt->execute();
+
+        return (int) $stmt->fetchColumn() > 0;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getAppointmentsForDateRange(string $startDate, string $endDate, ?int $professionalId = null): array
     {
         $sql = "SELECT
@@ -317,7 +352,9 @@ final class PdoAppointmentRepository implements AppointmentRepositoryInterface /
         ];
     }
 
-    // La función hydrateEntity ya no es necesaria si findById retorna array.
-    // Si otras partes del sistema la necesitan, se podría mover a un Factory.
-    // private function hydrateEntity(array $row): Appointment { ... }
+    public function getAppointmentsToday(): array
+    {
+        $today = date('Y-m-d');
+        return $this->getAppointmentsForDateRange($today, $today);
+    }
 }

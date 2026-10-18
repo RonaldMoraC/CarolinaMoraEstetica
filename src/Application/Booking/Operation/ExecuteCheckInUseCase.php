@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace App\Application\Booking\Operation;
 
 use App\Domain\Booking\Repositories\AppointmentRepositoryInterface;
-use App\Infrastructure\Shared\Audit\SystemAuditLogRepository;
+use App\Application\Shared\Audit\AuditService;
 use App\Infrastructure\Shared\Errors\Exceptions\NotFoundException;
 use App\Domain\Shared\Exceptions\DomainException;
 use App\Infrastructure\Shared\Errors\Exceptions\ConflictException;
@@ -19,12 +19,12 @@ class ExecuteCheckInUseCase
 {
     public function __construct(
         private AppointmentRepositoryInterface $appointmentRepo,
-        private SystemAuditLogRepository $auditRepo
+        private AuditService $auditService
     ) {}
 
     /**
      * Ejecuta el proceso de Check-in para una cita.
-     * 
+     *
      * @param int $appointmentId ID de la cita.
      * @param int $actorId ID del usuario (recepcionista/admin) que realiza la acción.
      * @return bool
@@ -34,16 +34,15 @@ class ExecuteCheckInUseCase
      */
     public function execute(int $appointmentId, int $actorId): bool
     {
-        // 1. Recuperar la cita (el repositorio devuelve un array hidratado)
+        // 1. Recuperar la cita (el repositorio devuelve un objeto Appointment)
         $appointment = $this->appointmentRepo->findById($appointmentId);
 
         if ($appointment === null) {
             throw new NotFoundException("La cita #{$appointmentId} no fue encontrada.");
         }
 
-        // 2. Validar invariantes de estado (Tarea 04)
-        // 'estado' contiene el valor original del ENUM (PENDING, CONFIRMED, etc.)
-        $currentStatus = $appointment['estado'] ?? '';
+        // 2. Validar invariantes de estado
+        $currentStatus = $appointment->getAppointmentStatus();
 
         if (!in_array($currentStatus, ['PENDING', 'CONFIRMED'], true)) {
             throw new DomainException(
@@ -57,16 +56,21 @@ class ExecuteCheckInUseCase
 
         if ($success) {
             // 4. Registrar Auditoría Forense (Skill 9)
-            // Obtenemos el nuevo estado para registrar el cambio completo.
             $updatedAppointment = $this->appointmentRepo->findById($appointmentId);
 
-            $this->auditRepo->insert(
-                actorId: (string) $actorId,
+            $this->auditService->recordMutation(
+                actorId: $actorId,
                 action: 'APPOINTMENT_CHECK_IN',
                 entityType: 'appointment',
                 entityId: $appointmentId,
-                oldValues: $appointment,
-                newValues: $updatedAppointment ?? []
+                oldValues: [
+                    'appointment_id' => $appointment->getAppointmentId(),
+                    'status' => $appointment->getAppointmentStatus()
+                ],
+                newValues: [
+                    'appointment_id' => $updatedAppointment?->getAppointmentId(),
+                    'status' => $updatedAppointment?->getAppointmentStatus()
+                ]
             );
         }
 

@@ -20,7 +20,7 @@ ob_start();
 <section class="metrics-grid">
     <div class="card metric-card" style="border-left-color: #2ecc71;">
         <span class="metric-card__label">Ingresos del Mes</span>
-        <div class="metric-card__value" id="kpiIngresos">$0.00</div>
+        <div class="metric-card__value" id="kpiIngresos">$0</div>
         <span class="metric-card__trend text-success" id="kpiIngresosTrend">—</span>
     </div>
 
@@ -98,11 +98,15 @@ async function loadDashboard() {
             const data = payload.metrics || {};
             const citasHoy = payload.appointments_today || [];
 
-            document.getElementById('kpiIngresos').textContent = '$' + (data.total_ingresos ?? 0).toLocaleString('en-US', {minimumFractionDigits: 2});
+            document.getElementById('kpiIngresos').textContent = new Intl.NumberFormat('es-CO', {
+                style: 'currency',
+                currency: 'COP',
+                minimumFractionDigits: 0
+            }).format(data.total_ingresos ?? 0);
             document.getElementById('kpiIngresosTrend').textContent = data.ingresos_trend ?? '—';
-            document.getElementById('kpiCitas').textContent = (data.total_citas ?? 0).toLocaleString();
+            document.getElementById('kpiCitas').textContent = (data.total_citas ?? 0).toLocaleString('es-CO');
             document.getElementById('kpiCitasTrend').textContent = 'Ocupación del ' + (data.ocupacion ?? 0) + '%';
-            document.getElementById('kpiClientes').textContent = (data.total_clientes ?? 0).toLocaleString();
+            document.getElementById('kpiClientes').textContent = (data.total_clientes ?? 0).toLocaleString('es-CO');
             document.getElementById('kpiClientesTrend').textContent = data.clientes_trend ?? '—';
             document.getElementById('kpiRating').textContent = (data.rating_promedio ?? 0).toFixed(1);
             document.getElementById('kpiRatingTrend').textContent = (data.total_resenas ?? 0) + ' reseñas';
@@ -161,7 +165,7 @@ function renderCitasHoy(citas) {
 }
 
 function renderEmptyState() {
-    document.getElementById('kpiIngresos').textContent = '$0.00';
+    document.getElementById('kpiIngresos').textContent = '$0';
     document.getElementById('kpiIngresosTrend').textContent = '— Sin datos comparativos';
     document.getElementById('kpiCitas').textContent = '0';
     document.getElementById('kpiCitasTrend').textContent = 'Ocupación del 0%';

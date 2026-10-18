@@ -25,61 +25,58 @@ final class ManageProfessionalServicesUseCase
 
     /**
      * Obtiene todos los servicios disponibles y los servicios asignados a un profesional.
+     * Si el usuario no tiene perfil profesional, lo crea automáticamente (UPSERT).
      *
-     * @param int $professionalId ID del perfil profesional.
-     * @return array Un array con 'all_services' y 'assigned_service_ids'.
-     * @throws NotFoundException Si el profesional no existe.
+     * @param int $professionalId ID del perfil profesional (= user_id).
+     * @return array Un array con 'all_services' y 'assigned_ids'.
      */
     public function getAssignedAndAllServices(int $professionalId): array
     {
-        // Verificar si el profesional existe (asumiendo que StaffingRepositoryInterface tiene un método para esto)
-        if (!$this->staffingRepository->findProfessionalProfileById($professionalId)) {
-            throw new NotFoundException("Perfil profesional con ID {$professionalId} no encontrado.");
-        }
+        // UPSERT: Garantiza que exista el perfil profesional antes de consultar.
+        // Esto permite que admins y otros roles no-PROFESSIONAL puedan configurar
+        // sus servicios desde la primera vez sin error 404.
+        $this->staffingRepository->upsertProfessionalProfile($professionalId);
 
-        $allServices = $this->serviceRepository->findAllActive(); // Asumiendo que existe este método
+        $allServices      = $this->serviceRepository->findAllActive();
         $assignedServices = $this->staffingRepository->getProfessionalServices($professionalId);
 
-        $assignedServiceIds = array_map(fn($s) => $s['service_id'], $assignedServices);
+        $assignedServiceIds = array_map(fn($s) => (int)$s['service_id'], $assignedServices);
 
         return [
-            'all_services' => $allServices,
-            'assigned_service_ids' => $assignedServiceIds
+            'all_services'  => $allServices,
+            'assigned_ids'  => $assignedServiceIds,
         ];
     }
 
     /**
      * Asigna un conjunto de servicios a un profesional, reemplazando los existentes.
+     * Si el usuario no tiene perfil profesional, lo crea automáticamente (UPSERT).
      *
-     * @param int $professionalId ID del perfil profesional.
+     * @param int $professionalId ID del perfil profesional (= user_id).
      * @param AssignServicesToProfessionalDTO $dto DTO con los IDs de los servicios a asignar.
      * @param int $actorId ID del usuario que realiza la acción (para auditoría).
      * @return bool True si la asignación fue exitosa.
-     * @throws NotFoundException Si el profesional no existe.
      * @throws DomainException Si algún serviceId no es válido o no existe.
      */
     public function assignServices(int $professionalId, AssignServicesToProfessionalDTO $dto, int $actorId): bool
     {
-        // Verificar si el profesional existe
-        $professionalProfile = $this->staffingRepository->findProfessionalProfileById($professionalId);
-        if (!$professionalProfile) {
-            throw new NotFoundException("Perfil profesional con ID {$professionalId} no encontrado.");
-        }
+        // UPSERT: Garantiza que el perfil exista antes de asignar servicios
+        $this->staffingRepository->upsertProfessionalProfile($professionalId);
 
         // Obtener servicios actuales para auditoría
-        $oldAssignedServices = $this->staffingRepository->getProfessionalServices($professionalId);
-        $oldAssignedServiceIds = array_map(fn($s) => $s['service_id'], $oldAssignedServices);
+        $oldAssignedServices   = $this->staffingRepository->getProfessionalServices($professionalId);
+        $oldAssignedServiceIds = array_map(fn($s) => (int)$s['service_id'], $oldAssignedServices);
 
         // Sincronizar los servicios asignados (eliminar viejos, añadir nuevos)
         $success = $this->staffingRepository->syncProfessionalServices($professionalId, $dto->serviceIds);
 
         $this->auditLogRepository->insert(
-            actorId: $actorId,
-            action: 'PROFESSIONAL_SERVICES_UPDATED',
+            actorId:    $actorId,
+            action:     'PROFESSIONAL_SERVICES_UPDATED',
             entityType: 'professional_profile',
-            entityId: $professionalId,
-            oldValues: ['assigned_service_ids' => $oldAssignedServiceIds],
-            newValues: ['assigned_service_ids' => $dto->serviceIds]
+            entityId:   $professionalId,
+            oldValues:  ['assigned_service_ids' => $oldAssignedServiceIds],
+            newValues:  ['assigned_service_ids' => $dto->serviceIds]
         );
 
         return $success;

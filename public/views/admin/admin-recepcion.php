@@ -159,14 +159,8 @@ document.addEventListener('DOMContentLoaded', () => {
             console.warn('[Recepcion] API no disponible:', error.message);
         }
 
-        // Datos simulados
-        citas = [
-            { appointment_id: 1, scheduled_timestamp: '2026-06-12 08:00:00', service_name: 'Corte de Cabello', client_name: 'Diana Restrepo', professional_name: 'Carolina Mora', appointment_status: 'CONFIRMED', total_price: 25.00 },
-            { appointment_id: 2, scheduled_timestamp: '2026-06-12 09:15:00', service_name: 'Manicure Premium', client_name: 'Milena Castro', professional_name: 'Andrea Gómez', appointment_status: 'CONFIRMED', total_price: 15.00 },
-            { appointment_id: 3, scheduled_timestamp: '2026-06-12 10:30:00', service_name: 'Limpieza Facial', client_name: 'Carlos Pérez', professional_name: 'Carolina Mora', appointment_status: 'IN_PROGRESS', total_price: 40.00 },
-            { appointment_id: 4, scheduled_timestamp: '2026-06-12 14:00:00', service_name: 'Pedicure Spa', client_name: 'Patricia Ortiz', professional_name: 'Andrea Gómez', appointment_status: 'PENDING', total_price: 22.00 },
-            { appointment_id: 5, scheduled_timestamp: '2026-06-12 15:30:00', service_name: 'Balayage', client_name: 'Sandra Muñoz', professional_name: 'Carolina Mora', appointment_status: 'PENDING', total_price: 120.00 },
-        ];
+        // Datos reales o estado vacío fidedigno
+        citas = [];
         renderCitas();
         actualizarIndicadores();
     }
@@ -273,15 +267,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // Simulación local
-            const statusMap = { 'check-in': 'IN_PROGRESS', 'complete': 'COMPLETED', 'cancel': 'CANCELLED', 'noshow': 'NOSHOW' };
-            const cita = citas.find(c => c.appointment_id === citaId);
-            if (cita) cita.appointment_status = statusMap[accion];
-            renderCitas();
-            actualizarIndicadores();
-            alerts.success('Estado actualizado (modo simulación).');
-        } catch (error) {
-            alerts.error(error.message || 'Error al actualizar el estado de la cita.');
+            // Sin simulación local si la API falla, para mantener integridad.
+            if (alerts) alerts.error(error.message || 'Error al actualizar el estado de la cita.');
         }
     };
 

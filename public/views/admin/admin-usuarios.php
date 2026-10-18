@@ -209,8 +209,8 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             if (api) {
                 const res = await api.get('/iam/users?role=staff');
-                if (res.success && res.data) {
-                    usuarios = res.data;
+                if (res.success) {
+                    usuarios = res.data ?? [];
                     renderUsuarios();
                     actualizarIndicadores();
                     return;
@@ -254,8 +254,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const statusClass = u.is_active ? 'user-status--active' : 'user-status--inactive';
             const statusText = u.is_active ? 'Activo' : 'Inactivo';
 
-            // Skill: Botón condicional para personal técnico/admin (Fase 2 corregida)
-            const showHabilidades = ['SUPER_ADMIN', 'BRANCH_ADMIN', 'PROFESSIONAL'].includes(u.role_name);
+            // Skill: Botón condicional para personal técnico/admin
+            // Visible para todos los roles EXCEPTO RECEPCIONIST y CLIENT
+            const showHabilidades = !['RECEPCIONIST', 'CLIENT'].includes(u.role_name) && !!u.role_name;
             const habilidadesBtn = showHabilidades 
                 ? `<button class="btn btn--ghost btn--sm" onclick="abrirModalHabilidades(${u.user_id})" title="Gestionar Habilidades Técnicas">💼</button>`
                 : '';
@@ -324,77 +325,125 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const nameParts = nombre.split(' ');
+        const nameParts = nombre.split(/\s+/);
         const firstName = nameParts[0];
-        const lastName = nameParts.slice(1).join(' ') || '';
-
-        const payload = {
-            first_name: firstName,
-            last_name: lastName,
-            email: email,
-            phone: phone,
-            role: rol,
-            is_active: activo ? 1 : 0,
-        };
+        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
 
         try {
-            if (api) {
-                let res;
-                if (id) {
-                    // Actualizar
-                    if (password) payload.password = password;
-                    res = await api.put(`/iam/users/${id}`, payload);
-                } else {
-                    if (!password) {
-                        alerts.error('La contraseña es obligatoria para nuevos usuarios.');
-                        return;
-                    }
-                    payload.password = password;
-                    payload.username = email.split('@')[0];
-                    res = await api.post('/iam/users', payload);
-                }
-
-                if (!res.success) {
-                    throw new Error(res.detail || 'El servidor no pudo procesar la actualización del usuario.');
-                }
-
-                alerts.success(id ? 'Usuario actualizado correctamente.' : 'Usuario creado exitosamente.');
-                cerrarModalUsuario();
-                await cargarUsuarios();
-                return;
-            }
-
-            // Simulación
-            alerts.success(id ? 'Usuario actualizado correctamente (Modo Desarrollo).' : 'Usuario creado exitosamente (Modo Desarrollo).');
-            cerrarModalUsuario();
-            
             if (id) {
-                // Actualizar localmente para reflejar cambios en la UI
+                // ── MODO EDICIÓN: Diff inteligente ──────────────────────────────
+                // Solo se envían al backend los campos que realmente cambiaron.
+                // Esto evita que restricciones UNIQUE (email, phone) se disparen
+                // cuando el usuario no modificó esos campos.
+                const original = usuarios.find(u => u.user_id == id);
+                const originalFirstName = original ? (original.first_name || '').trim() : null;
+                const originalLastName  = original ? (original.last_name  || '').trim() : null;
+                const originalFullName  = originalFirstName !== null
+                    ? `${originalFirstName} ${originalLastName}`.trim()
+                    : null;
+                const currentFullName   = `${firstName} ${lastName}`.trim();
+
+                const payload = {};
+
+                if (!original || currentFullName !== originalFullName) {
+                    payload.first_name = firstName;
+                    payload.last_name  = lastName;
+                }
+                if (!original || email !== (original.email || '').trim()) {
+                    payload.email = email;
+                }
+                if (!original || phone !== (original.auth_phone || '').trim()) {
+                    payload.phone = phone;
+                }
+                if (!original || rol !== (original.role_name || '')) {
+                    payload.role = rol;
+                }
+                const originalIsActive = original ? (!!original.is_active) : null;
+                if (original === null || (activo ? 1 : 0) !== (originalIsActive ? 1 : 0)) {
+                    payload.is_active = activo ? 1 : 0;
+                }
+                if (password) {
+                    payload.password = password;
+                }
+
+                // Si no hubo ningún cambio, avisar y no hacer el request
+                if (Object.keys(payload).length === 0) {
+                    alerts.error('No se detectaron cambios. Modifica al menos un campo antes de guardar.');
+                    return;
+                }
+
+                if (api) {
+                    const res = await api.put(`/iam/users/${id}`, payload);
+                    if (!res.success) {
+                        throw new Error(res.detail || 'El servidor no pudo procesar la actualización del usuario.');
+                    }
+                    alerts.success('Usuario actualizado correctamente.');
+                    cerrarModalUsuario();
+                    await cargarUsuarios();
+                    return;
+                }
+
+                // Simulación sin API
                 const index = usuarios.findIndex(u => u.user_id == id);
                 if (index !== -1) {
-                    usuarios[index] = { 
-                        ...usuarios[index], 
-                        first_name: firstName, 
-                        last_name: lastName, 
-                        email: email, 
+                    usuarios[index] = {
+                        ...usuarios[index],
+                        first_name: firstName,
+                        last_name:  lastName,
+                        email:      email,
                         auth_phone: phone,
-                        role_name: rol, 
-                        is_active: activo ? 1 : 0 
+                        role_name:  rol,
+                        is_active:  activo ? 1 : 0
                     };
                 }
+                renderUsuarios();
+                actualizarIndicadores();
+                alerts.success('Usuario actualizado correctamente (Modo Desarrollo).');
+                cerrarModalUsuario();
+
             } else {
-                usuarios.push({
-                    user_id: usuarios.length + 1,
+                // ── MODO CREACIÓN ────────────────────────────────────────────────
+                if (!password) {
+                    alerts.error('La contraseña es obligatoria para nuevos usuarios.');
+                    return;
+                }
+                const payload = {
                     first_name: firstName,
-                    last_name: lastName,
-                    email: email,
+                    last_name:  lastName,
+                    email:      email,
+                    phone:      phone,
+                    role:       rol,
+                    is_active:  activo ? 1 : 0,
+                    password:   password,
+                    username:   email.split('@')[0],
+                };
+
+                if (api) {
+                    const res = await api.post('/iam/users', payload);
+                    if (!res.success) {
+                        throw new Error(res.detail || 'El servidor no pudo crear el usuario.');
+                    }
+                    alerts.success('Usuario creado exitosamente.');
+                    cerrarModalUsuario();
+                    await cargarUsuarios();
+                    return;
+                }
+
+                // Simulación sin API
+                usuarios.push({
+                    user_id:    usuarios.length + 1,
+                    first_name: firstName,
+                    last_name:  lastName,
+                    email:      email,
                     auth_phone: phone,
-                    role_name: rol,
-                    is_active: activo ? 1 : 0
+                    role_name:  rol,
+                    is_active:  activo ? 1 : 0
                 });
+                renderUsuarios();
+                actualizarIndicadores();
+                alerts.success('Usuario creado exitosamente (Modo Desarrollo).');
+                cerrarModalUsuario();
             }
-            renderUsuarios();
-            actualizarIndicadores();
         } catch (error) {
             alerts.error(error.message || 'Error al guardar el usuario.');
         }

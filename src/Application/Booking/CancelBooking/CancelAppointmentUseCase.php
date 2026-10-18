@@ -3,7 +3,7 @@
 namespace App\Application\Booking\CancelBooking;
 
 use App\Domain\Booking\Repositories\AppointmentRepositoryInterface;
-use App\Infrastructure\Shared\Audit\SystemAuditLogRepository;
+use App\Application\Shared\Audit\AuditService;
 use App\Infrastructure\Shared\Errors\Exceptions\NotFoundException;
 use App\Domain\Shared\Exceptions\DomainException;
 use App\Infrastructure\Shared\Errors\Exceptions\ConflictException;
@@ -24,14 +24,14 @@ use DateTimeZone;
 class CancelAppointmentUseCase
 {
     private AppointmentRepositoryInterface $appointmentRepo;
-    private SystemAuditLogRepository $auditRepo;
+    private AuditService $auditService;
 
     public function __construct(
         AppointmentRepositoryInterface $appointmentRepo,
-        SystemAuditLogRepository $auditRepo
+        AuditService $auditService
     ) {
         $this->appointmentRepo = $appointmentRepo;
-        $this->auditRepo = $auditRepo;
+        $this->auditService = $auditService;
     }
 
     /**
@@ -45,7 +45,7 @@ class CancelAppointmentUseCase
      */
     public function execute(CancelAppointmentDTO $dto): array
     {
-        // 1. Recuperar la cita (el repositorio devuelve un array hidratado)
+        // 1. Recuperar la cita (el repositorio devuelve un objeto Appointment)
         $appointment = $this->appointmentRepo->findById($dto->appointmentId);
 
         if ($appointment === null) {
@@ -53,28 +53,26 @@ class CancelAppointmentUseCase
         }
 
         // 2. Validar pertenencia (ownership)
-        if (($appointment['client_profile_id'] ?? 0) !== $dto->userId) {
+        if (!$appointment->belongsToClient($dto->userId)) {
             throw new DomainException("No tienes permisos para cancelar la cita #{$dto->appointmentId}. La cita pertenece a otro cliente.");
         }
 
-        // 3. Validar estado actual de la cita (Tarea 04)
-        $currentStatus = $appointment['appointment_status'] ?? '';
-        if (!in_array($currentStatus, ['PENDING', 'CONFIRMED'], true)) {
+        // 3. Validar estado actual de la cita
+        if (!$appointment->canBeCancelled()) {
             throw new DomainException(
-                "La cita #{$dto->appointmentId} no puede ser cancelada. Estado actual: '{$currentStatus}'. " .
+                "La cita #{$dto->appointmentId} no puede ser cancelada. Estado actual: '{$appointment->getAppointmentStatus()}'. " .
                 "Solo se pueden cancelar citas en estado PENDING o CONFIRMED."
             );
         }
 
-        // 4. Validar la regla de 24 horas de anticipación (Skill 2, Skill 7)
-        $scheduledTimestamp = new DateTimeImmutable($appointment['scheduled_timestamp'], new DateTimeZone('America/Bogota'));
+        // 4. Validar la regla de 24 horas de anticipación
+        $scheduledTimestamp = $appointment->getScheduledTimestamp();
         $now = new DateTimeImmutable('now', new DateTimeZone('America/Bogota'));
 
         // Calcular la diferencia en segundos
         $diffSeconds = $scheduledTimestamp->getTimestamp() - $now->getTimestamp();
         $hoursRemaining = $diffSeconds / 3600;
 
-        // Asumimos 24 horas como el umbral, esto podría ser configurable en el futuro
         if ($hoursRemaining < 24) {
             throw new DomainException(
                 "La cita #{$dto->appointmentId} no puede ser cancelada con menos de 24 horas de anticipación. " .
@@ -82,7 +80,7 @@ class CancelAppointmentUseCase
             );
         }
 
-        // 5. Ejecutar mutación en el repositorio (delegando transaccionalidad y bloqueo pesimista)
+        // 5. Ejecutar mutación en el repositorio
         $success = $this->appointmentRepo->cancel(
             $dto->appointmentId,
             $dto->userId,
@@ -91,20 +89,28 @@ class CancelAppointmentUseCase
 
         if ($success) {
             // 6. Registrar Auditoría Forense (Skill 9)
+            // Se debe obtener el nuevo estado de la entidad para el log de auditoría
             $updatedAppointment = $this->appointmentRepo->findById($dto->appointmentId);
-            $this->auditRepo->insert(
-                actorId: (string) $dto->userId,
+
+            $this->auditService->recordMutation(
+                actorId: $dto->userId,
                 action: 'APPOINTMENT_CANCELLED',
                 entityType: 'appointment',
                 entityId: $dto->appointmentId,
-                oldValues: $appointment, // Estado completo antes del cambio
-                newValues: $updatedAppointment ?? [] // Estado completo después del cambio
+                oldValues: [
+                    'appointment_id' => $appointment->getAppointmentId(),
+                    'status' => $appointment->getAppointmentStatus()
+                ],
+                newValues: [
+                    'appointment_id' => $updatedAppointment?->getAppointmentId(),
+                    'status' => $updatedAppointment?->getAppointmentStatus()
+                ]
             );
         }
 
         return [
             'appointment_id' => $dto->appointmentId,
-            'previous_status' => $currentStatus,
+            'previous_status' => $appointment->getAppointmentStatus(),
             'new_status' => 'CANCELLED',
             'cancelled_at' => (new \DateTimeImmutable('now', new \DateTimeZone('America/Bogota')))
                 ->format('Y-m-d H:i:s')

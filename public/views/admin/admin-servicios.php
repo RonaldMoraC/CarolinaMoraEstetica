@@ -84,7 +84,7 @@ ob_start();
 
             <div class="form-group">
                 <label for="precio" class="form-label">Precio ($)</label>
-                <input type="number" step="0.01" min="0" id="precio" class="form-control" placeholder="Ej. 20.00" required>
+                <input type="number" step="0.01" min="0" id="precio" class="form-control" placeholder="Ej. 20.00" required oninput="this.value = !!this.value && Math.abs(this.value) >= 0 ? parseFloat(this.value).toFixed(2) : null">
             </div>
 
             <div class="form-group">
@@ -162,6 +162,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isNaN(payload.base_price) || payload.base_price <= 0) { alerts.error('El precio debe ser mayor a 0.'); return; }
         if (!payload.duration_minutes || payload.duration_minutes <= 0) { alerts.error('Seleccione una duración válida.'); return; }
 
+        const btn = document.getElementById('btnGuardar');
+        btn.disabled = true;
+        btn.textContent = 'Procesando...';
+
         try {
             let response;
             if (editandoId) {
@@ -169,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 response = await api.post('/catalog/services', payload);
             }
-            
+
             if (!response.success) {
                 throw new Error(response.detail || 'No se pudo actualizar el servicio.');
             }
@@ -180,6 +184,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             alerts.error(error.message || 'Error al guardar el servicio.');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = editandoId ? 'Actualizar' : 'Guardar';
         }
     });
 
@@ -198,6 +205,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 totalPages = meta.total_pages ?? 1;
                 totalRecords = meta.total_records ?? 0;
                 currentPage = meta.current_page ?? 1;
+
+                // Si por eliminación o paginación la página actual supera el total de páginas, re-ajustar
+                if (currentPage > totalPages && totalPages > 0) {
+                    currentPage = totalPages;
+                    await cargarServicios();
+                    return;
+                }
+
                 renderServicios(servicios);
                 renderPaginacion();
                 return;
@@ -220,7 +235,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 select.innerHTML = '<option value="">Seleccionar categoría...</option>'; // Limpiar opciones existentes
                 categorias.forEach(cat => {
                     const option = document.createElement('option');
-                    option.value = cat.category_id;
+                    // Usar acceso seguro a category_id || id
+                    option.value = cat.category_id ?? cat.id;
                     option.textContent = escapeHtml(cat.name);
                     select.appendChild(option);
                 });
@@ -245,14 +261,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         tbody.innerHTML = servicios.map(s => {
             const status = statusMap[s.is_active ?? 0] || { label: '—', class: 'badge--neutral' };
-            const price = parseFloat(s.base_price ?? 0).toFixed(2);
+            const price = new Intl.NumberFormat('es-CO', {
+                style: 'currency',
+                currency: 'COP',
+                minimumFractionDigits: 0
+            }).format(s.base_price ?? 0);
             const dur = (s.duration_minutes ?? 0) + ' min';
             const catName = escapeHtml(s.category_name ?? '—');
 
             return '<tr id="service-row-' + s.service_id + '">' +
                 '<td class="fw-bold">' + escapeHtml(s.name ?? '') + '</td>' +
                 '<td>' + catName + '</td>' +
-                '<td>$' + price + '</td>' +
+                '<td>' + price + '</td>' +
                 '<td>' + dur + '</td>' +
                 '<td><span class="badge ' + status.class + '">' + status.label + '</span></td>' +
                 '<td style="text-align: center;">' +
@@ -332,6 +352,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     window.toggleEstadoServicio = async function(id, nuevoEstado) {
+        const action = nuevoEstado ? 'activar' : 'desactivar';
+        if (!confirm(`¿Está seguro de que desea ${action} este servicio?`)) return;
+
         if (!api) return;
         try {
             const response = await api.patch('/catalog/services/' + id, { is_active: nuevoEstado });

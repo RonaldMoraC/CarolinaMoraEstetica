@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace App\Application\Booking\Operation;
 
 use App\Domain\Booking\Repositories\AppointmentRepositoryInterface;
-use App\Infrastructure\Shared\Audit\SystemAuditLogRepository;
+use App\Application\Shared\Audit\AuditService;
 use App\Infrastructure\Shared\Errors\Exceptions\NotFoundException;
 use App\Domain\Shared\Exceptions\DomainException;
 use App\Infrastructure\Shared\Errors\Exceptions\ConflictException;
@@ -19,7 +19,7 @@ class MarkNoShowUseCase
 {
     public function __construct(
         private AppointmentRepositoryInterface $appointmentRepo,
-        private SystemAuditLogRepository $auditRepo
+        private AuditService $auditService
     ) {}
 
     /**
@@ -35,7 +35,7 @@ class MarkNoShowUseCase
      */
     public function execute(int $appointmentId, int $actorId, string $reason): bool
     {
-        // 1. Recuperar la cita (el repositorio devuelve un array hidratado)
+        // 1. Recuperar la cita (el repositorio devuelve un objeto Appointment)
         $appointment = $this->appointmentRepo->findById($appointmentId);
 
         if ($appointment === null) {
@@ -43,7 +43,7 @@ class MarkNoShowUseCase
         }
 
         // 2. Validar estado actual (Tarea 04: Solo PENDING o CONFIRMED pueden ser marcadas como no-show)
-        $currentStatus = $appointment['estado'] ?? '';
+        $currentStatus = $appointment->getAppointmentStatus();
 
         if (!in_array($currentStatus, ['PENDING', 'CONFIRMED'], true)) {
             throw new DomainException(
@@ -58,13 +58,19 @@ class MarkNoShowUseCase
             // 4. Registrar Auditoría Forense (Skill 9)
             $updatedAppointment = $this->appointmentRepo->findById($appointmentId);
 
-            $this->auditRepo->insert(
-                actorId: (string) $actorId,
+            $this->auditService->recordMutation(
+                actorId: $actorId,
                 action: 'APPOINTMENT_NOSHOW',
                 entityType: 'appointment',
                 entityId: $appointmentId,
-                oldValues: $appointment,
-                newValues: $updatedAppointment ?? []
+                oldValues: [
+                    'appointment_id' => $appointment->getAppointmentId(),
+                    'status' => $appointment->getAppointmentStatus()
+                ],
+                newValues: [
+                    'appointment_id' => $updatedAppointment?->getAppointmentId(),
+                    'status' => $updatedAppointment?->getAppointmentStatus()
+                ]
             );
         }
 

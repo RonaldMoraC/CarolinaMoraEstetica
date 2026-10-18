@@ -196,17 +196,9 @@ document.addEventListener('DOMContentLoaded', () => {
             console.warn('[Calendario] API no disponible para profesionales');
         }
 
-        profesionales = [
-            { professional_profile_id: 1, first_name: 'Carolina', last_name: 'Mora' },
-            { professional_profile_id: 2, first_name: 'Andrea', last_name: 'Gómez' },
-        ];
+        profesionales = [];
         const select = document.getElementById('filtroProfesional');
-        profesionales.forEach(p => {
-            const option = document.createElement('option');
-            option.value = p.professional_profile_id;
-            option.textContent = \`\${p.first_name} \${p.last_name}\`;
-            select.appendChild(option);
-        });
+        select.innerHTML = '<option value="todos">Todos los profesionales</option>';
     }
 
     /**
@@ -238,14 +230,8 @@ document.addEventListener('DOMContentLoaded', () => {
             console.warn('[Calendario] API no disponible:', error.message);
         }
 
-        // Fallback simulado
-        citasData = [
-            { appointment_id: 1, scheduled_timestamp: '2026-06-15 08:00:00', service_name: 'Corte y Secado', client_name: 'Diana Restrepo', professional_name: 'Carolina Mora', total_price: 35.00, appointment_status: 'CONFIRMED', service_category: 'cabello' },
-            { appointment_id: 2, scheduled_timestamp: '2026-06-16 08:00:00', service_name: 'Manicure Gel', client_name: 'Milena Castro', professional_name: 'Andrea Gómez', total_price: 15.00, appointment_status: 'CONFIRMED', service_category: 'nail' },
-            { appointment_id: 3, scheduled_timestamp: '2026-06-17 10:00:00', service_name: 'Limpieza Facial', client_name: 'Carlos Pérez', professional_name: 'Carolina Mora', total_price: 40.00, appointment_status: 'PENDING', service_category: 'facial' },
-            { appointment_id: 4, scheduled_timestamp: '2026-06-18 10:00:00', service_name: 'Balayage', client_name: 'Sandra Muñoz', professional_name: 'Carolina Mora', total_price: 120.00, appointment_status: 'CONFIRMED', service_category: 'cabello' },
-            { appointment_id: 5, scheduled_timestamp: '2026-06-18 14:00:00', service_name: 'Pedicure Spa', client_name: 'Patricia Ortiz', professional_name: 'Andrea Gómez', total_price: 22.00, appointment_status: 'PENDING', service_category: 'nail' },
-        ];
+        // Sin datos simulados: si la API no responde, el calendario se mantiene vacío
+        citasData = [];
         renderCitas();
     }
 
@@ -334,7 +320,11 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div class="mb-3">
                 <label class="form-label" style="font-size:0.75rem;">VALOR</label>
-                <div class="fw-bold text-success">\$\${parseFloat(cita.total_price).toFixed(2)}</div>
+                <div class="fw-bold text-success">\${new Intl.NumberFormat('es-CO', {
+                    style: 'currency',
+                    currency: 'COP',
+                    minimumFractionDigits: 0
+                }).format(cita.total_price || 0)}</div>
             </div>
             <div class="d-flex gap-2 mt-4">
                 <button class="btn btn--outline btn--sm" style="flex:1;" onclick="reprogramarCita(\${cita.appointment_id})">Reasignar</button>

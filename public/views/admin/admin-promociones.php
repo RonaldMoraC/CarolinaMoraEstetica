@@ -155,14 +155,21 @@ document.addEventListener('DOMContentLoaded', () => {
             associated_services: selectedServices
         };
 
+        const btnSubmit = e.target.querySelector('button[type="submit"]');
+        btnSubmit.disabled = true;
+        const textoOriginal = btnSubmit.textContent;
+        btnSubmit.textContent = 'Registrando...';
+
         try {
             if (api) {
                 const res = await api.post('/catalog/promotions', payload);
                 if (res.success) {
-                    alerts.success(\`Campaña "\${codigo}" registrada exitosamente.\`);
+                    alerts.success('Campaña "' + codigo + '" registrada exitosamente.');
                     document.getElementById('promoForm').reset();
                     await cargarPromociones();
                     return;
+                } else {
+                    throw new Error(res.detail || 'No se pudo registrar la campaña.');
                 }
             }
 
@@ -179,9 +186,12 @@ document.addEventListener('DOMContentLoaded', () => {
             promociones.unshift(nuevaPromo);
             renderPromociones();
             document.getElementById('promoForm').reset();
-            alerts.success(\`Campaña "\${codigo}" registrada (simulación).\`);
+            alerts.success('Campaña "' + codigo + '" registrada (simulación).');
         } catch (error) {
             alerts.error(error.message || 'Error al crear la campaña.');
+        } finally {
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = textoOriginal;
         }
     });
 

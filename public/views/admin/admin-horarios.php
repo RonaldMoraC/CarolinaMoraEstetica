@@ -328,6 +328,11 @@ function initHorarios() {
             return;
         }
 
+        var btnGuardar = event.target;
+        btnGuardar.disabled = true;
+        var textoOriginal = btnGuardar.textContent;
+        btnGuardar.textContent = 'Guardando...';
+
         var agenda = DIAS_SEMANA.map(function(dia) {
             var activo = document.getElementById('check-' + dia.key).checked;
             return {
@@ -346,6 +351,8 @@ function initHorarios() {
 
         if (!api) {
             alerts.success('Horarios guardados. (modo simulación)');
+            btnGuardar.disabled = false;
+            btnGuardar.textContent = textoOriginal;
             return;
         }
 
@@ -359,6 +366,10 @@ function initHorarios() {
             })
             .catch(function(err) {
                 alerts.error(err.message || 'Error al guardar los horarios.');
+            })
+            .finally(function() {
+                btnGuardar.disabled = false;
+                btnGuardar.textContent = textoOriginal;
             });
     };
 

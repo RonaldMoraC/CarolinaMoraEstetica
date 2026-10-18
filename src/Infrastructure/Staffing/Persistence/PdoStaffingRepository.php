@@ -271,4 +271,37 @@ final class PdoStaffingRepository implements StaffingRepositoryInterface
             ];
         }, $rows);
     }
+
+    /**
+     * @inheritDoc
+     *
+     * Crea la fila en professional_profile si no existe todavía.
+     * Usa ON DUPLICATE KEY UPDATE para ser 100% idempotente (Skill 6).
+     * El campo service_commission_rate tiene DEFAULT 0.00, por lo que no
+     * se necesita enviar ningún valor adicional.
+     */
+    public function upsertProfessionalProfile(int $userId): void
+    {
+        $sql = "INSERT INTO professional_profile (professional_profile_id, service_commission_rate, operational_status)
+                VALUES (:id, 0.00, 'ACTIVE')
+                ON DUPLICATE KEY UPDATE operational_status = operational_status";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':id', $userId, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+
+    public function lockProfessionalWorkSchedule(int $professionalId, int $branchId, int $dayOfWeek): void
+    {
+        $sql = "SELECT work_schedule_id FROM work_schedule
+                WHERE professional_profile_id = :prof_id
+                  AND branch_id = :branch_id
+                  AND day_of_week = :day_of_week
+                FOR UPDATE";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':prof_id', $professionalId, PDO::PARAM_INT);
+        $stmt->bindValue(':branch_id', $branchId, PDO::PARAM_INT);
+        $stmt->bindValue(':day_of_week', $dayOfWeek, PDO::PARAM_INT);
+        $stmt->execute();
+    }
 }
+
