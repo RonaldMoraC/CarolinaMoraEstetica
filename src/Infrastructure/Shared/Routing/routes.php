@@ -27,6 +27,7 @@ use App\Infrastructure\Staffing\Http\GetProfessionalsController;
 use App\Infrastructure\Staffing\Http\GetSlotsController;
 use App\Infrastructure\Staffing\Http\SaveScheduleController;
 use App\Infrastructure\Staffing\Http\ScheduleExceptionController;
+use App\Infrastructure\Inventory\Http\InventarioController;
 use App\Infrastructure\Shared\Errors\GlobalExceptionHandler;
 
 /** @var Router $router */
@@ -161,3 +162,10 @@ $router->get('/api/v1/catalog/categories', [GetCategoriesController::class, 'han
 $router->get('/api/v1/crm/ratings', [RatingController::class, 'getRatings']);
 $router->post('/api/v1/crm/ratings', [RatingController::class, 'registerRating']);
 $router->patch('/api/v1/crm/ratings/{id}/hide', [RatingController::class, 'hideRating']);
+
+// --- RUTAS DE INVENTARIO ---
+$router->group('/api/v1/admin/inventory', function(Router $r) {
+    $r->get('', [InventarioController::class, 'handle']);
+    $r->post('', [InventarioController::class, 'handle']);
+    $r->delete('', [InventarioController::class, 'handle']);
+}, [AuthMiddleware::class]);

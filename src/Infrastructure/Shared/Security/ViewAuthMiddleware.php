@@ -18,15 +18,26 @@ final class ViewAuthMiddleware
      */
     public function __invoke(array $params, callable $next): void
     {
-        // En un entorno desacoplado, las vistas suelen cargarse y luego el JS valida.
-        // Sin embargo, para mayor seguridad, podemos verificar cookies si se implementan.
-        // Por ahora, permitimos el paso para que el script 'Auth Guard' del frontend ejecute la redirección.
-        
-        // Opcional: Si implementas cookies HTTP-Only en el futuro:
-        // if (!isset($_COOKIE['auth_session'])) {
-        //     header('Location: /login');
-        //     exit;
-        // }
+        // Validar autenticación por cookies (auth_token o user_role) o por autorización Bearer si aplica
+        $token = $_COOKIE['auth_token'] ?? '';
+        $role = $_COOKIE['user_role'] ?? '';
+        $staffRoles = ['SUPER_ADMIN', 'MANAGER', 'ESPECIALIST', 'RECEPCIONIST'];
+
+        // Si no hay cookies pero hay autorización en headers (por ejemplo, peticiones fetch con token), permitimos pasar
+        $headers = getallheaders();
+        $authHeader = $headers['Authorization'] ?? $headers['X-Authorization'] ?? '';
+        $hasValidAuthHeader = !empty($authHeader) && str_starts_with($authHeader, 'Bearer ');
+
+        if ((empty($token) || !in_array($role, $staffRoles, true)) && !$hasValidAuthHeader) {
+            // Determinar la raíz del proyecto para redirección absoluta limpia
+            $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+            $projectRoot = rtrim(dirname(dirname($scriptName)), '/\\');
+            if ($projectRoot === '/' || $projectRoot === '') {
+                $projectRoot = '';
+            }
+            header('Location: ' . $projectRoot . '/login');
+            exit;
+        }
 
         $next($params);
     }

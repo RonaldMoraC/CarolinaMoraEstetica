@@ -39,7 +39,7 @@ ob_start();
 // Hardening de seguridad: Verificar rol en el servidor
 // Suponiendo que el layout de admin proporciona $user o acceso a la sesión.
 // Si no, definimos una bandera basada en el rol.
-$isAdmin = isset($userRole) && $userRole === 'ADMIN';
+$isAdmin = isset($userRole) && in_array($userRole, ['SUPER_ADMIN', 'MANAGER', '1'], true);
 ?>
 
 <div class="layout-split">

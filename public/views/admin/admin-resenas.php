@@ -9,9 +9,9 @@
 define('ADMIN_LAYOUT_LOADED', true);
 
 // Autorización: Tanto ADMIN como RECEPCIONIST pueden ver reseñas.
-$canView = isset($userRole) && in_array($userRole, ['SUPER_ADMIN', 'MANAGER', 'RECEPCIONIST']);
+$canView = isset($userRole) && in_array($userRole, ['SUPER_ADMIN', 'MANAGER', 'RECEPCIONIST', '1']);
 if (!$canView) {
-    header('Location: ' . $basePath . '/admin/dashboard');
+    header('Location: /CarolinaMoraEstetica/admin/dashboard');
     exit;
 }
 

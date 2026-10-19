@@ -121,7 +121,18 @@ final class LoginController
                 }
             }
 
-            // 4. Retornar respuesta exitosa (Skill 1: Formato consistente)
+            // 4. Establecer cookies seguras para el backend (ViewAuthMiddleware y layouts)
+            $cookieOptions = [
+                'expires' => time() + (int) ($_ENV['JWT_EXPIRATION_SECONDS'] ?? 3600),
+                'path' => '/',
+                'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on',
+                'httponly' => false, // Permitir acceso desde JS si es necesario, o true por seguridad
+                'samesite' => 'Lax'
+            ];
+            setcookie('auth_token', $token, $cookieOptions);
+            setcookie('user_role', $role, $cookieOptions);
+
+            // 5. Retornar respuesta exitosa (Skill 1: Formato consistente)
             ResponseHelper::json(200, true, 'Autenticación exitosa.', [
                 'token'       => $token,
                 'token_type'  => 'Bearer',

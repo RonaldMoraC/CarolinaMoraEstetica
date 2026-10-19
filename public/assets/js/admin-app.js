@@ -496,12 +496,12 @@ const AdminApp = (() => {
             const role = localStorage.getItem('user_role');
 
             // Roles de staff válidos para acceso al admin
-            const staffRoles = ['SUPER_ADMIN', 'BRANCH_ADMIN', 'RECEPCIONIST', '1'];
+            const staffRoles = ['SUPER_ADMIN', 'MANAGER', 'ESPECIALIST', 'RECEPCIONIST'];
 
             if (!token || !staffRoles.includes(role)) {
-                console.warn('[AdminApp] Sin autenticación válida, redirigiendo...');
-                // No redirigir inmediatamente para permitir carga de páginas estáticas
-                // window.location.href = '/login';
+                console.warn('[AdminApp] Sin autenticación válida, redirigiendo al login...');
+                const projectRoot = window.location.pathname.split('/public/')[0] || window.location.pathname.split('/admin/')[0] || '';
+                window.location.href = projectRoot + '/login';
             }
         },
 

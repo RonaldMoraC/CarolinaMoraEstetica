@@ -10,6 +10,13 @@
 
 define('ADMIN_LAYOUT_LOADED', true);
 
+// Autorización: Módulo restringido a nivel administrativo.
+$canViewAnalytics = isset($userRole) && in_array($userRole, ['SUPER_ADMIN', 'MANAGER'], true);
+if (!$canViewAnalytics) {
+    header('Location: /CarolinaMoraEstetica/admin/dashboard');
+    exit;
+}
+
 $pageTitle = 'Analíticas del Negocio';
 $pageSubtitle = 'Consulte el rendimiento financiero y el volumen operativo acumulado.';
 $activeModule = 'analiticas';
