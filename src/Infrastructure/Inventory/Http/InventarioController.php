@@ -41,6 +41,21 @@ class InventarioController
     public function handle(): void
     {
         $action = $_GET['action'] ?? 'obtener_productos';
+        $userRole = $_COOKIE['user_role'] ?? 'CLIENT';
+        $isReadOnly = in_array($action, ['obtener_productos', 'obtener_datos_iniciales', 'obtener_movimientos'], true);
+        $isWriteAction = in_array($action, ['guardar_producto', 'eliminar_producto', 'registrar_movimiento', 'guardar_proveedor'], true);
+
+        // RBAC: Solo SUPER_ADMIN y MANAGER pueden escribir
+        if ($isWriteAction && !in_array($userRole, ['SUPER_ADMIN', 'MANAGER'], true)) {
+            GlobalExceptionHandler::emitRfc7807Response(
+                httpStatus: 403,
+                type: 'https://carolinamoraestetica.com/errors/forbidden',
+                title: 'Acceso Denegado',
+                detail: 'No tienes permisos para realizar esta acción.',
+                instance: $_SERVER['REQUEST_URI']
+            );
+            return;
+        }
 
         header('Content-Type: application/json; charset=utf-8');
 

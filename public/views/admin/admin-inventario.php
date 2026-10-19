@@ -6,6 +6,9 @@
 
 define('ADMIN_LAYOUT_LOADED', true);
 
+$userRole = $_COOKIE['user_role'] ?? 'CLIENT';
+$canEdit = in_array($userRole, ['SUPER_ADMIN', 'MANAGER'], true);
+
 $pageTitle = 'Gestión de Inventario';
 $pageSubtitle = 'Control de productos, stock y movimientos del sistema de estética.';
 $activeModule = 'inventario';
@@ -69,10 +72,12 @@ ob_start();
 <div class="card" style="margin-bottom: 24px; padding: 20px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
         <h3 style="margin: 0; font-size: 1.15rem;">Filtros y Búsqueda</h3>
+        <?php if ($canEdit): ?>
         <div style="display: flex; gap: 8px;">
             <button type="button" class="btn btn--outline" onclick="abrirModalMovimiento()">Registrar Movimiento</button>
             <button type="button" class="btn btn--primary" onclick="abrirModalProducto()">+ Nuevo Producto</button>
         </div>
+        <?php endif; ?>
     </div>
 
     <div class="search-filter-bar">
@@ -109,11 +114,11 @@ ob_start();
                     <th>Precio Venta</th>
                     <th>Stock</th>
                     <th>Estado</th>
-                    <th style="text-align: center;">Acciones</th>
+                    <?php if ($canEdit): ?><th style="text-align: center;">Acciones</th><?php endif; ?>
                 </tr>
             </thead>
             <tbody id="tbody-productos">
-                <tr><td colspan="8" class="text-center text-muted p-4">Cargando productos...</td></tr>
+                <tr><td colspan="<?= $canEdit ? 8 : 7 ?>" class="text-center text-muted p-4">Cargando productos...</td></tr>
             </tbody>
         </table>
     </div>
@@ -356,10 +361,14 @@ function renderTablaProductos(productos) {
                 <td>$${parseFloat(p.unit_price).toFixed(2)}</td>
                 <td><strong>${stock}</strong></td>
                 <td><span class="badge-stock ${badgeClass}">${badgeText}</span></td>
+                <?php if ($canEdit): ?>
                 <td style="text-align: center;">
                     <button class="btn btn--outline" style="padding: 4px 8px; font-size: 0.8rem;" onclick='editarProducto(${JSON.stringify(p)})'>Editar</button>
                     <button class="btn" style="padding: 4px 8px; font-size: 0.8rem; background: #fee2e2; color: #991b1b; border: none;" onclick='eliminarProducto(${p.id})'>Eliminar</button>
                 </td>
+                <?php else: ?>
+                <td style="text-align: center;">-</td>
+                <?php endif; ?>
             </tr>
         `;
     });
