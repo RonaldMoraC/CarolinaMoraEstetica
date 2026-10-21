@@ -8,10 +8,15 @@
 
 define('ADMIN_LAYOUT_LOADED', true);
 
+use App\Infrastructure\Shared\Utils\AppPath;
+
+// Extraer rol de la cookie para validación perimetral anticipada
+$userRole = $_COOKIE['user_role'] ?? '';
+
 // Verificación de acceso estricta para Admin
-$isAdmin = isset($userRole) && ($userRole === 'SUPER_ADMIN' || $userRole === 'MANAGER');
+$isAdmin = ($userRole === 'SUPER_ADMIN' || $userRole === 'MANAGER');
 if (!$isAdmin) {
-    header('Location: ' . $basePath . '/admin/dashboard');
+    header('Location: ' . AppPath::url('/admin/dashboard'));
     exit;
 }
 

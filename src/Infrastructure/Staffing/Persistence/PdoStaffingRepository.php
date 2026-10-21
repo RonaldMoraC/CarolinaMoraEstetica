@@ -118,6 +118,25 @@ final class PdoStaffingRepository implements StaffingRepositoryInterface
         $stmt->execute();
     }
 
+    /**
+     * Bloqueo pesimista para prevenir concurrencia y overbooking en la malla horaria.
+     */
+    public function lockProfessionalWorkSchedule(int $professionalId, int $branchId, int $dayOfWeek): void
+    {
+        $sql = "SELECT work_schedule_id
+                FROM work_schedule
+                WHERE professional_profile_id = :prof_id
+                  AND branch_id = :branch_id
+                  AND day_of_week = :day_of_week
+                FOR UPDATE";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':prof_id', $professionalId, PDO::PARAM_INT);
+        $stmt->bindValue(':branch_id', $branchId, PDO::PARAM_INT);
+        $stmt->bindValue(':day_of_week', $dayOfWeek, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+
     public function getExceptionsInTimeRange(int $professionalId, string $startTimestamp, string $endTimestamp): array
     {
         // Dos rangos [A_start, A_end] y [B_start, B_end] se solapan si A_start < B_end y B_start < A_end
@@ -290,18 +309,5 @@ final class PdoStaffingRepository implements StaffingRepositoryInterface
         $stmt->execute();
     }
 
-    public function lockProfessionalWorkSchedule(int $professionalId, int $branchId, int $dayOfWeek): void
-    {
-        $sql = "SELECT work_schedule_id FROM work_schedule
-                WHERE professional_profile_id = :prof_id
-                  AND branch_id = :branch_id
-                  AND day_of_week = :day_of_week
-                FOR UPDATE";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->bindValue(':prof_id', $professionalId, PDO::PARAM_INT);
-        $stmt->bindValue(':branch_id', $branchId, PDO::PARAM_INT);
-        $stmt->bindValue(':day_of_week', $dayOfWeek, PDO::PARAM_INT);
-        $stmt->execute();
-    }
 }
 

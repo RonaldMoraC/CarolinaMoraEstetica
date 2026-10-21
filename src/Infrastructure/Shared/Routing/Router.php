@@ -5,6 +5,7 @@ namespace App\Infrastructure\Shared\Routing;
 
 use App\Infrastructure\Shared\Errors\GlobalExceptionHandler;
 use App\Infrastructure\Shared\Errors\Exceptions\NotFoundException;
+use App\Infrastructure\Shared\Utils\AppPath;
 
 /**
  * Router
@@ -410,13 +411,7 @@ final class Router
         // /CarolinaMoraEstetica/api/v1/... (sin /public/).
         $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
 
-        // Calcular baseDir como el directorio del proyecto (2 niveles arriba de index.php)
-        // /CarolinaMoraEstetica/public/index.php → /CarolinaMoraEstetica
-        $projectRoot = rtrim(dirname(dirname($scriptName)), '/\\');
-        // Fallback: si SCRIPT_NAME es solo /index.php (sin subdirectorios), no strippear nada.
-        if ($projectRoot === '/' || $projectRoot === '') {
-            $projectRoot = '';
-        }
+        $projectRoot = AppPath::getRoot();
 
         if ($projectRoot !== '' && str_starts_with($path, $projectRoot)) {
             $path = substr($path, strlen($projectRoot));

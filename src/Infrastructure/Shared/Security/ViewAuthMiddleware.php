@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Shared\Security;
 
+use App\Infrastructure\Shared\Utils\AppPath;
+
 /**
  * ViewAuthMiddleware
  * 
@@ -29,13 +31,7 @@ final class ViewAuthMiddleware
         $hasValidAuthHeader = !empty($authHeader) && str_starts_with($authHeader, 'Bearer ');
 
         if ((empty($token) || !in_array($role, $staffRoles, true)) && !$hasValidAuthHeader) {
-            // Determinar la raíz del proyecto para redirección absoluta limpia
-            $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
-            $projectRoot = rtrim(dirname(dirname($scriptName)), '/\\');
-            if ($projectRoot === '/' || $projectRoot === '') {
-                $projectRoot = '';
-            }
-            header('Location: ' . $projectRoot . '/login');
+            header('Location: ' . AppPath::url('/login'));
             exit;
         }
 
