@@ -15,25 +15,9 @@ class InventarioController
     private Producto $productoModel;
     private MovimientoInventario $movimientoModel;
 
-    public function __construct()
+    public function __construct(PDO $db)
     {
-        // Conexión centralizada de la base de datos
-        $dbPath = __DIR__ . '/../../../../database/connection.php';
-        if (file_exists($dbPath)) {
-            require_once $dbPath;
-            if (function_exists('getDBConnection')) {
-                $this->db = getDBConnection();
-            } else {
-                throw new Exception("Función getDBConnection no disponible.");
-            }
-        } else {
-            // Fallback usando PDO directo si existe config
-            $this->db = new PDO("mysql:host=localhost;dbname=carolina_mora_estetica;charset=utf8mb4", "root", "", [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-            ]);
-        }
-
+        $this->db = $db;
         $this->productoModel = new Producto($this->db);
         $this->movimientoModel = new MovimientoInventario($this->db);
     }

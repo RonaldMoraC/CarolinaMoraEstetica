@@ -56,63 +56,72 @@ class Producto
 
     public function obtenerPorId(int $id): ?array
     {
-        $stmt = $this->db->prepare("SELECT * FROM productos WHERE id = ?");
-        $stmt->execute([$id]);
+        $sql = "SELECT id, sku, name, description, category_id, brand_id, supplier_id, cost_price, unit_price, current_stock, minimum_stock, created_at, updated_at
+                FROM productos
+                WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
         $res = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $res ?: null;
+        return $res !== false ? $res : null;
     }
 
     public function crear(array $data): int
     {
         $sql = "INSERT INTO productos (sku, name, description, category_id, brand_id, supplier_id, cost_price, unit_price, current_stock, minimum_stock, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+                VALUES (:sku, :name, :description, :category_id, :brand_id, :supplier_id, :cost_price, :unit_price, :current_stock, :minimum_stock, NOW(), NOW())";
 
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([
-            $data['sku'] ?? null,
-            $data['name'],
-            $data['description'] ?? null,
-            $data['category_id'] ?? null,
-            $data['brand_id'] ?? null,
-            $data['supplier_id'] ?? null,
-            $data['cost_price'] ?? 0.00,
-            $data['unit_price'] ?? 0.00,
-            $data['current_stock'] ?? 0,
-            $data['minimum_stock'] ?? 5
-        ]);
+        $stmt->bindValue(':sku', $data['sku'] ?? null, PDO::PARAM_STR);
+        $stmt->bindValue(':name', $data['name'], PDO::PARAM_STR);
+        $stmt->bindValue(':description', $data['description'] ?? null, PDO::PARAM_STR);
+        $stmt->bindValue(':category_id', !empty($data['category_id']) ? (int)$data['category_id'] : null, PDO::PARAM_INT);
+        $stmt->bindValue(':brand_id', !empty($data['brand_id']) ? (int)$data['brand_id'] : null, PDO::PARAM_INT);
+        $stmt->bindValue(':supplier_id', !empty($data['supplier_id']) ? (int)$data['supplier_id'] : null, PDO::PARAM_INT);
+        $stmt->bindValue(':cost_price', (float)($data['cost_price'] ?? 0.00), PDO::PARAM_STR);
+        $stmt->bindValue(':unit_price', (float)($data['unit_price'] ?? 0.00), PDO::PARAM_STR);
+        $stmt->bindValue(':current_stock', (int)($data['current_stock'] ?? 0), PDO::PARAM_INT);
+        $stmt->bindValue(':minimum_stock', (int)($data['minimum_stock'] ?? 5), PDO::PARAM_INT);
+
+        $stmt->execute();
 
         return (int)$this->db->lastInsertId();
     }
 
     public function actualizar(int $id, array $data): bool
     {
-        $sql = "UPDATE productos SET sku = ?, name = ?, description = ?, category_id = ?, brand_id = ?, supplier_id = ?, cost_price = ?, unit_price = ?, minimum_stock = ?, updated_at = NOW() WHERE id = ?";
+        $sql = "UPDATE productos
+                SET sku = :sku, name = :name, description = :description, category_id = :category_id, brand_id = :brand_id, supplier_id = :supplier_id, cost_price = :cost_price, unit_price = :unit_price, minimum_stock = :minimum_stock, updated_at = NOW()
+                WHERE id = :id";
 
         $stmt = $this->db->prepare($sql);
-        return $stmt->execute([
-            $data['sku'] ?? null,
-            $data['name'],
-            $data['description'] ?? null,
-            $data['category_id'] ?? null,
-            $data['brand_id'] ?? null,
-            $data['supplier_id'] ?? null,
-            $data['cost_price'] ?? 0.00,
-            $data['unit_price'] ?? 0.00,
-            $data['minimum_stock'] ?? 5,
-            $id
-        ]);
+        $stmt->bindValue(':sku', $data['sku'] ?? null, PDO::PARAM_STR);
+        $stmt->bindValue(':name', $data['name'], PDO::PARAM_STR);
+        $stmt->bindValue(':description', $data['description'] ?? null, PDO::PARAM_STR);
+        $stmt->bindValue(':category_id', !empty($data['category_id']) ? (int)$data['category_id'] : null, PDO::PARAM_INT);
+        $stmt->bindValue(':brand_id', !empty($data['brand_id']) ? (int)$data['brand_id'] : null, PDO::PARAM_INT);
+        $stmt->bindValue(':supplier_id', !empty($data['supplier_id']) ? (int)$data['supplier_id'] : null, PDO::PARAM_INT);
+        $stmt->bindValue(':cost_price', (float)($data['cost_price'] ?? 0.00), PDO::PARAM_STR);
+        $stmt->bindValue(':unit_price', (float)($data['unit_price'] ?? 0.00), PDO::PARAM_STR);
+        $stmt->bindValue(':minimum_stock', (int)($data['minimum_stock'] ?? 5), PDO::PARAM_INT);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+
+        return $stmt->execute();
     }
 
     public function actualizarStock(int $id, int $nuevoStock): bool
     {
-        $stmt = $this->db->prepare("UPDATE productos SET current_stock = ?, updated_at = NOW() WHERE id = ?");
-        return $stmt->execute([$nuevoStock, $id]);
+        $stmt = $this->db->prepare("UPDATE productos SET current_stock = :stock, updated_at = NOW() WHERE id = :id");
+        $stmt->bindValue(':stock', $nuevoStock, PDO::PARAM_INT);
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        return $stmt->execute();
     }
 
     public function eliminar(int $id): bool
     {
-        $stmt = $this->db->prepare("DELETE FROM productos WHERE id = ?");
-        return $stmt->execute([$id]);
+        $stmt = $this->db->prepare("DELETE FROM productos WHERE id = :id");
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        return $stmt->execute();
     }
 
     public function obtenerMetricas(): array
