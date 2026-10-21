@@ -353,7 +353,7 @@ final class PdoAppointmentRepository implements AppointmentRepositoryInterface /
 
     public function getAppointmentsToday(): array
     {
-        $today = date('Y-m-d');
+        $today = (new \DateTimeImmutable('now', new \DateTimeZone('America/Bogota')))->format('Y-m-d');
         return $this->getAppointmentsForDateRange($today, $today);
     }
 }
