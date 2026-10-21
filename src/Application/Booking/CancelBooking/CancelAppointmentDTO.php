@@ -11,15 +11,18 @@ class CancelAppointmentDTO
 {
     public int $appointmentId;
     public int $userId;
+    public ?string $userRole;
     public ?string $reason;
 
     public function __construct(
-        int    $appointmentId,
-        int    $userId,
+        int     $appointmentId,
+        int     $userId,
+        ?string $userRole = null,
         ?string $reason = null
     ) {
         $this->appointmentId = $appointmentId;
         $this->userId = $userId;
+        $this->userRole = $userRole;
         $this->reason = $reason;
     }
 }

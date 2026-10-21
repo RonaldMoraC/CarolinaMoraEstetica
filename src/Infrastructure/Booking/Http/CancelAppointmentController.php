@@ -58,10 +58,11 @@ final class CancelAppointmentController
         }
 
         $userId = (int) $authUser['user_id'];
-        $reason = (string) ($_POST['reason'] ?? $_GET['reason'] ?? 'Cancelación solicitada por el cliente');
+        $userRole = (string) ($authUser['role'] ?? $authUser['user_role'] ?? 'CLIENT');
+        $reason = (string) ($_POST['reason'] ?? $_GET['reason'] ?? '');
 
         try {
-            $dto = new CancelAppointmentDTO($appointmentId, $userId, $reason);
+            $dto = new CancelAppointmentDTO($appointmentId, $userId, $userRole, $reason !== '' ? $reason : null);
             $result = $this->cancelUseCase->execute($dto);
 
             ResponseHelper::json(

@@ -52,8 +52,11 @@ class CancelAppointmentUseCase
             throw new NotFoundException("La cita #{$dto->appointmentId} no fue encontrada.");
         }
 
-        // 2. Validar pertenencia (ownership)
-        if (!$appointment->belongsToClient($dto->userId)) {
+        // 2. Validar pertenencia (ownership) o permisos de rol administrativo
+        $userRole = $dto->userRole ?? 'CLIENT';
+        $isStaff = in_array($userRole, ['SUPER_ADMIN', 'MANAGER', 'RECEPTIONIST'], true);
+
+        if (!$isStaff && !$appointment->belongsToClient($dto->userId)) {
             throw new DomainException("No tienes permisos para cancelar la cita #{$dto->appointmentId}. La cita pertenece a otro cliente.");
         }
 
@@ -65,33 +68,34 @@ class CancelAppointmentUseCase
             );
         }
 
-        // 4. Validar la regla de 24 horas de anticipación
-        $scheduledTimestamp = $appointment->getScheduledTimestamp();
-        $now = new DateTimeImmutable('now', new DateTimeZone('America/Bogota'));
+        // 4. Validar la regla de 24 horas de anticipación (Solo aplicable si cancela el cliente, staff tiene bypass)
+        if (!$isStaff) {
+            $scheduledTimestamp = $appointment->getScheduledTimestamp();
+            $now = new DateTimeImmutable('now', new DateTimeZone('America/Bogota'));
 
-        // Calcular la diferencia en segundos
-        $diffSeconds = $scheduledTimestamp->getTimestamp() - $now->getTimestamp();
-        $hoursRemaining = $diffSeconds / 3600;
+            // Calcular la diferencia en segundos
+            $diffSeconds = $scheduledTimestamp->getTimestamp() - $now->getTimestamp();
+            $hoursRemaining = $diffSeconds / 3600;
 
-        if ($hoursRemaining < 24) {
-            throw new DomainException(
-                "La cita #{$dto->appointmentId} no puede ser cancelada con menos de 24 horas de anticipación. " .
-                "Faltan " . round($hoursRemaining, 1) . " horas para la cita."
-            );
+            if ($hoursRemaining < 24) {
+                throw new DomainException(
+                    "La cita #{$dto->appointmentId} no puede ser cancelada con menos de 24 horas de anticipación. " .
+                    "Faltan " . round($hoursRemaining, 1) . " horas para la cita."
+                );
+            }
         }
+
+        $reason = $dto->reason ?? ($isStaff ? 'Cancelación administrativa' : 'Cancelación solicitada por el cliente');
 
         // 5. Ejecutar mutación en el repositorio
         $success = $this->appointmentRepo->cancel(
             $dto->appointmentId,
             $dto->userId,
-            $dto->reason ?? 'Cancelación solicitada por el cliente'
+            $reason
         );
 
         if ($success) {
-            // 6. Registrar Auditoría Forense (Skill 9)
-            // Se debe obtener el nuevo estado de la entidad para el log de auditoría
-            $updatedAppointment = $this->appointmentRepo->findById($dto->appointmentId);
-
+            // 6. Registrar Auditoría Forense (Skill 9) de forma optimizada
             $this->auditService->recordMutation(
                 actorId: $dto->userId,
                 action: 'APPOINTMENT_CANCELLED',
@@ -102,8 +106,8 @@ class CancelAppointmentUseCase
                     'status' => $appointment->getAppointmentStatus()
                 ],
                 newValues: [
-                    'appointment_id' => $updatedAppointment?->getAppointmentId(),
-                    'status' => $updatedAppointment?->getAppointmentStatus()
+                    'appointment_id' => $appointment->getAppointmentId(),
+                    'status' => 'CANCELLED'
                 ]
             );
         }
