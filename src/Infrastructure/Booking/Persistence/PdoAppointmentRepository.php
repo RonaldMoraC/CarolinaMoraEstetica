@@ -174,6 +174,24 @@ final class PdoAppointmentRepository implements AppointmentRepositoryInterface /
                 return false; // Cita no encontrada
             }
 
+            // Validar transiciones de estado permitidas (State Machine Guard)
+            $allowedTransitions = [
+                'PENDING'     => ['CONFIRMED', 'CANCELLED'],
+                'CONFIRMED'   => ['IN_PROGRESS', 'CANCELLED', 'NOSHOW'],
+                'IN_PROGRESS' => ['COMPLETED'],
+                'COMPLETED'   => [],
+                'CANCELLED'   => [],
+                'NOSHOW'      => [],
+            ];
+
+            if ($previousStatus !== $newStatus) {
+                $validNextStates = $allowedTransitions[$previousStatus] ?? [];
+                if (!in_array($newStatus, $validNextStates, true)) {
+                    $this->pdo->rollBack();
+                    throw new DomainException("Transición de estado inválida: no se puede cambiar de '{$previousStatus}' a '{$newStatus}'.");
+                }
+            }
+
             // Actualizar estado en appointment
             $updateSql = "UPDATE appointment SET appointment_status = :status, updated_at = NOW() WHERE appointment_id = :id";
             $updateStmt = $this->pdo->prepare($updateSql);
