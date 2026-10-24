@@ -140,9 +140,10 @@ $router->group('/api/v1/booking', function(Router $r) {
 }, [AuthMiddleware::class]);
 
 // Rutas Protegidas para Administración (/admin/*)
-// Metrics y Analytics: público para desarrollo, proteger con AuthMiddleware cuando login esté completo
-$router->get('/api/v1/admin/metrics', [AdminMetricsController::class, 'handle']);
-$router->get('/api/v1/admin/analytics', [AdminAnalyticsController::class, 'handle']);
+$router->group('/api/v1/admin', function(Router $r) {
+    $r->get('/metrics', [AdminMetricsController::class, 'handle']);
+    $r->get('/analytics', [AdminAnalyticsController::class, 'handle']);
+}, [AuthMiddleware::class]);
 
 // Rutas del Catálogo — Listado público (PWA + Admin), mutaciones protegidas
 $router->get('/api/v1/catalog/services', [BrowseCatalogController::class, 'handle']);

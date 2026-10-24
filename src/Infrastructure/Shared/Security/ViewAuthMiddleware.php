@@ -25,12 +25,22 @@ final class ViewAuthMiddleware
         $role = $_COOKIE['user_role'] ?? '';
         $staffRoles = ['SUPER_ADMIN', 'MANAGER', 'ESPECIALIST', 'RECEPCIONIST'];
 
-        // Si no hay cookies pero hay autorización en headers (por ejemplo, peticiones fetch con token), permitimos pasar
+        // Permitimos el paso si existe el header de autorización,
+        // asumiendo que el cliente validará el token en el frontend
         $headers = getallheaders();
         $authHeader = $headers['Authorization'] ?? $headers['X-Authorization'] ?? '';
-        $hasValidAuthHeader = !empty($authHeader) && str_starts_with($authHeader, 'Bearer ');
 
-        if ((empty($token) || !in_array($role, $staffRoles, true)) && !$hasValidAuthHeader) {
+        if (!empty($authHeader) && str_starts_with($authHeader, 'Bearer ')) {
+            $next($params);
+            return;
+        }
+
+        // Fallback a validación de cookies existente
+        $token = $_COOKIE['auth_token'] ?? '';
+        $role = $_COOKIE['user_role'] ?? '';
+        $staffRoles = ['SUPER_ADMIN', 'MANAGER', 'ESPECIALIST', 'RECEPCIONIST'];
+
+        if ((empty($token) || !in_array($role, $staffRoles, true))) {
             header('Location: ' . AppPath::url('/login'));
             exit;
         }
