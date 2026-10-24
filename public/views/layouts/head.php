@@ -1,10 +1,10 @@
-<?php declare(strict_types=1); ?>
+﻿<?php declare(strict_types=1); ?>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Montserrat:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
 
 <script>
-    // Configuración de Tailwind antes de la carga del script para evitar parpadeos y errores de contraste
+    // ConfiguraciÃ³n de Tailwind antes de la carga del script para evitar parpadeos y errores de contraste
     window.tailwind = {
         config: {
             darkMode: 'class',
@@ -12,11 +12,11 @@
                 extend: {
                     colors: {
                         brand: {
-                            gold: '#D4AF37',      /* Oro Clásico */
+                            gold: '#D4AF37',      /* Oro ClÃ¡sico */
                             goldDark: '#B8860B',  /* Oro Profundo */
                             goldLight: '#F1D37E', /* Oro Brillante */
                             silver: '#F1F5F9',    /* Gris Plata */
-                            charcoal: '#000',  /* Carbón */
+                            charcoal: '#000',  /* CarbÃ³n */
                             pureBlack: '#000', /* Negro Absoluto */
                         }
                     },
@@ -32,7 +32,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 
 <script>
-    // Lógica de Rutas y Seguridad
+    // LÃ³gica de Rutas y Seguridad
     (function() {
         const pathSegments = window.location.pathname.split('/');
         const publicIndex = pathSegments.indexOf('public');
@@ -60,7 +60,7 @@
         window.location.href = window.fullBaseUrl + '/login'; 
     };
     
-    // Función toggleTheme Centralizada
+    // FunciÃ³n toggleTheme Centralizada
     function toggleTheme() {
         const isDark = document.documentElement.classList.toggle('dark');
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
@@ -85,7 +85,7 @@
         }
     }
 
-    // Sincronización inicial
+    // SincronizaciÃ³n inicial
     document.addEventListener("DOMContentLoaded", syncThemeIcons);
 </script>
 
