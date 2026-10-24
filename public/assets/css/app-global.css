@@ -1,6 +1,6 @@
-/**
- * Sistema de Diseño Global - Panel Cliente (PWA)
- * Estética Carolina Mora - Antigravity v2.0
+﻿/**
+ * Sistema de DiseÃ±o Global - Panel Cliente (PWA)
+ * EstÃ©tica Carolina Mora - CarolinaMoraEstetica
  *
  * CSS modular, reutiliza variables de admin-global.css donde aplica.
  * Separado completamente del backend PHP y del JS.
@@ -328,3 +328,4 @@
 .dark .app-modal__close:hover {
     color: #fff;
 }
+
