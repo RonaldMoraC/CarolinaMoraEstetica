@@ -1,7 +1,7 @@
-<?php declare(strict_types=1);
+﻿<?php declare(strict_types=1);
 /**
- * Gestión de Inventario - Panel Administrativo
- * Estética Carolina Mora - Antigravity v2.0
+ * GestiÃ³n de Inventario - Panel Administrativo
+ * EstÃ©tica Carolina Mora - CarolinaMoraEstetica
  */
 
 define('ADMIN_LAYOUT_LOADED', true);
@@ -9,8 +9,8 @@ define('ADMIN_LAYOUT_LOADED', true);
 $userRole = $_COOKIE['user_role'] ?? 'CLIENT';
 $canEdit = in_array($userRole, ['SUPER_ADMIN', 'MANAGER'], true);
 
-$pageTitle = 'Gestión de Inventario';
-$pageSubtitle = 'Control de productos, stock y movimientos del sistema de estética.';
+$pageTitle = 'GestiÃ³n de Inventario';
+$pageSubtitle = 'Control de productos, stock y movimientos del sistema de estÃ©tica.';
 $activeModule = 'inventario';
 
 $extraCSS = <<<'CSS'
@@ -28,7 +28,7 @@ CSS;
 ob_start();
 ?>
 
-<!-- Métricas -->
+<!-- MÃ©tricas -->
 <div class="metrics-grid">
     <div class="metric-card">
         <div class="metric-icon" style="background: #E0F2FE; color: #0369A1;">
@@ -71,7 +71,7 @@ ob_start();
 <!-- Acciones Principales y Filtros -->
 <div class="card" style="margin-bottom: 24px; padding: 20px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
-        <h3 style="margin: 0; font-size: 1.15rem;">Filtros y Búsqueda</h3>
+        <h3 style="margin: 0; font-size: 1.15rem;">Filtros y BÃºsqueda</h3>
         <?php if ($canEdit): ?>
         <div style="display: flex; gap: 8px;">
             <button type="button" class="btn btn--outline" onclick="abrirModalMovimiento()">Registrar Movimiento</button>
@@ -83,7 +83,7 @@ ob_start();
     <div class="search-filter-bar">
         <input type="text" id="filtro-busqueda" class="form-control" placeholder="Buscar por nombre, SKU..." oninput="filtrarConDebounce()">
         <select id="filtro-categoria" class="form-control" onchange="cargarProductos()">
-            <option value="">Todas las categorías</option>
+            <option value="">Todas las categorÃ­as</option>
         </select>
         <select id="filtro-stock" class="form-control" onchange="cargarProductos()">
             <option value="">Todos los estados de stock</option>
@@ -95,7 +95,7 @@ ob_start();
     </div>
 </div>
 
-<!-- Pestañas -->
+<!-- PestaÃ±as -->
 <div style="display: flex; gap: 12px; margin-bottom: 16px; border-bottom: 2px solid var(--color-border, #e5e7eb);">
     <button type="button" id="tab-btn-productos" class="btn" style="background: none; border: none; border-bottom: 3px solid var(--color-primary, #0284c7); padding: 8px 16px; font-weight: 600; cursor: pointer;" onclick="cambiarTab('productos')">Lista de Productos</button>
     <button type="button" id="tab-btn-movimientos" class="btn" style="background: none; border: none; border-bottom: 3px solid transparent; padding: 8px 16px; font-weight: 600; cursor: pointer; color: #6b7280;" onclick="cambiarTab('movimientos')">Historial de Movimientos</button>
@@ -109,7 +109,7 @@ ob_start();
                 <tr>
                     <th>SKU</th>
                     <th>Producto</th>
-                    <th>Categoría</th>
+                    <th>CategorÃ­a</th>
                     <th>Costo</th>
                     <th>Precio Venta</th>
                     <th>Stock</th>
@@ -135,7 +135,7 @@ ob_start();
                     <th>Producto</th>
                     <th>Tipo de Movimiento</th>
                     <th>Cantidad</th>
-                    <th>Razón / Notas</th>
+                    <th>RazÃ³n / Notas</th>
                     <th>Usuario</th>
                 </tr>
             </thead>
@@ -155,7 +155,7 @@ ob_start();
             <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 12px; margin-bottom: 12px;">
                 <div>
                     <label class="form-label">SKU</label>
-                    <input type="text" id="sku" class="form-control" placeholder="Automático">
+                    <input type="text" id="sku" class="form-control" placeholder="AutomÃ¡tico">
                 </div>
                 <div>
                     <label class="form-label">Nombre del Producto *</label>
@@ -163,12 +163,12 @@ ob_start();
                 </div>
             </div>
             <div style="margin-bottom: 12px;">
-                <label class="form-label">Descripción</label>
+                <label class="form-label">DescripciÃ³n</label>
                 <textarea id="inv_description" class="form-control" rows="2" placeholder="Detalles..."></textarea>
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
                 <div>
-                    <label class="form-label">Categoría</label>
+                    <label class="form-label">CategorÃ­a</label>
                     <select id="category_id" class="form-control"></select>
                 </div>
                 <div>
@@ -192,7 +192,7 @@ ob_start();
                     <input type="number" id="current_stock" class="form-control" value="0" required>
                 </div>
                 <div>
-                    <label class="form-label">Stock Mínimo Alerta</label>
+                    <label class="form-label">Stock MÃ­nimo Alerta</label>
                     <input type="number" id="minimum_stock" class="form-control" value="5" required>
                 </div>
             </div>
@@ -219,7 +219,7 @@ ob_start();
                     <option value="ENTRADA_COMPRA">ENTRADA / COMPRA (+)</option>
                     <option value="SALIDA_VENTA">SALIDA / VENTA (-)</option>
                     <option value="CONSUMO_INTERNO">CONSUMO INTERNO (-)</option>
-                    <option value="MERMA">MERMA / DAÑO (-)</option>
+                    <option value="MERMA">MERMA / DAÃ‘O (-)</option>
                     <option value="AJUSTE">AJUSTE DE INVENTARIO (+)</option>
                 </select>
             </div>
@@ -228,7 +228,7 @@ ob_start();
                 <input type="number" min="1" id="quantity" class="form-control" value="1" required>
             </div>
             <div style="margin-bottom: 20px;">
-                <label class="form-label">Razón / Notas</label>
+                <label class="form-label">RazÃ³n / Notas</label>
                 <textarea id="reason" class="form-control" rows="2" placeholder="Motivo del movimiento..."></textarea>
             </div>
             <div style="display: flex; justify-content: flex-end; gap: 8px;">
@@ -262,7 +262,7 @@ async function cargarCatalogosIniciales() {
             poblarSelectSelectMovimiento(data.categories); // fallback
         }
     } catch (err) {
-        console.error('Error cargando catálogos:', err);
+        console.error('Error cargando catÃ¡logos:', err);
     }
 }
 
@@ -317,7 +317,7 @@ function poblarFiltroCategorias(productos) {
             cats[p.category_id] = p.categoria_nombre;
         }
     });
-    let html = '<option value="">Todas las categorías</option>';
+    let html = '<option value="">Todas las categorÃ­as</option>';
     for (const [id, name] of Object.entries(cats)) {
         html += `<option value="${id}" ${valorActual == id ? 'selected' : ''}>${name}</option>`;
     }
@@ -523,7 +523,7 @@ async function guardarProducto(e) {
 }
 
 async function eliminarProducto(id) {
-    if (!confirm('¿Estás seguro de eliminar este producto?')) return;
+    if (!confirm('Â¿EstÃ¡s seguro de eliminar este producto?')) return;
     try {
         const resp = await fetch(`${API_URL}?action=eliminar_producto&id=${id}`, {
             method: 'DELETE'
@@ -578,3 +578,4 @@ async function guardarMovimiento(e) {
 JS;
 
 require __DIR__ . '/../layouts/admin-layout.php';
+

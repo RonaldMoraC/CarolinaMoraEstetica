@@ -1,18 +1,18 @@
-<?php declare(strict_types=1);
+﻿<?php declare(strict_types=1);
 /**
- * Configuración de Horarios - Panel Administrativo
- * Estética Carolina Mora - Antigravity v2.0
+ * ConfiguraciÃ³n de Horarios - Panel Administrativo
+ * EstÃ©tica Carolina Mora - CarolinaMoraEstetica
  *
- * Gestión de jornadas laborales por profesional.
+ * GestiÃ³n de jornadas laborales por profesional.
  */
 
 define('ADMIN_LAYOUT_LOADED', true);
 
-$pageTitle = 'Configuración de Horarios';
+$pageTitle = 'ConfiguraciÃ³n de Horarios';
 $pageSubtitle = 'Establezca y modifique las jornadas laborables y de descanso de cada profesional.';
 $activeModule = 'horarios';
 
-// CSS específico
+// CSS especÃ­fico
 $extraCSS = <<<CSS
 .day-item {
     display: flex;
@@ -54,26 +54,26 @@ ob_start();
                 <option value="" disabled selected>-- Seleccione un miembro del personal --</option>
             </select>
         </div>
-        <p class="form-hint">💡 Al cambiar de profesional, se cargarán sus configuraciones de días vigentes.</p>
+        <p class="form-hint">ðŸ’¡ Al cambiar de profesional, se cargarÃ¡n sus configuraciones de dÃ­as vigentes.</p>
 
-        <!-- Sección de excepciones de agenda -->
+        <!-- SecciÃ³n de excepciones de agenda -->
         <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--color-border);">
             <h3 class="card__title">2. Excepciones de Agenda</h3>
             <p class="form-hint mb-3">Registre vacaciones, incapacidades o cierres especiales.</p>
             <button class="btn btn--outline btn--block" onclick="abrirModalExcepcion()">
-                ➕ Agregar Excepción
+                âž• Agregar ExcepciÃ³n
             </button>
             <div id="listaExcepciones" style="margin-top: 16px;"></div>
         </div>
     </section>
 
-    <!-- Definición de jornada semanal -->
+    <!-- DefiniciÃ³n de jornada semanal -->
     <section class="card" style="flex: 2;">
         <h3 class="card__title">3. Definir Jornada Semanal</h3>
-        <p class="text-muted mb-4">Marque los días activos y asigne la hora de apertura y cierre.</p>
+        <p class="text-muted mb-4">Marque los dÃ­as activos y asigne la hora de apertura y cierre.</p>
 
         <div id="daysList" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
-            <!-- Días generados por JS -->
+            <!-- DÃ­as generados por JS -->
         </div>
 
         <div class="text-center">
@@ -88,7 +88,7 @@ ob_start();
 <div class="modal-overlay" id="modalExcepcion">
     <div class="modal">
         <div class="modal__header">
-            <h3 class="modal__title">Agregar Excepción de Agenda</h3>
+            <h3 class="modal__title">Agregar ExcepciÃ³n de Agenda</h3>
             <button class="modal__close" onclick="cerrarModalExcepcion()">&times;</button>
         </div>
         <div class="modal__body">
@@ -116,20 +116,20 @@ ob_start();
 <?php
 $pageContent = ob_get_clean();
 
-// JS específico
+// JS especÃ­fico
 $extraJS = <<<JS
 function initHorarios() {
     var api    = window.adminApi;
     var alerts = window.adminAlerts;
 
-    // Días de la semana (0 = Domingo, 1 = Lunes, etc.)
+    // DÃ­as de la semana (0 = Domingo, 1 = Lunes, etc.)
     var DIAS_SEMANA = [
         { key: 'lunes',     label: 'Lunes',                dayOfWeek: 1 },
         { key: 'martes',    label: 'Martes',               dayOfWeek: 2 },
-        { key: 'miercoles', label: 'Miércoles',            dayOfWeek: 3 },
+        { key: 'miercoles', label: 'MiÃ©rcoles',            dayOfWeek: 3 },
         { key: 'jueves',    label: 'Jueves',               dayOfWeek: 4 },
         { key: 'viernes',   label: 'Viernes',              dayOfWeek: 5 },
-        { key: 'sabado',    label: 'Sábado',               dayOfWeek: 6 },
+        { key: 'sabado',    label: 'SÃ¡bado',               dayOfWeek: 6 },
         { key: 'domingo',   label: 'Domingo (No Laborable)', dayOfWeek: 0 },
     ];
 
@@ -137,7 +137,7 @@ function initHorarios() {
     var horariosActuales = {};
 
     /* ------------------------------------------------------------------
-     * toggleDia — Habilita/deshabilita los inputs de tiempo de un día
+     * toggleDia â€” Habilita/deshabilita los inputs de tiempo de un dÃ­a
      * ------------------------------------------------------------------ */
     window.toggleDia = function(key) {
         var chk   = document.getElementById('check-' + key);
@@ -148,7 +148,7 @@ function initHorarios() {
         item.classList.toggle('day-item--disabled', !chk.checked);
     };
 
-    // Inicializar días y cargar profesionales
+    // Inicializar dÃ­as y cargar profesionales
     renderDias();
     cargarProfesionales();
 
@@ -157,7 +157,7 @@ function initHorarios() {
     });
 
     /* ------------------------------------------------------------------
-     * renderDias — Construye la grilla de días usando métodos DOM puros
+     * renderDias â€” Construye la grilla de dÃ­as usando mÃ©todos DOM puros
      * ------------------------------------------------------------------ */
     function renderDias() {
         var container = document.getElementById('daysList');
@@ -218,7 +218,7 @@ function initHorarios() {
     }
 
     /* ------------------------------------------------------------------
-     * cargarProfesionales — Llena el <select> desde la API REST
+     * cargarProfesionales â€” Llena el <select> desde la API REST
      * ------------------------------------------------------------------ */
     function cargarProfesionales() {
         var select = document.getElementById('profesionalSelect');
@@ -238,11 +238,11 @@ function initHorarios() {
                         var opt = document.createElement('option');
                         opt.value       = p.professional_profile_id;
                         opt.textContent = p.first_name + ' ' + p.last_name
-                                        + ' — ' + (p.public_biography || 'Esteticista');
+                                        + ' â€” ' + (p.public_biography || 'Esteticista');
                         select.appendChild(opt);
                     });
 
-                    // Seleccionar automáticamente el primer profesional para mejorar la UX inicial
+                    // Seleccionar automÃ¡ticamente el primer profesional para mejorar la UX inicial
                     if (profesionales.length > 0) {
                         select.value = profesionales[0].professional_profile_id;
                         cargarHorariosProfesional(select.value);
@@ -261,13 +261,13 @@ function initHorarios() {
     function usarProfesionalesFallback(select) {
         profesionales = [
             { professional_profile_id: 1, first_name: 'Carolina', last_name: 'Mora',  public_biography: 'Estilista Principal'     },
-            { professional_profile_id: 2, first_name: 'Andrea',   last_name: 'Gómez', public_biography: 'Especialista en Uñas'    },
+            { professional_profile_id: 2, first_name: 'Andrea',   last_name: 'GÃ³mez', public_biography: 'Especialista en UÃ±as'    },
         ];
         profesionales.forEach(function(p) {
             var opt = document.createElement('option');
             opt.value       = p.professional_profile_id;
             opt.textContent = p.first_name + ' ' + p.last_name
-                            + ' — ' + (p.public_biography || 'Esteticista');
+                            + ' â€” ' + (p.public_biography || 'Esteticista');
             select.appendChild(opt);
         });
 
@@ -279,7 +279,7 @@ function initHorarios() {
     }
 
     /* ------------------------------------------------------------------
-     * cargarHorariosProfesional — Carga los horarios del profesional
+     * cargarHorariosProfesional â€” Carga los horarios del profesional
      * ------------------------------------------------------------------ */
     function cargarHorariosProfesional(profesionalId) {
         if (!api) { usarHorariosFallback(); return; }
@@ -316,7 +316,7 @@ function initHorarios() {
     }
 
     /* ------------------------------------------------------------------
-     * aplicarHorariosDesdeAPI — Refleja los datos en el formulario
+     * aplicarHorariosDesdeAPI â€” Refleja los datos en el formulario
      * ------------------------------------------------------------------ */
     function aplicarHorariosDesdeAPI(horarios) {
         horariosActuales = {};
@@ -337,7 +337,7 @@ function initHorarios() {
     }
 
     /* ------------------------------------------------------------------
-     * guardarHorarios — Persiste la jornada semanal en el servidor
+     * guardarHorarios â€” Persiste la jornada semanal en el servidor
      * ------------------------------------------------------------------ */
     window.guardarHorarios = function(btnGuardar) {
         var profesionalId = document.getElementById('profesionalSelect').value;
@@ -380,7 +380,7 @@ function initHorarios() {
         };
 
         if (!api) {
-            alerts.success('Horarios guardados. (modo simulación)');
+            alerts.success('Horarios guardados. (modo simulaciÃ³n)');
             btnGuardar.disabled = false;
             btnGuardar.textContent = textoOriginal;
             return;
@@ -422,7 +422,7 @@ function initHorarios() {
         var descripcion = document.getElementById('excDescripcion').value.trim();
 
         if (!fecha || !descripcion) {
-            alerts.error('Complete todos los campos de la excepción.');
+            alerts.error('Complete todos los campos de la excepciÃ³n.');
             return;
         }
 
@@ -434,18 +434,18 @@ function initHorarios() {
         };
 
         if (!api) {
-            alerts.success('Excepción registrada para el ' + fecha + '. (modo simulación)');
+            alerts.success('ExcepciÃ³n registrada para el ' + fecha + '. (modo simulaciÃ³n)');
             cerrarModalExcepcion();
             return;
         }
 
         api.post('/staffing/exceptions', payload)
             .then(function() {
-                alerts.success('Excepción registrada para el ' + fecha + '.');
+                alerts.success('ExcepciÃ³n registrada para el ' + fecha + '.');
                 cerrarModalExcepcion();
             })
             .catch(function(err) {
-                alerts.error(err.message || 'Error al registrar la excepción.');
+                alerts.error(err.message || 'Error al registrar la excepciÃ³n.');
             });
     };
 
@@ -457,7 +457,7 @@ function initHorarios() {
     }
 }
 
-// Arrancar cuando AdminApp esté listo
+// Arrancar cuando AdminApp estÃ© listo
 if (window.adminApi) {
     initHorarios();
 } else {
@@ -466,3 +466,4 @@ if (window.adminApi) {
 JS;
 
 require_once __DIR__ . '/../layouts/admin-layout.php';
+

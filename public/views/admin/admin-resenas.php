@@ -1,25 +1,25 @@
-<?php declare(strict_types=1);
+﻿<?php declare(strict_types=1);
 /**
- * Gestión de Reseñas - Panel Administrativo
- * Estética Carolina Mora - Antigravity v2.0
+ * GestiÃ³n de ReseÃ±as - Panel Administrativo
+ * EstÃ©tica Carolina Mora - CarolinaMoraEstetica
  *
- * Visualización y moderación de calificaciones y comentarios de clientes.
+ * VisualizaciÃ³n y moderaciÃ³n de calificaciones y comentarios de clientes.
  */
 
 define('ADMIN_LAYOUT_LOADED', true);
 
-// Autorización: Tanto ADMIN como RECEPCIONIST pueden ver reseñas.
+// AutorizaciÃ³n: Tanto ADMIN como RECEPCIONIST pueden ver reseÃ±as.
 $canView = isset($userRole) && in_array($userRole, ['SUPER_ADMIN', 'MANAGER', 'RECEPCIONIST', '1']);
 if (!$canView) {
     header('Location: /CarolinaMoraEstetica/admin/dashboard');
     exit;
 }
 
-// Acción de moderación limitada a roles administrativos
+// AcciÃ³n de moderaciÃ³n limitada a roles administrativos
 $canModerate = isset($userRole) && in_array($userRole, ['SUPER_ADMIN', 'MANAGER']);
 
-$pageTitle = 'Reseñas de Clientes';
-$pageSubtitle = 'Revise los testimonios, comentarios y el puntaje de satisfacción asignado por sus usuarios.';
+$pageTitle = 'ReseÃ±as de Clientes';
+$pageSubtitle = 'Revise los testimonios, comentarios y el puntaje de satisfacciÃ³n asignado por sus usuarios.';
 $activeModule = 'resenas';
 
 $extraCSS = <<<CSS
@@ -48,7 +48,7 @@ $extraCSS = <<<CSS
     color: #f1c40f;
     letter-spacing: 3px;
 }
-.reseña-comment {
+.reseÃ±a-comment {
     font-style: italic;
     color: var(--color-text-muted);
     font-weight: 500;
@@ -62,20 +62,20 @@ ob_start();
 <!-- Resumen de calificaciones -->
 <section class="rating-summary">
     <div class="card rating-summary-card">
-        <div class="metric-card__label">Calificación Global</div>
+        <div class="metric-card__label">CalificaciÃ³n Global</div>
         <div class="big-score" id="ratingGlobal">0.0</div>
         <div class="stars-big" id="starsGlobal"></div>
-        <small class="text-muted"><span id="totalResenas">0</span> reseñas totales</small>
+        <small class="text-muted"><span id="totalResenas">0</span> reseÃ±as totales</small>
     </div>
     <div class="card rating-summary-card">
-        <div class="metric-card__label">Reseñas este Mes</div>
+        <div class="metric-card__label">ReseÃ±as este Mes</div>
         <div class="big-score" id="resenasMes">0</div>
-        <div class="metric-card__trend text-success" id="resenasMesTrend">—</div>
+        <div class="metric-card__trend text-success" id="resenasMesTrend">â€”</div>
     </div>
     <div class="card rating-summary-card">
-        <div class="metric-card__label">Satisfacción 5★</div>
+        <div class="metric-card__label">SatisfacciÃ³n 5â˜…</div>
         <div class="big-score" id="porcentaje5">0%</div>
-        <div class="metric-card__trend" style="color:#f1c40f;">⭐ Clientes muy satisfechos</div>
+        <div class="metric-card__trend" style="color:#f1c40f;">â­ Clientes muy satisfechos</div>
     </div>
 </section>
 
@@ -98,7 +98,7 @@ ob_start();
     </div>
 </div>
 
-<!-- Tabla de reseñas -->
+<!-- Tabla de reseÃ±as -->
 <section class="card">
     <div class="table-container">
         <table class="table">
@@ -107,13 +107,13 @@ ob_start();
                     <th>Cliente</th>
                     <th>Profesional</th>
                     <th>Servicio</th>
-                    <th>Calificación</th>
+                    <th>CalificaciÃ³n</th>
                     <th style="width:35%;">Comentario</th>
-                    <th style="text-align:center;">Acción</th>
+                    <th style="text-align:center;">AcciÃ³n</th>
                 </tr>
             </thead>
             <tbody id="tablaResenas">
-                <tr><td colspan="6" class="text-center text-muted p-5">Cargando reseñas...</td></tr>
+                <tr><td colspan="6" class="text-center text-muted p-5">Cargando reseÃ±as...</td></tr>
             </tbody>
         </table>
     </div>
@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const api = window.adminApi;
     const alerts = window.adminAlerts;
 
-    let reseñas = [];
+    let reseÃ±as = [];
     let todosResenas = [];
 
     // Cargar datos
@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     todosResenas = res.data.ratings;
                     renderResumen(res.data.summary);
                     cargarProfesionalesEnFiltro(res.data.professionals);
-                    reseñas = [...todosResenas];
+                    reseÃ±as = [...todosResenas];
                     renderResenas();
                     return;
                 }
@@ -156,11 +156,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Datos simulados
         todosResenas = [
-            { rating_id: 1, client_name: 'Diana Restrepo', professional_name: 'Carolina Mora', service_name: 'Corte de Cabello', score: 5, comments: '¡Excelente atención! El corte quedó idéntico a la referencia. Súper recomendada.', is_visible: 1, created_at: '2026-06-10' },
-            { rating_id: 2, client_name: 'Milena Castro', professional_name: 'Andrea Gómez', service_name: 'Manicure Premium', score: 4, comments: 'Muy buen manicure, los materiales son de excelente calidad. Volveré pronto.', is_visible: 1, created_at: '2026-06-09' },
-            { rating_id: 3, client_name: 'Carlos Pérez', professional_name: 'Carolina Mora', service_name: 'Limpieza Facial', score: 5, comments: 'La limpieza facial fue muy profesional. El ambiente de la estética es impecable.', is_visible: 1, created_at: '2026-06-08' },
-            { rating_id: 4, client_name: 'Sandra Muñoz', professional_name: 'Carolina Mora', service_name: 'Balayage', score: 5, comments: 'El balayage quedó espectacular, exactamente como lo pedí.', is_visible: 1, created_at: '2026-06-07' },
-            { rating_id: 5, client_name: 'Patricia Ortiz', professional_name: 'Andrea Gómez', service_name: 'Pedicure Spa', score: 3, comments: 'El servicio estuvo bien, pero hubo un poco de demora en la atención.', is_visible: 1, created_at: '2026-06-06' },
+            { rating_id: 1, client_name: 'Diana Restrepo', professional_name: 'Carolina Mora', service_name: 'Corte de Cabello', score: 5, comments: 'Â¡Excelente atenciÃ³n! El corte quedÃ³ idÃ©ntico a la referencia. SÃºper recomendada.', is_visible: 1, created_at: '2026-06-10' },
+            { rating_id: 2, client_name: 'Milena Castro', professional_name: 'Andrea GÃ³mez', service_name: 'Manicure Premium', score: 4, comments: 'Muy buen manicure, los materiales son de excelente calidad. VolverÃ© pronto.', is_visible: 1, created_at: '2026-06-09' },
+            { rating_id: 3, client_name: 'Carlos PÃ©rez', professional_name: 'Carolina Mora', service_name: 'Limpieza Facial', score: 5, comments: 'La limpieza facial fue muy profesional. El ambiente de la estÃ©tica es impecable.', is_visible: 1, created_at: '2026-06-08' },
+            { rating_id: 4, client_name: 'Sandra MuÃ±oz', professional_name: 'Carolina Mora', service_name: 'Balayage', score: 5, comments: 'El balayage quedÃ³ espectacular, exactamente como lo pedÃ­.', is_visible: 1, created_at: '2026-06-07' },
+            { rating_id: 5, client_name: 'Patricia Ortiz', professional_name: 'Andrea GÃ³mez', service_name: 'Pedicure Spa', score: 3, comments: 'El servicio estuvo bien, pero hubo un poco de demora en la atenciÃ³n.', is_visible: 1, created_at: '2026-06-06' },
         ];
 
         renderResumen({
@@ -172,10 +172,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         cargarProfesionalesEnFiltro([
             { id: 1, nombre: 'Carolina Mora' },
-            { id: 2, nombre: 'Andrea Gómez' },
+            { id: 2, nombre: 'Andrea GÃ³mez' },
         ]);
 
-        reseñas = [...todosResenas];
+        reseÃ±as = [...todosResenas];
         renderResenas();
     }
 
@@ -184,7 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('starsGlobal').textContent = generarEstrellas(Math.round(summary.rating_promedio ?? 0));
         document.getElementById('totalResenas').textContent = summary.total_resenas ?? 0;
         document.getElementById('resenasMes').textContent = summary.resenas_mes ?? 0;
-        document.getElementById('resenasMesTrend').textContent = summary.resenas_mes > 0 ? '▲ Nuevas reseñas este mes' : 'Sin actividad';
+        document.getElementById('resenasMesTrend').textContent = summary.resenas_mes > 0 ? 'â–² Nuevas reseÃ±as este mes' : 'Sin actividad';
         document.getElementById('porcentaje5').textContent = \`\${summary.porcentaje_5 ?? 0}%\`;
     }
 
@@ -201,18 +201,18 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderResenas() {
         const tbody = document.getElementById('tablaResenas');
 
-        if (!reseñas.length) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted p-5">No hay reseñas que coincidan con los filtros.</td></tr>';
+        if (!reseÃ±as.length) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted p-5">No hay reseÃ±as que coincidan con los filtros.</td></tr>';
             return;
         }
 
-        tbody.innerHTML = reseñas.filter(r => r.is_visible !== 0).map(r => \`
+        tbody.innerHTML = reseÃ±as.filter(r => r.is_visible !== 0).map(r => \`
             <tr id="resena-row-\${r.rating_id}">
                 <td class="fw-bold">\${escapeHtml(r.client_name)}</td>
                 <td>\${escapeHtml(r.professional_name)}</td>
                 <td>\${escapeHtml(r.service_name)}</td>
                 <td><span class="stars">\${generarEstrellas(r.score)}</span></td>
-                <td class="reseña-comment">"\${escapeHtml(r.comments)}"</td>
+                <td class="reseÃ±a-comment">"\${escapeHtml(r.comments)}"</td>
                 <td style="text-align:center;">
                     <button class="btn btn--outline-danger btn--sm" onclick="ocultarResena(\${r.rating_id})">Ocultar</button>
                 </td>
@@ -223,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function generarEstrellas(score) {
         let s = '';
         for (let i = 1; i <= 5; i++) {
-            s += i <= score ? '★' : '☆';
+            s += i <= score ? 'â˜…' : 'â˜†';
         }
         return s;
     }
@@ -232,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const prof = document.getElementById('filtroProfesional').value;
         const estrellas = document.getElementById('filtroEstrellas').value;
 
-        reseñas = todosResenas.filter(r => {
+        reseÃ±as = todosResenas.filter(r => {
             const matchProf = prof === 'todos' || r.professional_name === prof;
             const matchEst = estrellas === 'todos' || r.score === parseInt(estrellas);
             return matchProf && matchEst;
@@ -242,27 +242,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.ocultarResena = async function(id) {
-        if (!confirm('¿Desea ocultar este comentario de la vista pública? Permanecerá visible solo en auditorías.')) return;
+        if (!confirm('Â¿Desea ocultar este comentario de la vista pÃºblica? PermanecerÃ¡ visible solo en auditorÃ­as.')) return;
 
         try {
             if (api) {
                 const res = await api.patch(\`/crm/ratings/\${id}/hide\`);
                 if (res.success) {
-                    alerts.success('Comentario ocultado de la vista pública.');
-                    reseñas = reseñas.filter(r => r.rating_id !== id);
+                    alerts.success('Comentario ocultado de la vista pÃºblica.');
+                    reseÃ±as = reseÃ±as.filter(r => r.rating_id !== id);
                     todosResenas = todosResenas.filter(r => r.rating_id !== id);
                     renderResenas();
                     return;
                 }
             }
 
-            // Simulación
-            reseñas = reseñas.filter(r => r.rating_id !== id);
+            // SimulaciÃ³n
+            reseÃ±as = reseÃ±as.filter(r => r.rating_id !== id);
             todosResenas = todosResenas.filter(r => r.rating_id !== id);
             renderResenas();
-            alerts.success('Comentario ocultado (modo simulación).');
+            alerts.success('Comentario ocultado (modo simulaciÃ³n).');
         } catch (error) {
-            alerts.error(error.message || 'Error al ocultar la reseña.');
+            alerts.error(error.message || 'Error al ocultar la reseÃ±a.');
         }
     };
 
@@ -276,3 +276,4 @@ document.addEventListener('DOMContentLoaded', () => {
 JS;
 
 require_once __DIR__ . '/../layouts/admin-layout.php';
+

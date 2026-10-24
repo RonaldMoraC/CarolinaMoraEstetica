@@ -1,19 +1,19 @@
-<?php declare(strict_types=1);
+﻿<?php declare(strict_types=1);
 /**
  * Control de Usuarios y Roles - Panel Administrativo
- * Estética Carolina Mora - Antigravity v2.0
+ * EstÃ©tica Carolina Mora - CarolinaMoraEstetica
  *
- * Administración de niveles de autorización y RBAC para el personal.
+ * AdministraciÃ³n de niveles de autorizaciÃ³n y RBAC para el personal.
  */
 
 define('ADMIN_LAYOUT_LOADED', true);
 
 use App\Infrastructure\Shared\Utils\AppPath;
 
-// Extraer rol de la cookie para validación perimetral anticipada
+// Extraer rol de la cookie para validaciÃ³n perimetral anticipada
 $userRole = $_COOKIE['user_role'] ?? '';
 
-// Verificación de acceso estricta para Admin
+// VerificaciÃ³n de acceso estricta para Admin
 $isAdmin = ($userRole === 'SUPER_ADMIN' || $userRole === 'MANAGER');
 if (!$isAdmin) {
     header('Location: ' . AppPath::url('/admin/dashboard'));
@@ -21,7 +21,7 @@ if (!$isAdmin) {
 }
 
 $pageTitle = 'Control de Usuarios y Roles';
-$pageSubtitle = 'Administre los niveles de autorización y el acceso a módulos para el personal de la estética.';
+$pageSubtitle = 'Administre los niveles de autorizaciÃ³n y el acceso a mÃ³dulos para el personal de la estÃ©tica.';
 $activeModule = 'usuarios';
 
 $extraCSS = <<<CSS
@@ -109,7 +109,7 @@ ob_start();
 <section class="card">
     <div class="d-flex justify-between align-center" style="margin-bottom:16px;">
         <h3 class="card__title" style="margin:0;border:none;padding:0;">Personal del Sistema</h3>
-        <button class="btn btn--primary" onclick="abrirModalNuevoUsuario()">➕ Nuevo Usuario</button>
+        <button class="btn btn--primary" onclick="abrirModalNuevoUsuario()">âž• Nuevo Usuario</button>
     </div>
     <div class="table-container">
         <table class="table">
@@ -145,17 +145,17 @@ ob_start();
                     <input type="text" id="inputNombre" class="form-control" required maxlength="200">
                 </div>
                 <div class="form-group">
-                    <label for="inputEmail" class="form-label">Correo Electrónico</label>
+                    <label for="inputEmail" class="form-label">Correo ElectrÃ³nico</label>
                     <input type="email" id="inputEmail" class="form-control" required>
                 </div>
                 <div class="form-group">
-                    <label for="inputPhone" class="form-label">Teléfono (WhatsApp)</label>
+                    <label for="inputPhone" class="form-label">TelÃ©fono (WhatsApp)</label>
                     <input type="tel" id="inputPhone" class="form-control" required placeholder="+573000000000">
                 </div>
                 <div class="form-group" id="groupPassword">
-                    <label for="inputPassword" class="form-label">Contraseña</label>
+                    <label for="inputPassword" class="form-label">ContraseÃ±a</label>
                     <input type="password" id="inputPassword" class="form-control" minlength="8" autocomplete="new-password">
-                    <span class="form-hint">Mínimo 8 caracteres. Dejar vacío para no cambiar.</span>
+                    <span class="form-hint">MÃ­nimo 8 caracteres. Dejar vacÃ­o para no cambiar.</span>
                 </div>
                 <div class="form-group">
                     <label for="inputRol" class="form-label">Asignar Rol</label>
@@ -164,7 +164,7 @@ ob_start();
                         <option value="SUPER_ADMIN">Administrador Global</option>
                         <option value="BRANCH_ADMIN">Administrador de Sucursal</option>
                         <option value="RECEPCIONIST">Recepcionista</option>
-                        <option value="PROFESSIONAL">Especialista Técnico</option>
+                        <option value="PROFESSIONAL">Especialista TÃ©cnico</option>
                         <option value="CLIENT">Cliente</option>
                     </select>
                 </div>
@@ -182,18 +182,18 @@ ob_start();
     </div>
 </div>
 
-<!-- Modal para habilidades técnicas (Staff) -->
+<!-- Modal para habilidades tÃ©cnicas (Staff) -->
 <div class="modal-overlay" id="modalHabilidades">
     <div class="modal">
         <div class="modal__header">
-            <h3 class="modal__title">Habilidades Técnicas</h3>
+            <h3 class="modal__title">Habilidades TÃ©cnicas</h3>
             <button class="modal__close" onclick="cerrarModalHabilidades()">&times;</button>
         </div>
         <div class="modal__body" style="max-height: 400px; overflow-y: auto;">
-            <p class="text-muted mb-4" style="font-size: 0.85rem;">Seleccione los servicios que este profesional está capacitado para realizar.</p>
+            <p class="text-muted mb-4" style="font-size: 0.85rem;">Seleccione los servicios que este profesional estÃ¡ capacitado para realizar.</p>
             <input type="hidden" id="habilidadesUserId" value="">
             <div id="listaServiciosHabilidades" class="d-flex flex-column gap-2">
-                <!-- Se llena vía JS -->
+                <!-- Se llena vÃ­a JS -->
             </div>
         </div>
         <div class="modal__footer">
@@ -264,11 +264,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const statusClass = u.is_active ? 'user-status--active' : 'user-status--inactive';
             const statusText = u.is_active ? 'Activo' : 'Inactivo';
 
-            // Skill: Botón condicional para personal técnico/admin
+            // Skill: BotÃ³n condicional para personal tÃ©cnico/admin
             // Visible para todos los roles EXCEPTO RECEPCIONIST y CLIENT
             const showHabilidades = !['RECEPCIONIST', 'CLIENT'].includes(u.role_name) && !!u.role_name;
             const habilidadesBtn = showHabilidades 
-                ? `<button class="btn btn--ghost btn--sm" onclick="abrirModalHabilidades(${u.user_id})" title="Gestionar Habilidades Técnicas">💼</button>`
+                ? `<button class="btn btn--ghost btn--sm" onclick="abrirModalHabilidades(${u.user_id})" title="Gestionar Habilidades TÃ©cnicas">ðŸ’¼</button>`
                 : '';
 
             return `
@@ -280,9 +280,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td><span class="user-status ${statusClass}">${statusText}</span></td>
                     <td style="text-align:center;">
                         ${habilidadesBtn}
-                        <button class="btn btn--ghost btn--sm" onclick="editarUsuario(${u.user_id})" title="Editar">✏️</button>
+                        <button class="btn btn--ghost btn--sm" onclick="editarUsuario(${u.user_id})" title="Editar">âœï¸</button>
                         <button class="btn btn--ghost btn--sm" onclick="toggleEstadoUsuario(${u.user_id})" title="Activar/Desactivar">
-                            ${u.is_active ? '⏸️' : '▶️'}
+                            ${u.is_active ? 'â¸ï¸' : 'â–¶ï¸'}
                         </button>
                     </td>
                 </tr>
@@ -331,7 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const activo = document.getElementById('inputActivo').checked;
 
         if (!nombre || !email || !phone) {
-            alerts.error('Nombre, correo y teléfono son obligatorios.');
+            alerts.error('Nombre, correo y telÃ©fono son obligatorios.');
             return;
         }
 
@@ -341,10 +341,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             if (id) {
-                // ── MODO EDICIÓN: Diff inteligente ──────────────────────────────
-                // Solo se envían al backend los campos que realmente cambiaron.
+                // â”€â”€ MODO EDICIÃ“N: Diff inteligente â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                // Solo se envÃ­an al backend los campos que realmente cambiaron.
                 // Esto evita que restricciones UNIQUE (email, phone) se disparen
-                // cuando el usuario no modificó esos campos.
+                // cuando el usuario no modificÃ³ esos campos.
                 const original = usuarios.find(u => u.user_id == id);
                 const originalFirstName = original ? (original.first_name || '').trim() : null;
                 const originalLastName  = original ? (original.last_name  || '').trim() : null;
@@ -376,7 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     payload.password = password;
                 }
 
-                // Si no hubo ningún cambio, avisar y no hacer el request
+                // Si no hubo ningÃºn cambio, avisar y no hacer el request
                 if (Object.keys(payload).length === 0) {
                     alerts.error('No se detectaron cambios. Modifica al menos un campo antes de guardar.');
                     return;
@@ -385,7 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (api) {
                     const res = await api.put(`/iam/users/${id}`, payload);
                     if (!res.success) {
-                        throw new Error(res.detail || 'El servidor no pudo procesar la actualización del usuario.');
+                        throw new Error(res.detail || 'El servidor no pudo procesar la actualizaciÃ³n del usuario.');
                     }
                     alerts.success('Usuario actualizado correctamente.');
                     cerrarModalUsuario();
@@ -393,7 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                // Simulación sin API
+                // SimulaciÃ³n sin API
                 const index = usuarios.findIndex(u => u.user_id == id);
                 if (index !== -1) {
                     usuarios[index] = {
@@ -412,9 +412,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 cerrarModalUsuario();
 
             } else {
-                // ── MODO CREACIÓN ────────────────────────────────────────────────
+                // â”€â”€ MODO CREACIÃ“N â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                 if (!password) {
-                    alerts.error('La contraseña es obligatoria para nuevos usuarios.');
+                    alerts.error('La contraseÃ±a es obligatoria para nuevos usuarios.');
                     return;
                 }
                 const payload = {
@@ -439,7 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                // Simulación sin API
+                // SimulaciÃ³n sin API
                 usuarios.push({
                     user_id:    usuarios.length + 1,
                     first_name: firstName,
@@ -466,7 +466,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const nuevoEstado = user.is_active ? 0 : 1;
         const accion = nuevoEstado ? 'activar' : 'desactivar';
 
-        if (!confirm(`¿Desea ${accion} al usuario ${user.first_name} ${user.last_name}?`)) return;
+        if (!confirm(`Â¿Desea ${accion} al usuario ${user.first_name} ${user.last_name}?`)) return;
 
         try {
             if (api) {
@@ -481,20 +481,20 @@ document.addEventListener('DOMContentLoaded', () => {
             user.is_active = nuevoEstado;
             renderUsuarios();
             actualizarIndicadores();
-            alerts.success(`Usuario ${nuevoEstado ? 'activado' : 'desactivado'} (simulación).`);
+            alerts.success(`Usuario ${nuevoEstado ? 'activado' : 'desactivado'} (simulaciÃ³n).`);
         } catch (error) {
             alerts.error(error.message || 'Error al cambiar el estado del usuario.');
         }
     };
 
-    // --- Gestión de Habilidades Técnicas (Fase 2 JS) ---
+    // --- GestiÃ³n de Habilidades TÃ©cnicas (Fase 2 JS) ---
     window.abrirModalHabilidades = async function(id) {
         const user = usuarios.find(u => u.user_id === id);
         if (!user) return;
 
         document.getElementById('habilidadesUserId').value = id;
         const container = document.getElementById('listaServiciosHabilidades');
-        container.innerHTML = '<p class="text-center p-4">Cargando catálogo...</p>';
+        container.innerHTML = '<p class="text-center p-4">Cargando catÃ¡logo...</p>';
         document.getElementById('modalHabilidades').classList.add('modal-overlay--visible');
 
         try {
@@ -503,7 +503,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { all_services, assigned_ids } = res.data;
                 
                 if (all_services.length === 0) {
-                    container.innerHTML = '<p class="text-center text-muted">No hay servicios activos en el catálogo.</p>';
+                    container.innerHTML = '<p class="text-center text-muted">No hay servicios activos en el catÃ¡logo.</p>';
                     return;
                 }
 
@@ -535,7 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const res = await api.post(`/iam/professionals/${id}/services`, { service_ids: serviceIds });
             if (res.success) {
-                alerts.success('Habilidades técnicas actualizadas correctamente.');
+                alerts.success('Habilidades tÃ©cnicas actualizadas correctamente.');
                 cerrarModalHabilidades();
             }
         } catch (error) {
@@ -553,3 +553,4 @@ document.addEventListener('DOMContentLoaded', () => {
 JS;
 
 require_once __DIR__ . '/../layouts/admin-layout.php';
+
