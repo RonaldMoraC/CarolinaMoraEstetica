@@ -1,9 +1,17 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Application\Billing\PosPayment;
 
-class RegisterPosPaymentDTO
+use App\Domain\Shared\ValueObjects\Money;
+
+final class RegisterPosPaymentDTO
 {
-    // TODO: implementar
+    public function __construct(
+        public readonly int $appointmentId,
+        public readonly Money $amount,
+        public readonly string $paymentMethod,
+        public readonly ?string $transactionReference = null
+    ) {}
 }
