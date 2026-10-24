@@ -1,22 +1,22 @@
-Este manual define la arquitectura física del código fuente y las directrices de programación obligatorias para el desarrollo de la estética. Al ejecutarse sobre entornos estándar (XAMPP en desarrollo / Hostinger en producción), el sistema dependerá de un diseño desacoplado en PHP Puro (v8.x+) utilizando un autoloader PSR-4 para garantizar rendimiento y mantenibilidad extrema.
+﻿Este manual define la arquitectura fÃ­sica del cÃ³digo fuente y las directrices de programaciÃ³n obligatorias para el desarrollo de la estÃ©tica. Al ejecutarse sobre entornos estÃ¡ndar (XAMPP en desarrollo / Hostinger en producciÃ³n), el sistema dependerÃ¡ de un diseÃ±o desacoplado en PHP Puro (v8.x+) utilizando un autoloader PSR-4 para garantizar rendimiento y mantenibilidad extrema.
 
-1. Patrones de Programación y Reglas de Escritura Obligatorias
-Antigravity 2.0 deberá rechazar cualquier lrujo de código que viole las siguientes cuatro directivas de ingeniería:
+1. Patrones de ProgramaciÃ³n y Reglas de Escritura Obligatorias
+Antigravity 2.0 deberÃ¡ rechazar cualquier lrujo de cÃ³digo que viole las siguientes cuatro directivas de ingenierÃ­a:
 
-1.1. Declaración de Tipado Estricto (strict_types)
-Absolutamente todos los archivos con extensión .php en el proyecto deben iniciar exactamente con la siguiente línea de código, sin excepciones:
+1.1. DeclaraciÃ³n de Tipado Estricto (strict_types)
+Absolutamente todos los archivos con extensiÃ³n .php en el proyecto deben iniciar exactamente con la siguiente lÃ­nea de cÃ³digo, sin excepciones:
 
 PHP
 <?php
 declare(strict_types=1);
-Esto prohíbe las coerciones implícitas de tipos de PHP (por ejemplo, que un string "5" sea aceptado automáticamente en un parámetro que exige int), forzando fallos en tiempo de ejecución si la data no es perfectamente limpia.
+Esto prohÃ­be las coerciones implÃ­citas de tipos de PHP (por ejemplo, que un string "5" sea aceptado automÃ¡ticamente en un parÃ¡metro que exige int), forzando fallos en tiempo de ejecuciÃ³n si la data no es perfectamente limpia.
 
-1.2. Inyección de Dependencias Manual por Constructor
+1.2. InyecciÃ³n de Dependencias Manual por Constructor
 Queda estrictamente prohibido el uso de la palabra clave new dentro de los Casos de Uso o Controladores para instanciar dependencias o servicios.
 
-Todas las clases deben recibir sus dependencias de forma pasiva a través del método __construct apuntando a interfaces (abstracciones), nunca a clases concretas.
+Todas las clases deben recibir sus dependencias de forma pasiva a travÃ©s del mÃ©todo __construct apuntando a interfaces (abstracciones), nunca a clases concretas.
 
-Ejemplo de diseño requerido:
+Ejemplo de diseÃ±o requerido:
 
 PHP
 namespace App\Application\Booking;
@@ -31,115 +31,115 @@ class CreateAppointmentUseCase {
     }
 }
 1.3. Sentencias Preparadas PDO Obligatorias (Anti-SQL Injection)
-Queda terminantemente prohibido concatenar variables directas en strings de consultas SQL o usar funciones obsoletas. Toda interacción de escritura o lectura con MySQL debe utilizar marcadores de posición (:parametro) y vinculación explícita mediante execute().
+Queda terminantemente prohibido concatenar variables directas en strings de consultas SQL o usar funciones obsoletas. Toda interacciÃ³n de escritura o lectura con MySQL debe utilizar marcadores de posiciÃ³n (:parametro) y vinculaciÃ³n explÃ­cita mediante execute().
 
 PHP
 $stmt = $this->pdo->prepare("SELECT * FROM user WHERE email = :email AND is_active = 1");
 $stmt->execute(['email' => $email]);
 1.4. Manejo Global de Excepciones y Errores
-Ningún controlador de la API debe envolver su lógica en bloques try-catch genéricos para ocultar fallos.
+NingÃºn controlador de la API debe envolver su lÃ³gica en bloques try-catch genÃ©ricos para ocultar fallos.
 
-Si ocurre un error de negocio, se debe lanzar una excepción semántica personalizada que herede de DomainException.
+Si ocurre un error de negocio, se debe lanzar una excepciÃ³n semÃ¡ntica personalizada que herede de DomainException.
 
-Un componente centralizado de infraestructura (GlobalExceptionHandler) capturará de forma perimetral cualquier excepción no controlada, registrará el incidente de forma segura y devolverá la respuesta JSON formateada bajo el estándar RFC 7807 definido en el contrato de la API.
+Un componente centralizado de infraestructura (GlobalExceptionHandler) capturarÃ¡ de forma perimetral cualquier excepciÃ³n no controlada, registrarÃ¡ el incidente de forma segura y devolverÃ¡ la respuesta JSON formateada bajo el estÃ¡ndar RFC 7807 definido en el contrato de la API.
 
-2. Árbol de Directorios Estricto: Capas Internas (Domain y Application)
-A continuación se detalla la anatomía exacta del directorio src/ para las capas del Dominio (Reglas puras de negocio) y de Aplicación (Casos de uso/Orquestación). Esta estructura es agnóstica a la infraestructura; no sabe nada de bases de datos, ni de servidores, ni de HTTP.
+2. Ãrbol de Directorios Estricto: Capas Internas (Domain y Application)
+A continuaciÃ³n se detalla la anatomÃ­a exacta del directorio src/ para las capas del Dominio (Reglas puras de negocio) y de AplicaciÃ³n (Casos de uso/OrquestaciÃ³n). Esta estructura es agnÃ³stica a la infraestructura; no sabe nada de bases de datos, ni de servidores, ni de HTTP.
 
 raiz-del-proyecto/
-├── logs/                         # Registros de errores y auditoría del sistema (.log)
-├── vendor/                       # Dependencias externas gestionadas por Composer
-├── public/                       # Único directorio accesible desde la web (Raíz Pública)
-│   ├── index.php                 # Front Controller: Punto de entrada único de la API
-│   ├── .htaccess                 # Directivas Apache, HTTPS estricto y reescritura de URLs
-│   ├── manifest.json             # Manifiesto de la PWA para instalación en dispositivos
-│   ├── sw.js                     # Service Worker de la PWA (Estrategias de caché offline)
-│   ├── assets/                   # Recursos estáticos (CSS, JS compilado, fuentes, logos)
-│   └── storage/                  # Archivos dinámicos públicos (Vouchers de pago, PDFs)
-│
-└── src/
-    ├── Domain/                   # CAPA 1: LOGICA PURA DEL NEGOCIO (Sin SQL ni Frameworks)
-    │   ├── Shared/
-    │   │   ├── ValueObjects/     # Objetos inmutables (Money.php, TimeRange.php)
-    │   │   ├── Exceptions/       # Excepciones de negocio (DomainException.php)
-    │   │   └── Events/           # Despachador y Contratos (DomainEventInterface.php)
-    │   ├── IAM/                  # Contexto: Control de Accesos e Identidades
-    │   │   ├── Entities/         # User.php, Role.php
-    │   │   └── Repositories/     # UserRepositoryInterface.php
-    │   ├── Catalog/              # Contexto: Catálogo de Servicios y Promociones
-    │   │   ├── Entities/         # Service.php, Promotion.php
-    │   │   └── Repositories/     # ServiceRepositoryInterface.php
-    │   ├── Staffing/             # Contexto: Horarios y Disponibilidad de Especialistas
-    │   │   ├── Entities/         # ProfessionalProfile.php, WorkSchedule.php
-    │   │   └── Repositories/     # StaffingRepositoryInterface.php
-    │   ├── Booking/              # Contexto Core: Gestión y Flujo de Citas
-    │   │   ├── Entities/         # Appointment.php, ClientProfile.php
-    │   │   └── Repositories/     # AppointmentRepositoryInterface.php
-    │   └── Billing/              # Contexto Financiero: Facturación, Caja y Pagos
-    │       ├── Entities/         # Payment.php, Invoice.php
-    │       └── Repositories/     # PaymentRepositoryInterface.php
-    │
-    ├── Application/              # CAPA 2: CASOS DE USO (Orquestadores de Acciones)
-    │   ├── Shared/
-    │   │   └── Validators/       # Sanitizadores y validadores de DTOs (InputSanitizer.php)
-    │   ├── IAM/                  # Casos de Uso de Autenticación y Registro
-    │   │   ├── RegisterClient/   # RegisterNewClientUseCase.php, RegisterClientDTO.php
-    │   │   └── Authenticate/     # AuthenticateUserUseCase.php
-    │   ├── Catalog/              # Casos de Uso de Catálogo
-    │   │   ├── BrowseCatalog/    # BrowseServiceCatalogUseCase.php
-    │   │   └── ManageServices/   # ManageServiceInventoryUseCase.php
-    │   ├── Staffing/             # Casos de Uso de Mallas Horarias
-    │   │   ├── GetAvailableSlots/# GetAvailableSlotsUseCase.php
-    │   │   └── SaveSchedule/     # ConfigureScheduleUseCase.php
-    │   ├── Booking/              # Casos de Uso de Reservas (Cruciales)
-    │   │   ├── CreateBooking/    # CreateAppointmentUseCase.php, CreateAppointmentDTO.php
-    │   │   ├── CancelBooking/    # CancelAppointmentUseCase.php
-    │   │   └── Operation/        # ExecuteCheckInUseCase.php, CompleteServiceUseCase.php
-    │   └── Billing/              # Casos de Uso Financieros
-    │       ├── ProcessWebhook/   # ProcessOnlinePaymentWebhookUseCase.php
-    │       └── PosPayment/       # RegisterPosPaymentUseCase.php
-    │
-    ├── Infrastructure/           # CAPA 3: ADAPTADORES TECNOLÓGICOS (Conexiones reales)
-    │   ├── Shared/
-    │   │   ├── Database/         # ConnectionFactory.php (Manejador de la conexión PDO)
-    │   │   ├── Security/         # JwtTokenManager.php, EncryptionService.php
-    │   │   ├── Errors/           # GlobalExceptionHandler.php (Formateador RFC 7807)
-    │   │   ├── Routing/          # NUEVO: Router.php y archivo routes.php de la API
-    │   │   └── Helpers/          # Utilitarios (DateTimeHelper.php, ResponseHelper.php)
-    │   ├── IAM/                  # Implementación Física de IAM
-    │   │   ├── Persistence/      # PdoUserRepository.php (Consultas SQL nativas)
-    │   │   └── Http/             # LoginController.php, RegisterController.php
-    │   ├── Catalog/              # Implementación Física de Catálogo
-    │   │   ├── Persistence/      # PdoServiceRepository.php
-    │   │   └── Http/             # BrowseCatalogController.php, CreatePromotionController.php
-    │   ├── Staffing/             # Implementación Física de Staffing
-    │   │   ├── Persistence/      # PdoStaffingRepository.php
-    │   │   └── Http/             # GetSlotsController.php
-    │   ├── Booking/              # Implementación Física de Reservas
-    │   │   ├── Persistence/      # PdoAppointmentRepository.php
-    │   │   └── Http/             # CreateAppointmentController.php, OperationsController.php
-    │   ├── Billing/              # Implementación Física de Finanzas
-    │   │   ├── Persistence/      # PdoPaymentRepository.php
-    │   │   └── Http/             # PosPaymentController.php, PaymentWebhookController.php
-    │   └── Integration/          # Integraciones Externas y Tareas Cron
-    │       └── WhatsApp/
-    │           ├── Http/         # WhatsAppWebhookController.php (Escucha mensajes de Meta)
-    │           └── Workers/      # NUEVO: NotificationQueueWorker.php (Consola / CLI para Cron)
-    │
-    └── bootstrap.php             # Contenedor de Inyección de Dependencias Manual
+â”œâ”€â”€ logs/                         # Registros de errores y auditorÃ­a del sistema (.log)
+â”œâ”€â”€ vendor/                       # Dependencias externas gestionadas por Composer
+â”œâ”€â”€ public/                       # Ãšnico directorio accesible desde la web (RaÃ­z PÃºblica)
+â”‚   â”œâ”€â”€ index.php                 # Front Controller: Punto de entrada Ãºnico de la API
+â”‚   â”œâ”€â”€ .htaccess                 # Directivas Apache, HTTPS estricto y reescritura de URLs
+â”‚   â”œâ”€â”€ manifest.json             # Manifiesto de la PWA para instalaciÃ³n en dispositivos
+â”‚   â”œâ”€â”€ sw.js                     # Service Worker de la PWA (Estrategias de cachÃ© offline)
+â”‚   â”œâ”€â”€ assets/                   # Recursos estÃ¡ticos (CSS, JS compilado, fuentes, logos)
+â”‚   â””â”€â”€ storage/                  # Archivos dinÃ¡micos pÃºblicos (Vouchers de pago, PDFs)
+â”‚
+â””â”€â”€ src/
+    â”œâ”€â”€ Domain/                   # CAPA 1: LOGICA PURA DEL NEGOCIO (Sin SQL ni Frameworks)
+    â”‚   â”œâ”€â”€ Shared/
+    â”‚   â”‚   â”œâ”€â”€ ValueObjects/     # Objetos inmutables (Money.php, TimeRange.php)
+    â”‚   â”‚   â”œâ”€â”€ Exceptions/       # Excepciones de negocio (DomainException.php)
+    â”‚   â”‚   â””â”€â”€ Events/           # Despachador y Contratos (DomainEventInterface.php)
+    â”‚   â”œâ”€â”€ IAM/                  # Contexto: Control de Accesos e Identidades
+    â”‚   â”‚   â”œâ”€â”€ Entities/         # User.php, Role.php
+    â”‚   â”‚   â””â”€â”€ Repositories/     # UserRepositoryInterface.php
+    â”‚   â”œâ”€â”€ Catalog/              # Contexto: CatÃ¡logo de Servicios y Promociones
+    â”‚   â”‚   â”œâ”€â”€ Entities/         # Service.php, Promotion.php
+    â”‚   â”‚   â””â”€â”€ Repositories/     # ServiceRepositoryInterface.php
+    â”‚   â”œâ”€â”€ Staffing/             # Contexto: Horarios y Disponibilidad de Especialistas
+    â”‚   â”‚   â”œâ”€â”€ Entities/         # ProfessionalProfile.php, WorkSchedule.php
+    â”‚   â”‚   â””â”€â”€ Repositories/     # StaffingRepositoryInterface.php
+    â”‚   â”œâ”€â”€ Booking/              # Contexto Core: GestiÃ³n y Flujo de Citas
+    â”‚   â”‚   â”œâ”€â”€ Entities/         # Appointment.php, ClientProfile.php
+    â”‚   â”‚   â””â”€â”€ Repositories/     # AppointmentRepositoryInterface.php
+    â”‚   â””â”€â”€ Billing/              # Contexto Financiero: FacturaciÃ³n, Caja y Pagos
+    â”‚       â”œâ”€â”€ Entities/         # Payment.php, Invoice.php
+    â”‚       â””â”€â”€ Repositories/     # PaymentRepositoryInterface.php
+    â”‚
+    â”œâ”€â”€ Application/              # CAPA 2: CASOS DE USO (Orquestadores de Acciones)
+    â”‚   â”œâ”€â”€ Shared/
+    â”‚   â”‚   â””â”€â”€ Validators/       # Sanitizadores y validadores de DTOs (InputSanitizer.php)
+    â”‚   â”œâ”€â”€ IAM/                  # Casos de Uso de AutenticaciÃ³n y Registro
+    â”‚   â”‚   â”œâ”€â”€ RegisterClient/   # RegisterNewClientUseCase.php, RegisterClientDTO.php
+    â”‚   â”‚   â””â”€â”€ Authenticate/     # AuthenticateUserUseCase.php
+    â”‚   â”œâ”€â”€ Catalog/              # Casos de Uso de CatÃ¡logo
+    â”‚   â”‚   â”œâ”€â”€ BrowseCatalog/    # BrowseServiceCatalogUseCase.php
+    â”‚   â”‚   â””â”€â”€ ManageServices/   # ManageServiceInventoryUseCase.php
+    â”‚   â”œâ”€â”€ Staffing/             # Casos de Uso de Mallas Horarias
+    â”‚   â”‚   â”œâ”€â”€ GetAvailableSlots/# GetAvailableSlotsUseCase.php
+    â”‚   â”‚   â””â”€â”€ SaveSchedule/     # ConfigureScheduleUseCase.php
+    â”‚   â”œâ”€â”€ Booking/              # Casos de Uso de Reservas (Cruciales)
+    â”‚   â”‚   â”œâ”€â”€ CreateBooking/    # CreateAppointmentUseCase.php, CreateAppointmentDTO.php
+    â”‚   â”‚   â”œâ”€â”€ CancelBooking/    # CancelAppointmentUseCase.php
+    â”‚   â”‚   â””â”€â”€ Operation/        # ExecuteCheckInUseCase.php, CompleteServiceUseCase.php
+    â”‚   â””â”€â”€ Billing/              # Casos de Uso Financieros
+    â”‚       â”œâ”€â”€ ProcessWebhook/   # ProcessOnlinePaymentWebhookUseCase.php
+    â”‚       â””â”€â”€ PosPayment/       # RegisterPosPaymentUseCase.php
+    â”‚
+    â”œâ”€â”€ Infrastructure/           # CAPA 3: ADAPTADORES TECNOLÃ“GICOS (Conexiones reales)
+    â”‚   â”œâ”€â”€ Shared/
+    â”‚   â”‚   â”œâ”€â”€ Database/         # ConnectionFactory.php (Manejador de la conexiÃ³n PDO)
+    â”‚   â”‚   â”œâ”€â”€ Security/         # JwtTokenManager.php, EncryptionService.php
+    â”‚   â”‚   â”œâ”€â”€ Errors/           # GlobalExceptionHandler.php (Formateador RFC 7807)
+    â”‚   â”‚   â”œâ”€â”€ Routing/          # NUEVO: Router.php y archivo routes.php de la API
+    â”‚   â”‚   â””â”€â”€ Helpers/          # Utilitarios (DateTimeHelper.php, ResponseHelper.php)
+    â”‚   â”œâ”€â”€ IAM/                  # ImplementaciÃ³n FÃ­sica de IAM
+    â”‚   â”‚   â”œâ”€â”€ Persistence/      # PdoUserRepository.php (Consultas SQL nativas)
+    â”‚   â”‚   â””â”€â”€ Http/             # LoginController.php, RegisterController.php
+    â”‚   â”œâ”€â”€ Catalog/              # ImplementaciÃ³n FÃ­sica de CatÃ¡logo
+    â”‚   â”‚   â”œâ”€â”€ Persistence/      # PdoServiceRepository.php
+    â”‚   â”‚   â””â”€â”€ Http/             # BrowseCatalogController.php, CreatePromotionController.php
+    â”‚   â”œâ”€â”€ Staffing/             # ImplementaciÃ³n FÃ­sica de Staffing
+    â”‚   â”‚   â”œâ”€â”€ Persistence/      # PdoStaffingRepository.php
+    â”‚   â”‚   â””â”€â”€ Http/             # GetSlotsController.php
+    â”‚   â”œâ”€â”€ Booking/              # ImplementaciÃ³n FÃ­sica de Reservas
+    â”‚   â”‚   â”œâ”€â”€ Persistence/      # PdoAppointmentRepository.php
+    â”‚   â”‚   â””â”€â”€ Http/             # CreateAppointmentController.php, OperationsController.php
+    â”‚   â”œâ”€â”€ Billing/              # ImplementaciÃ³n FÃ­sica de Finanzas
+    â”‚   â”‚   â”œâ”€â”€ Persistence/      # PdoPaymentRepository.php
+    â”‚   â”‚   â””â”€â”€ Http/             # PosPaymentController.php, PaymentWebhookController.php
+    â”‚   â””â”€â”€ Integration/          # Integraciones Externas y Tareas Cron
+    â”‚       â””â”€â”€ WhatsApp/
+    â”‚           â”œâ”€â”€ Http/         # WhatsAppWebhookController.php (Escucha mensajes de Meta)
+    â”‚           â””â”€â”€ Workers/      # NUEVO: NotificationQueueWorker.php (Consola / CLI para Cron)
+    â”‚
+    â””â”€â”€ bootstrap.php             # Contenedor de InyecciÃ³n de Dependencias Manual
 
 
 4. Archivo de Arranque Central (src/bootstrap.php)
-Para evitar el uso ilícito de acoplamientos ocultos o el uso de Service Locators, bootstrap.php actúa como el Contenedor de Inyección de Dependencias Manual. Centraliza la instanciación de clases de la infraestructura a la superficie, ordenadas de forma secuencial.
+Para evitar el uso ilÃ­cito de acoplamientos ocultos o el uso de Service Locators, bootstrap.php actÃºa como el Contenedor de InyecciÃ³n de Dependencias Manual. Centraliza la instanciaciÃ³n de clases de la infraestructura a la superficie, ordenadas de forma secuencial.
 
 PHP
 <?php
 declare(strict_types=1);
 
-// 1. Cargar el Autoloader estándar PSR-4
+// 1. Cargar el Autoloader estÃ¡ndar PSR-4
 require_once __DIR__ . '/../vendor/autoload.php';
 
-// 2. Inicializar la Conexión Física PDO (Hostinger / XAMPP)
+// 2. Inicializar la ConexiÃ³n FÃ­sica PDO (Hostinger / XAMPP)
 $pdo = \App\Infrastructure\Shared\Database\ConnectionFactory::createFromEnv();
 
 // 3. Instanciar Repositorios de Infraestructura (Implementaciones de BD)
@@ -147,19 +147,19 @@ $pdoUserRepository        = new \App\Infrastructure\IAM\Persistence\PdoUserRepos
 $pdoAppointmentRepository = new \App\Infrastructure\Booking\Persistence\PdoAppointmentRepository($pdo);
 $pdoServiceRepository     = new \App\Infrastructure\Catalog\Persistence\PdoServiceRepository($pdo);
 
-// 4. Instanciar Casos de Uso de la Capa de Aplicación inyectando sus dependencias
+// 4. Instanciar Casos de Uso de la Capa de AplicaciÃ³n inyectando sus dependencias
 $createAppointmentUseCase = new \App\Application\Booking\CreateBooking\CreateAppointmentUseCase(
     $pdoAppointmentRepository,
     $pdoServiceRepository
 );
 
-// 5. Instanciar Controladores HTTP de Infraestructura pasándoles los Casos de Uso
+// 5. Instanciar Controladores HTTP de Infraestructura pasÃ¡ndoles los Casos de Uso
 $createAppointmentController = new \App\Infrastructure\Booking\Http\CreateAppointmentController($createAppointmentUseCase);
 $whatsAppWebhookController   = new \App\Infrastructure\Integration\WhatsApp\WhatsAppWebhookController($createAppointmentUseCase, $pdoUserRepository);
-5. Plantilla de Código Patrón Integrador (Boilerplate de Referencia)
-A continuación se muestra cómo interactúan las tres capas de manera desacoplada para el caso crítico de Creación de Cita con Bloqueo Anti-Overbooking. Este fragmento de código rige como ley de diseño de software para Antigravity 2.0.
+5. Plantilla de CÃ³digo PatrÃ³n Integrador (Boilerplate de Referencia)
+A continuaciÃ³n se muestra cÃ³mo interactÃºan las tres capas de manera desacoplada para el caso crÃ­tico de CreaciÃ³n de Cita con Bloqueo Anti-Overbooking. Este fragmento de cÃ³digo rige como ley de diseÃ±o de software para Antigravity 2.0.
 
-Capa 1: Dominio (Definición abstracta libre de SQL)
+Capa 1: Dominio (DefiniciÃ³n abstracta libre de SQL)
 PHP
 <?php
 declare(strict_types=1);
@@ -170,13 +170,13 @@ use App\Domain\Booking\Entities\Appointment;
 
 interface AppointmentRepositoryInterface {
     /**
-     * Verifica de forma atómica si el profesional tiene un choque de horarios en el servidor.
+     * Verifica de forma atÃ³mica si el profesional tiene un choque de horarios en el servidor.
      */
     public function hasCollision(int $professionalId, string $start, string $end): bool;
     
     public function save(Appointment $appointment): void;
 }
-Capa 2: Aplicación (Orquestador del caso de uso)
+Capa 2: AplicaciÃ³n (Orquestador del caso de uso)
 PHP
 <?php
 declare(strict_types=1);
@@ -202,10 +202,10 @@ class CreateAppointmentUseCase {
         );
 
         if ($hasCollision) {
-            throw new \DomainException("El horario seleccionado ya está reservado.", 422);
+            throw new \DomainException("El horario seleccionado ya estÃ¡ reservado.", 422);
         }
 
-        // Creación del objeto de negocio y persistencia
+        // CreaciÃ³n del objeto de negocio y persistencia
         $appointment = new Appointment($dto->clientProfileId, $dto->professionalProfileId, $dto->scheduledTimestamp);
         $this->repository->save($appointment);
 
@@ -215,7 +215,7 @@ class CreateAppointmentUseCase {
         ];
     }
 }
-Capa 3: Infraestructura (Implementación real de persistencia con PDO)
+Capa 3: Infraestructura (ImplementaciÃ³n real de persistencia con PDO)
 PHP
 <?php
 declare(strict_types=1);
@@ -269,16 +269,16 @@ class PdoAppointmentRepository implements AppointmentRepositoryInterface {
 }
 
 
-Plantillas de Código Patrón
-Puedes pegar el texto de las plantillas de código al final del documento completo, creando una nueva sección dedicada: "6. Ampliación de la Arquitectura: Validadores, Eventos y Helpers", o bien anexarlo directamente al final de la sección 5 (la plantilla del Boilerplate).
+Plantillas de CÃ³digo PatrÃ³n
+Puedes pegar el texto de las plantillas de cÃ³digo al final del documento completo, creando una nueva secciÃ³n dedicada: "6. AmpliaciÃ³n de la Arquitectura: Validadores, Eventos y Helpers", o bien anexarlo directamente al final de la secciÃ³n 5 (la plantilla del Boilerplate).
 
-Al formatearlo dentro de tu archivo .md, asegúrate de usar los bloques de código limpios con triple comilla invertida (```) seguidos de la palabra php para que mantenga el resaltado de sintaxis correcto:
+Al formatearlo dentro de tu archivo .md, asegÃºrate de usar los bloques de cÃ³digo limpios con triple comilla invertida (```) seguidos de la palabra php para que mantenga el resaltado de sintaxis correcto:
 
 Markdown
-## 6. Ampliación de Arquitectura: Validadores, Eventos y Helpers
+## 6. AmpliaciÃ³n de Arquitectura: Validadores, Eventos y Helpers
 
-### A. Capa de Aplicación: Validadores de Entrada
-Las validaciones de formato deben ocurrir en la capa de aplicación usando clases dedicadas antes de que el DTO toque el Caso de Uso.
+### A. Capa de AplicaciÃ³n: Validadores de Entrada
+Las validaciones de formato deben ocurrir en la capa de aplicaciÃ³n usando clases dedicadas antes de que el DTO toque el Caso de Uso.
 
 ```php
 <?php
@@ -296,7 +296,7 @@ class CreateAppointmentValidator implements ValidatorInterface {
             throw new \InvalidArgumentException("El ID del cliente es obligatorio.", 400);
         }
         if (empty($data['scheduled_timestamp']) || !strtotime($data['scheduled_timestamp'])) {
-            throw new \InvalidArgumentException("La fecha no tiene un formato válido.", 400);
+            throw new \InvalidArgumentException("La fecha no tiene un formato vÃ¡lido.", 400);
         }
         if (strtotime($data['scheduled_timestamp']) < time()) {
             throw new \InvalidArgumentException("No es posible agendar en el pasado.", 400);
@@ -333,7 +333,7 @@ class EventDispatcher {
     }
 }
 C. Capa de Infraestructura: Helpers (Utilidades del sistema)
-Métodos estáticos puros para resolver problemas repetitivos de infraestructura, como formatear respuestas HTTP JSON estándar.
+MÃ©todos estÃ¡ticos puros para resolver problemas repetitivos de infraestructura, como formatear respuestas HTTP JSON estÃ¡ndar.
 
 PHP
 <?php
@@ -354,4 +354,5 @@ class ResponseHelper {
         exit;
     }
 }
+
 

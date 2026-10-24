@@ -1,8 +1,8 @@
-1. Mecanismo de Autenticación y Gestión de Contexto
-La API opera bajo una arquitectura Stateless (Sin estado). Toda solicitud que requiera control de acceso debe suministrar credenciales válidas en las cabeceras HTTP.
+﻿1. Mecanismo de AutenticaciÃ³n y GestiÃ³n de Contexto
+La API opera bajo una arquitectura Stateless (Sin estado). Toda solicitud que requiera control de acceso debe suministrar credenciales vÃ¡lidas en las cabeceras HTTP.
 
-A. Canal PWA y Aplicación Móvil (JWT Standard)
-Las interfaces gráficas enviarán un token de portador (Bearer Token) en la cabecera estándar de autorización:
+A. Canal PWA y AplicaciÃ³n MÃ³vil (JWT Standard)
+Las interfaces grÃ¡ficas enviarÃ¡n un token de portador (Bearer Token) en la cabecera estÃ¡ndar de autorizaciÃ³n:
 
 HTTP
 Authorization: Bearer <JWT_TOKEN>
@@ -18,19 +18,19 @@ JSON
   "iat": 1780754400,
   "exp": 1780783200
 }
-Procesamiento en PHP: El middleware de infraestructura interceptará el token, validará la firma criptográfica (utilizando una llave secreta segura del servidor) y poblará un objeto global UserContext inyectado en el controlador correspondiente.
+Procesamiento en PHP: El middleware de infraestructura interceptarÃ¡ el token, validarÃ¡ la firma criptogrÃ¡fica (utilizando una llave secreta segura del servidor) y poblarÃ¡ un objeto global UserContext inyectado en el controlador correspondiente.
 
-B. Canal Bot de WhatsApp (Autenticación Transparente por MSISDN)
-Dado que el bot de WhatsApp interactúa de forma automatizada mediante el Webhook de Meta, el cliente no puede enviar una cabecera de autenticación interactiva ni almacenar un JWT tradicional.
+B. Canal Bot de WhatsApp (AutenticaciÃ³n Transparente por MSISDN)
+Dado que el bot de WhatsApp interactÃºa de forma automatizada mediante el Webhook de Meta, el cliente no puede enviar una cabecera de autenticaciÃ³n interactiva ni almacenar un JWT tradicional.
 
-Mecanismo: La pasarela del Webhook de WhatsApp se autentica ante nuestra API usando un Token estático de Sistema (X-WhatsApp-System-Token) en las cabeceras.
+Mecanismo: La pasarela del Webhook de WhatsApp se autentica ante nuestra API usando un Token estÃ¡tico de Sistema (X-WhatsApp-System-Token) en las cabeceras.
 
-Resolución de Contexto de Cliente: Para cada mensaje entrante, el controlador del webhook extraerá el número de teléfono del remitente en formato internacional E.164 (ejemplo: 573001234567), conocido técnicamente como MSISDN.
+ResoluciÃ³n de Contexto de Cliente: Para cada mensaje entrante, el controlador del webhook extraerÃ¡ el nÃºmero de telÃ©fono del remitente en formato internacional E.164 (ejemplo: 573001234567), conocido tÃ©cnicamente como MSISDN.
 
-Flujo en PHP: El caso de uso invocará al repositorio (UserRepository->findByPhone($msisdn)) para resolver si el número está asociado a un client_profile_id activo. Si existe, se inicializa el contexto de ese cliente de manera transparente; si no existe, el bot iniciará automáticamente el flujo guiado de registro (RF-01).
+Flujo en PHP: El caso de uso invocarÃ¡ al repositorio (UserRepository->findByPhone($msisdn)) para resolver si el nÃºmero estÃ¡ asociado a un client_profile_id activo. Si existe, se inicializa el contexto de ese cliente de manera transparente; si no existe, el bot iniciarÃ¡ automÃ¡ticamente el flujo guiado de registro (RF-01).
 
 2. Estructura Unificada de Respuestas de Error (RFC 7807)
-Para evitar inconsistencias, absolutamente todos los errores devueltos por la API (desde excepciones de base de datos hasta fallos de validación de negocio) utilizarán el tipo de medio application/problem+json:
+Para evitar inconsistencias, absolutamente todos los errores devueltos por la API (desde excepciones de base de datos hasta fallos de validaciÃ³n de negocio) utilizarÃ¡n el tipo de medio application/problem+json:
 
 A. Formato General de Error (Ejemplo 400 / 401 / 500)
 JSON
@@ -38,23 +38,23 @@ JSON
   "type": "https://api.esteticacarolinamora.com/errors/unauthorized",
   "title": "No autorizado",
   "status": 401,
-  "detail": "El token JWT suministrado ha expirado o la firma es inválida.",
+  "detail": "El token JWT suministrado ha expirado o la firma es invÃ¡lida.",
   "instance": "/api/v1/catalog/services"
 }
-B. Formato de Error de Validación de Datos (Código HTTP 422 - Unprocessable Entity)
-Cuando las reglas de negocio o los tipos de datos del JSON de entrada no se cumplan, se listarán los campos específicos afectados:
+B. Formato de Error de ValidaciÃ³n de Datos (CÃ³digo HTTP 422 - Unprocessable Entity)
+Cuando las reglas de negocio o los tipos de datos del JSON de entrada no se cumplan, se listarÃ¡n los campos especÃ­ficos afectados:
 
 JSON
 {
   "type": "https://api.esteticacarolinamora.com/errors/validation-failed",
-  "title": "Error de validación en la entidad",
+  "title": "Error de validaciÃ³n en la entidad",
   "status": 422,
-  "detail": "Los datos enviados contienen errores sintácticos o violan reglas de negocio.",
+  "detail": "Los datos enviados contienen errores sintÃ¡cticos o violan reglas de negocio.",
   "instance": "/api/v1/iam/register",
   "invalid_params": [
     {
       "name": "email",
-      "reason": "El formato del correo electrónico no es válido."
+      "reason": "El formato del correo electrÃ³nico no es vÃ¡lido."
     },
     {
       "name": "username",
@@ -62,15 +62,15 @@ JSON
     }
   ]
 }
-3. Especificación de Endpoints: Módulo IAM
-Endpoint: Autenticación de Usuarios (PWA / App)
+3. EspecificaciÃ³n de Endpoints: MÃ³dulo IAM
+Endpoint: AutenticaciÃ³n de Usuarios (PWA / App)
 Ruta: /api/v1/iam/login
 
-Método: POST
+MÃ©todo: POST
 
 Cabeceras: Content-Type: application/json
 
-Cuerpo de la Petición (Request Body):
+Cuerpo de la PeticiÃ³n (Request Body):
 
 JSON
 {
@@ -79,7 +79,7 @@ JSON
 }
 Respuestas:
 
-200 OK (Credenciales Válidas):
+200 OK (Credenciales VÃ¡lidas):
 
 JSON
 {
@@ -95,12 +95,12 @@ JSON
 }
 401 Unauthorized (Credenciales Incorrectas o Usuario Inactivo): De acuerdo al formato unificado de error.
 
-Endpoint: Registro Autónomo de Clientes (RF-01)
+Endpoint: Registro AutÃ³nomo de Clientes (RF-01)
 Ruta: /api/v1/iam/register
 
-Método: POST
+MÃ©todo: POST
 
-Cuerpo de la Petición:
+Cuerpo de la PeticiÃ³n:
 
 JSON
 {
@@ -124,15 +124,15 @@ JSON
     "client_profile_id": 34
   }
 }
-422 Unprocessable Entity: Si el correo o el usuario ya existen, o el teléfono no sigue el patrón E.164.
+422 Unprocessable Entity: Si el correo o el usuario ya existen, o el telÃ©fono no sigue el patrÃ³n E.164.
 
-4. Especificación de Endpoints: Módulo Catalog & Pricing
-Endpoint: Exploración Filtrada del Catálogo (RF-04)
+4. EspecificaciÃ³n de Endpoints: MÃ³dulo Catalog & Pricing
+Endpoint: ExploraciÃ³n Filtrada del CatÃ¡logo (RF-04)
 Ruta: /api/v1/catalog/services
 
-Método: GET
+MÃ©todo: GET
 
-Parámetros de Consulta (Query Params): ?category_id=2&search=Manicure&limit=10&page=1
+ParÃ¡metros de Consulta (Query Params): ?category_id=2&search=Manicure&limit=10&page=1
 
 Respuestas:
 
@@ -149,22 +149,22 @@ JSON
   "data": [
     {
       "service_id": 2,
-      "name": "Manicure Semi技术",
-      "description": "Tratamiento completo de uñas con esmaltado semipermanente.",
+      "name": "Manicure SemiæŠ€æœ¯",
+      "description": "Tratamiento completo de uÃ±as con esmaltado semipermanente.",
       "price": 15.00,
       "duration_minutes": 45,
       "is_active": 1
     }
   ]
 }
-Endpoint: Creación de Campaña de Promoción (Administrador - RF-13 / RF-21)
+Endpoint: CreaciÃ³n de CampaÃ±a de PromociÃ³n (Administrador - RF-13 / RF-21)
 Ruta: /api/v1/catalog/promotions
 
-Método: POST
+MÃ©todo: POST
 
 Cabeceras: Authorization: Bearer <JWT_TOKEN> (Rol restringido a SUPER_ADMIN o BRANCH_ADMIN)
 
-Cuerpo de la Petición:
+Cuerpo de la PeticiÃ³n:
 
 JSON
 {
@@ -182,19 +182,19 @@ JSON
 {
   "success": true,
   "promotion_id": 5,
-  "message": "Campaña promocional creada y vinculada a los servicios seleccionados."
+  "message": "CampaÃ±a promocional creada y vinculada a los servicios seleccionados."
 }
 403 Forbidden: Si el usuario no tiene los privilegios adecuados en su JWT.
 
-5. Especificación de Endpoints: Módulo Staffing & Availability
+5. EspecificaciÃ³n de Endpoints: MÃ³dulo Staffing & Availability
 Endpoint: Consulta de Disponibilidad de un Especialista (RF-05, RF-14)
 Ruta: /api/v1/staffing/professionals/{professional_profile_id}/slots
 
-Método: GET
+MÃ©todo: GET
 
-Parámetros de Consulta (Query Params): ?branch_id=1&date=2026-06-15&service_id=2
+ParÃ¡metros de Consulta (Query Params): ?branch_id=1&date=2026-06-15&service_id=2
 
-Descripción: Cruza la tabla work_schedule, las excepciones de agenda y las citas activas en appointment para devolver una matriz lineal de bloques horarios libres listos para ser reservados.
+DescripciÃ³n: Cruza la tabla work_schedule, las excepciones de agenda y las citas activas en appointment para devolver una matriz lineal de bloques horarios libres listos para ser reservados.
 
 Respuestas:
 
@@ -227,14 +227,14 @@ JSON
     }
   ]
 }
-Endpoint: Configuración de la Malla Horaria Semanal (Administrador - RF-14)
+Endpoint: ConfiguraciÃ³n de la Malla Horaria Semanal (Administrador - RF-14)
 Ruta: /api/v1/staffing/schedules
 
-Método: POST
+MÃ©todo: POST
 
 Cabeceras: Authorization: Bearer <JWT_TOKEN> (Roles: SUPER_ADMIN, BRANCH_ADMIN)
 
-Cuerpo de la Petición (Request Body):
+Cuerpo de la PeticiÃ³n (Request Body):
 
 JSON
 {
@@ -258,15 +258,15 @@ JSON
 }
 422 Unprocessable Entity: Si end_time <= start_time o si viola los constraints chk_work_day o chk_lunch_hours de la base de datos.
 
-6. Especificación de Endpoints: Módulo Transaccional de Agendamiento (Booking Core)
-Endpoint: Creación Concurrente de Cita (PWA / App / WhatsApp - RF-06, RF-07)
+6. EspecificaciÃ³n de Endpoints: MÃ³dulo Transaccional de Agendamiento (Booking Core)
+Endpoint: CreaciÃ³n Concurrente de Cita (PWA / App / WhatsApp - RF-06, RF-07)
 Ruta: /api/v1/booking/appointments
 
-Método: POST
+MÃ©todo: POST
 
-Estrategia de Control: Este endpoint debe implementar el bloqueo pesimista (FOR UPDATE) detallado en el diseño modular para validar de manera atómica el solapamiento temporal y blindar el sistema contra overbooking ante ráfagas del Bot o la PWA.
+Estrategia de Control: Este endpoint debe implementar el bloqueo pesimista (FOR UPDATE) detallado en el diseÃ±o modular para validar de manera atÃ³mica el solapamiento temporal y blindar el sistema contra overbooking ante rÃ¡fagas del Bot o la PWA.
 
-Cuerpo de la Petición:
+Cuerpo de la PeticiÃ³n:
 
 JSON
 {
@@ -277,7 +277,7 @@ JSON
   "scheduled_timestamp": "2026-06-15 09:00:00",
   "notes": "Cliente solicita cabina aislada por temas de privacidad."
 }
-Lógica del Controlador PHP: El sistema calculará dinámicamente la duración del servicio (obtenida del catálogo) para inyectar automáticamente el campo estimated_end_timestamp y procesar el cálculo financiero de total_price y final_price antes de la inserción física.
+LÃ³gica del Controlador PHP: El sistema calcularÃ¡ dinÃ¡micamente la duraciÃ³n del servicio (obtenida del catÃ¡logo) para inyectar automÃ¡ticamente el campo estimated_end_timestamp y procesar el cÃ¡lculo financiero de total_price y final_price antes de la inserciÃ³n fÃ­sica.
 
 Respuestas:
 
@@ -286,7 +286,7 @@ Respuestas:
 JSON
 {
   "success": true,
-  "message": "Cita agendada y bloqueada con éxito.",
+  "message": "Cita agendada y bloqueada con Ã©xito.",
   "data": {
     "appointment_id": 50812,
     "appointment_status": "PENDING",
@@ -296,7 +296,7 @@ JSON
     "final_price": 12.75
   }
 }
-422 Unprocessable Entity (Colisión de Horario / Bloqueo Anti-Overbooking):
+422 Unprocessable Entity (ColisiÃ³n de Horario / Bloqueo Anti-Overbooking):
 
 JSON
 {
@@ -306,76 +306,76 @@ JSON
   "detail": "El especialista seleccionado ya cuenta con un servicio agendado o en progreso en el rango horario solicitado.",
   "instance": "/api/v1/booking/appointments"
 }
-Endpoint: Reprogramación Autónoma de Citas (RF-08, RF-09)
+Endpoint: ReprogramaciÃ³n AutÃ³noma de Citas (RF-08, RF-09)
 Ruta: /api/v1/booking/appointments/{appointment_id}/reschedule
 
-Método: PUT
+MÃ©todo: PUT
 
-Cuerpo de la Petición:
+Cuerpo de la PeticiÃ³n:
 
 JSON
 {
   "new_scheduled_timestamp": "2026-06-18 14:00:00"
 }
-Restricciones del Dominio en PHP: El controlador debe validar que la cita original no esté en estado IN_PROGRESS o COMPLETED. Adicionalmente, evaluará el límite de reprogramación autónoma parametrizado por la sucursal (autonomous_reschedule_limit) consultando la tabla branch.
+Restricciones del Dominio en PHP: El controlador debe validar que la cita original no estÃ© en estado IN_PROGRESS o COMPLETED. Adicionalmente, evaluarÃ¡ el lÃ­mite de reprogramaciÃ³n autÃ³noma parametrizado por la sucursal (autonomous_reschedule_limit) consultando la tabla branch.
 
 Respuestas:
 
 200 OK: Regresa el objeto mutado reflejando el nuevo scheduled_timestamp e incremental en el log inmutable.
 
-400 Bad Request: Si el cliente superó el límite permitido de cambios automáticos.
+400 Bad Request: Si el cliente superÃ³ el lÃ­mite permitido de cambios automÃ¡ticos.
 
-Endpoint: Cancelación Lógica de Cita (RF-09)
+Endpoint: CancelaciÃ³n LÃ³gica de Cita (RF-09)
 Ruta: /api/v1/booking/appointments/{appointment_id}/cancel
 
-Método: PATCH
+MÃ©todo: PATCH
 
-Cuerpo de la Petición:
+Cuerpo de la PeticiÃ³n:
 
 JSON
 {
-  "change_reason": "Cancelación solicitada por el usuario desde el bot de WhatsApp."
+  "change_reason": "CancelaciÃ³n solicitada por el usuario desde el bot de WhatsApp."
 }
-Validación de la Regla de Oro (24 Horas): El caso de uso restará scheduled_timestamp del tiempo actual del servidor. Si el delta es menor que las horas parametrizadas en branch.cancellation_hours_notice, denegará la cancelación autónoma o aplicará la penalización financiera configurada.
+ValidaciÃ³n de la Regla de Oro (24 Horas): El caso de uso restarÃ¡ scheduled_timestamp del tiempo actual del servidor. Si el delta es menor que las horas parametrizadas en branch.cancellation_hours_notice, denegarÃ¡ la cancelaciÃ³n autÃ³noma o aplicarÃ¡ la penalizaciÃ³n financiera configurada.
 
 Respuestas:
 
 200 OK: Muta appointment_status a 'CANCELLED' e inserta la trazabilidad en appointment_history.
 
-Endpoints de Recepción: Gestión Operativa en Sucursal (RF-17, RF-18)
-Para controlar el flujo de los clientes dentro de la sucursal, la recepcionista consume endpoints semánticos que guían las transiciones lógicas de la máquina de estados:
+Endpoints de RecepciÃ³n: GestiÃ³n Operativa en Sucursal (RF-17, RF-18)
+Para controlar el flujo de los clientes dentro de la sucursal, la recepcionista consume endpoints semÃ¡nticos que guÃ­an las transiciones lÃ³gicas de la mÃ¡quina de estados:
 
 Check-In Presencial (Llegada del Cliente - RF-17):
 
 Ruta: /api/v1/booking/appointments/{appointment_id}/check-in
 
-Método: PATCH
+MÃ©todo: PATCH
 
-Acción: Cambia appointment_status de CONFIRMED o PENDING hacia IN_PROGRESS. Registra al operador en appointment_history.
+AcciÃ³n: Cambia appointment_status de CONFIRMED o PENDING hacia IN_PROGRESS. Registra al operador en appointment_history.
 
 Respuesta 200 OK: {"success": true, "new_status": "IN_PROGRESS"}
 
-Finalización Técnica del Servicio (Cierre de Cabina - RF-18):
+FinalizaciÃ³n TÃ©cnica del Servicio (Cierre de Cabina - RF-18):
 
 Ruta: /api/v1/booking/appointments/{appointment_id}/complete
 
-Método: PATCH
+MÃ©todo: PATCH
 
-Acción: Cambia appointment_status hacia COMPLETED. Esta transición dispara de manera automática el evento de dominio AppointmentCompletedEvent, inhabilitando cualquier modificación posterior sobre los tiempos de la cita y habilitando la facturación en el POS.
+AcciÃ³n: Cambia appointment_status hacia COMPLETED. Esta transiciÃ³n dispara de manera automÃ¡tica el evento de dominio AppointmentCompletedEvent, inhabilitando cualquier modificaciÃ³n posterior sobre los tiempos de la cita y habilitando la facturaciÃ³n en el POS.
 
 Respuesta 200 OK: {"success": true, "new_status": "COMPLETED"}
 
-Especificación de Endpoints: Módulo Financiero y Caja (Billing & POS)
+EspecificaciÃ³n de Endpoints: MÃ³dulo Financiero y Caja (Billing & POS)
 Endpoint: Registro de Pago Presencial en Punto de Venta (POS - RF-12, RF-18)
 Ruta: /api/v1/billing/cash-desk/payments
 
-Método: POST
+MÃ©todo: POST
 
 Cabeceras: Authorization: Bearer <JWT_TOKEN> (Roles: SUPER_ADMIN, BRANCH_ADMIN, RECEPCIONIST)
 
-Descripción: Registra el cobro en el mostrador físico de la sucursal para una cita que ha transicionado al estado COMPLETED.
+DescripciÃ³n: Registra el cobro en el mostrador fÃ­sico de la sucursal para una cita que ha transicionado al estado COMPLETED.
 
-Cuerpo de la Petición (Request Body):
+Cuerpo de la PeticiÃ³n (Request Body):
 
 JSON
 {
@@ -383,7 +383,7 @@ JSON
   "amount": 12.75,
   "payment_method": "CASH", 
   "transaction_reference": "POS-001-50812",
-  "notes": "Pago exacto recibido en efectivo. Se entrega tirilla física."
+  "notes": "Pago exacto recibido en efectivo. Se entrega tirilla fÃ­sica."
 }
 Respuestas:
 
@@ -395,20 +395,20 @@ JSON
   "payment_id": 98412,
   "payment_status": "COMPLETED",
   "registered_at": "2026-06-06 14:05:22",
-  "message": "Transacción contable POS asentada exitosamente."
+  "message": "TransacciÃ³n contable POS asentada exitosamente."
 }
-422 Unprocessable Entity: Si el monto no coincide con el balance calculado para la cita o si la referencia de transacción ya existe (UNIQUE constraint violation).
+422 Unprocessable Entity: Si el monto no coincide con el balance calculado para la cita o si la referencia de transacciÃ³n ya existe (UNIQUE constraint violation).
 
 Endpoint: Webhook de la Pasarela de Pagos Online (RF-12)
 Ruta: /api/v1/billing/payments/webhook
 
-Método: POST
+MÃ©todo: POST
 
 Cabeceras: X-Gateway-Signature: <SHA256_HASH_VERIFICATION>
 
-Descripción: Punto de entrada asíncrono e impersonal consumido por la pasarela externa (ej. Stripe o pasarela local). No requiere JWT de usuario, pero valida la autenticidad mediante la firma criptográfica en las cabeceras.
+DescripciÃ³n: Punto de entrada asÃ­ncrono e impersonal consumido por la pasarela externa (ej. Stripe o pasarela local). No requiere JWT de usuario, pero valida la autenticidad mediante la firma criptogrÃ¡fica en las cabeceras.
 
-Cuerpo de la Petición:
+Cuerpo de la PeticiÃ³n:
 
 JSON
 {
@@ -432,9 +432,9 @@ Respuestas:
 Endpoint: Consolidado de Cierre de Caja Diario (RF-19)
 Ruta: /api/v1/billing/cash-desk/closing
 
-Método: GET
+MÃ©todo: GET
 
-Parámetros de Consulta: ?branch_id=1&date=2026-06-06
+ParÃ¡metros de Consulta: ?branch_id=1&date=2026-06-06
 
 Cabeceras: Authorization: Bearer <JWT_TOKEN> (Roles: SUPER_ADMIN, BRANCH_ADMIN)
 
@@ -459,38 +459,38 @@ JSON
     ]
   }
 }
-8. Especificación de Endpoints: Módulo Analítico y CRM (CRM & Analytics)
-Endpoint: Registro de Calificación de Servicio (RF-11, RF-20)
+8. EspecificaciÃ³n de Endpoints: MÃ³dulo AnalÃ­tico y CRM (CRM & Analytics)
+Endpoint: Registro de CalificaciÃ³n de Servicio (RF-11, RF-20)
 Ruta: /api/v1/crm/ratings
 
-Método: POST
+MÃ©todo: POST
 
-Descripción: Consumido directamente desde la encuesta asíncrona enviada al cliente.
+DescripciÃ³n: Consumido directamente desde la encuesta asÃ­ncrona enviada al cliente.
 
-Cuerpo de la Petición:
+Cuerpo de la PeticiÃ³n:
 
 JSON
 {
   "appointment_id": 50812,
   "score": 5,
-  "comments": "Excelente atención en la manicura. El personal fue muy detallista."
+  "comments": "Excelente atenciÃ³n en la manicura. El personal fue muy detallista."
 }
-Validación de Dominio: El controlador PHP validará obligatoriamente que score esté en el rango integro del backend [1, 5] y que la cita referenciada se encuentre en estado COMPLETED.
+ValidaciÃ³n de Dominio: El controlador PHP validarÃ¡ obligatoriamente que score estÃ© en el rango integro del backend [1, 5] y que la cita referenciada se encuentre en estado COMPLETED.
 
 Respuestas:
 
 201 Created: {"success": true, "rating_id": 4321}
 
 9. Contrato de Entrada: Webhook de Meta Cloud API (WhatsApp Omnicanal - RF-07)
-Este endpoint es el punto de enlace crítico para el procesamiento conversacional. Recibe las notificaciones crudas desde los servidores de Meta cuando un cliente envía un mensaje de texto o interactúa con un botón estructurado del bot.
+Este endpoint es el punto de enlace crÃ­tico para el procesamiento conversacional. Recibe las notificaciones crudas desde los servidores de Meta cuando un cliente envÃ­a un mensaje de texto o interactÃºa con un botÃ³n estructurado del bot.
 
 Ruta: /api/v1/webhooks/whatsapp
 
-Método: POST
+MÃ©todo: POST
 
 Cabeceras Obligatorias: X-Hub-Signature-256: sha256=<HEX_DIGEST> (Validada internamente usando el App Secret de Meta para asegurar el origen).
 
-Payload Estándar de Entrada (Payload Enviado por Meta):
+Payload EstÃ¡ndar de Entrada (Payload Enviado por Meta):
 JSON
 {
   "object": "whatsapp_business_account",
@@ -517,7 +517,7 @@ JSON
                 "id": "wamid.HBgLNTczMDAxMjM0NTY3FQIAERgE...",
                 "timestamp": "1780754400",
                 "text": {
-                  "body": "Quiero reservar una cita para manicure mañana"
+                  "body": "Quiero reservar una cita para manicure maÃ±ana"
                 },
                 "type": "text"
               }
@@ -529,28 +529,28 @@ JSON
     }
   ]
 }
-Protocolo de Extracción e Inyección en el Backend en PHP:
-Para que Antigravity 2.0 procese el flujo sin romper capas, el controlador del webhook ejecutará secuencialmente los siguientes pasos técnicos:
+Protocolo de ExtracciÃ³n e InyecciÃ³n en el Backend en PHP:
+Para que Antigravity 2.0 procese el flujo sin romper capas, el controlador del webhook ejecutarÃ¡ secuencialmente los siguientes pasos tÃ©cnicos:
 
-Aislamiento del MSISDN: Extraerá el valor de entry[0].changes[0].value.messages[0].from ("573001234567"). Este string representa el PhoneNumber del Value Object del dominio.
+Aislamiento del MSISDN: ExtraerÃ¡ el valor de entry[0].changes[0].value.messages[0].from ("573001234567"). Este string representa el PhoneNumber del Value Object del dominio.
 
-Resolución Transparente de Perfil: Consultará de manera atómica el repositorio de clientes. Si el número telefónico existe, inyectará el client_profile_id resultante en el contenedor de dependencias del caso de uso.
+ResoluciÃ³n Transparente de Perfil: ConsultarÃ¡ de manera atÃ³mica el repositorio de clientes. Si el nÃºmero telefÃ³nico existe, inyectarÃ¡ el client_profile_id resultante en el contenedor de dependencias del caso de uso.
 
-Análisis de Intención (NLP / Keyword Parsing): Extraerá el string del campo text.body. Si la intención coincide con un flujo estructurado (ej. "reservar", "cancelar"), enrutará la lógica de negocio directamente hacia los mismos casos de uso consumidos por la PWA (vía CreateAppointmentUseCase o CancelAppointmentUseCase), garantizando que las validaciones contra condiciones de carrera (FOR UPDATE) y límites horarios sean idénticas y centralizadas.
+AnÃ¡lisis de IntenciÃ³n (NLP / Keyword Parsing): ExtraerÃ¡ el string del campo text.body. Si la intenciÃ³n coincide con un flujo estructurado (ej. "reservar", "cancelar"), enrutarÃ¡ la lÃ³gica de negocio directamente hacia los mismos casos de uso consumidos por la PWA (vÃ­a CreateAppointmentUseCase o CancelAppointmentUseCase), garantizando que las validaciones contra condiciones de carrera (FOR UPDATE) y lÃ­mites horarios sean idÃ©nticas y centralizadas.
 
-10. Códigos de Estado HTTP y Semántica Global de la API
-Para garantizar la homogeneidad de la integración, la API se compromete a responder usando estrictamente los siguientes códigos del estándar HTTP:
+10. CÃ³digos de Estado HTTP y SemÃ¡ntica Global de la API
+Para garantizar la homogeneidad de la integraciÃ³n, la API se compromete a responder usando estrictamente los siguientes cÃ³digos del estÃ¡ndar HTTP:
 
-200 OK: Solicitud procesada correctamente con retorno de datos (Consultas de catálogo, listados de citas, cierres de caja).
+200 OK: Solicitud procesada correctamente con retorno de datos (Consultas de catÃ¡logo, listados de citas, cierres de caja).
 
-201 Created: Inserción física exitosa de un recurso inmutable en la base de datos (Creación de citas, registros de usuarios, pagos POS).
+201 Created: InserciÃ³n fÃ­sica exitosa de un recurso inmutable en la base de datos (CreaciÃ³n de citas, registros de usuarios, pagos POS).
 
-400 Bad Request: Error sintáctico en el JSON o violación directa de rangos lógicos ordinarios en los parámetros.
+400 Bad Request: Error sintÃ¡ctico en el JSON o violaciÃ³n directa de rangos lÃ³gicos ordinarios en los parÃ¡metros.
 
-401 Unauthorized: Ausencia de token de autorización, expiración de credenciales JWT o firma inválida.
+401 Unauthorized: Ausencia de token de autorizaciÃ³n, expiraciÃ³n de credenciales JWT o firma invÃ¡lida.
 
-403 Forbidden: Token válido pero el rol asignado no cuenta con los privilegios suficientes en la matriz RBAC para acceder al recurso.
+403 Forbidden: Token vÃ¡lido pero el rol asignado no cuenta con los privilegios suficientes en la matriz RBAC para acceder al recurso.
 
-422 Unprocessable Entity: Solicitud sintácticamente correcta pero inválida a nivel semántico de negocio (Colisiones de disponibilidad, bloqueos por sobre-reserva concurrentes, violaciones a la regla de cancelación de 24 horas).
+422 Unprocessable Entity: Solicitud sintÃ¡cticamente correcta pero invÃ¡lida a nivel semÃ¡ntico de negocio (Colisiones de disponibilidad, bloqueos por sobre-reserva concurrentes, violaciones a la regla de cancelaciÃ³n de 24 horas).
 
-500 Internal Server Error: Excepciones de infraestructura no controladas (Pérdida de conectividad con el servidor MySQL de Hostinger, desbordamiento de memoria). El payload devuelto ocultará el Stack-Trace técnico en producción por motivos de seguridad perimetral, registrándolo únicamente de forma interna.
+500 Internal Server Error: Excepciones de infraestructura no controladas (PÃ©rdida de conectividad con el servidor MySQL de Hostinger, desbordamiento de memoria). El payload devuelto ocultarÃ¡ el Stack-Trace tÃ©cnico en producciÃ³n por motivos de seguridad perimetral, registrÃ¡ndolo Ãºnicamente de forma interna.
