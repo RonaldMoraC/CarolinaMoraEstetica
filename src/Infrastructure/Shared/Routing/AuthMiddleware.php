@@ -7,7 +7,7 @@ use App\Infrastructure\Shared\Security\JwtTokenManager;
 use App\Infrastructure\Shared\Errors\GlobalExceptionHandler;
 
 /**
- * AuthMiddleware — Guardia de Seguridad JWT
+ * AuthMiddleware â¬ Guardia de Seguridad JWT
  * 
  * Valida el token Bearer y detiene la petición si es inválido o ausente.
  * Cumple Skill 4 (RFC 7807) y Skill 10 (Sanitización Perimetral).

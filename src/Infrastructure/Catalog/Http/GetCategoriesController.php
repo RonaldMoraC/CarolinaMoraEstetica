@@ -11,7 +11,7 @@ use App\Infrastructure\Shared\Helpers\ResponseHelper;
  * Controlador HTTP para GET /api/v1/catalog/categories.
  * Retorna las categorías de servicios disponibles para filtros PWA.
  *
- * Cumple Skill 1 → strict_types, Skill 10 → sin parámetros de entrada.
+ * Cumple Skill 1 â  strict_types, Skill 10 â  sin parámetros de entrada.
  */
 final class GetCategoriesController
 {

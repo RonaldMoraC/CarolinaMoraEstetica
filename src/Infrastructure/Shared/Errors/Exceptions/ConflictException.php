@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Shared\Errors\Exceptions;
 
 /**
- * ConflictException — HTTP 409
+ * ConflictException â¬ HTTP 409
  *
  * Se lanza en dos escenarios arquitectónicos:
  *   1. Idempotencia (Skill 6): Una clave de idempotencia llega en estado PROCESSING.

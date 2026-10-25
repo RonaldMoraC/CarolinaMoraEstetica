@@ -9,7 +9,7 @@ use App\Infrastructure\Shared\Helpers\ResponseHelper;
 use App\Infrastructure\Shared\Errors\GlobalExceptionHandler;
 
 /**
- * RegisterController — Punto de entrada para nuevos registros
+ * RegisterController â¬ Punto de entrada para nuevos registros
  *
  * Implementa validación perimetral estricta (Skill 10) y respuestas RFC 7807 (Skill 4).
  */

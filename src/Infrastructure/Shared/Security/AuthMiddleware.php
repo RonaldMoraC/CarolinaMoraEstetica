@@ -28,7 +28,7 @@ final class AuthMiddleware
             return $authHeader;
         }
 
-        // Fallback: X-Authorization header — enviado por el ApiClient como alternativa
+        // Fallback: X-Authorization header â¬ enviado por el ApiClient como alternativa
         // cuando Apache/XAMPP en CGI mode elimina el header Authorization estándar.
         $xAuthHeader = $_SERVER['HTTP_X_AUTHORIZATION'] ?? '';
         if (!empty($xAuthHeader)) {
@@ -71,6 +71,12 @@ final class AuthMiddleware
             }
         }
 
+        // Fallback resiliente: Cookie auth_token emitida por LoginController
+        $cookieToken = $_COOKIE['auth_token'] ?? '';
+        if (!empty($cookieToken)) {
+            return 'Bearer ' . $cookieToken;
+        }
+
         return '';
     }
 
@@ -86,21 +92,22 @@ final class AuthMiddleware
 
         try {
             $claims = $this->jwtTokenManager->validate($token);
-            // Inyectar claims en los parámetros para que el controlador los use si es necesario
-            $params['auth_user'] = $claims;
-            $next($params);
         } catch (\Exception $e) {
-            $this->abort();
+            $this->abort('La sesión ha expirado o el token de acceso es inválido.');
         }
+
+        // Inyectar claims en los parámetros para que el controlador los use si es necesario
+        $params['auth_user'] = $claims;
+        $next($params);
     }
 
-    private function abort(): void
+    private function abort(string $detail = 'Se requiere un token de acceso válido para acceder a este recurso.'): void
     {
         GlobalExceptionHandler::emitRfc7807Response(
             httpStatus: 401,
             type: 'https://carolinamoraestetica.com/errors/unauthorized',
             title: 'No Autorizado',
-            detail: 'Se requiere un token de acceso válido para acceder a este recurso.',
+            detail: $detail,
             instance: $_SERVER['REQUEST_URI'] ?? '/'
         );
     }

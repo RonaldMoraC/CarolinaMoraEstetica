@@ -20,9 +20,9 @@ use App\Infrastructure\Shared\Utils\AppPath;
  *   - Soporte de grupos de rutas con prefijo URI y middleware compartido.
  *
  * Cumple:
- *  - Skill 1  → strict_types, inyección por constructor, sin variables globales
- *  - Skill 4  → 404/405 formateados bajo RFC 7807 vía GlobalExceptionHandler
- *  - Skill 10 → La URI se sanea antes de la comparación para evitar path-traversal
+ *  - Skill 1  â  strict_types, inyección por constructor, sin variables globales
+ *  - Skill 4  â  404/405 formateados bajo RFC 7807 vía GlobalExceptionHandler
+ *  - Skill 10 â  La URI se sanea antes de la comparación para evitar path-traversal
  *
  * Uso mínimo en bootstrap.php:
  *   $router = new Router($exceptionHandler);
@@ -32,9 +32,9 @@ use App\Infrastructure\Shared\Utils\AppPath;
  */
 final class Router
 {
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
     //  TIPOS INTERNOS
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 
     /**
      * Estructura de una ruta registrada.
@@ -70,9 +70,9 @@ final class Router
 
     private GlobalExceptionHandler $exceptionHandler;
 
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
     //  CONSTRUCTOR
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 
     /**
      * @param callable(class-string): object $container
@@ -87,9 +87,9 @@ final class Router
         $this->exceptionHandler = $exceptionHandler;
     }
 
-    // ─────────────────────────────────────────────────────────
-    //  MÉTODOS DE REGISTRO DE RUTAS
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
+    //  MÃ0TODOS DE REGISTRO DE RUTAS
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 
     /**
      * Registra una ruta GET.
@@ -146,9 +146,9 @@ final class Router
         return $this->addRoute('DELETE', $uri, $handler, $middlewares);
     }
 
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
     //  AGRUPAMIENTO DE RUTAS
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 
     /**
      * Agrupa rutas bajo un prefijo URI y/o middlewares compartidos.
@@ -173,9 +173,9 @@ final class Router
         $this->groupMiddlewares = $previousMiddlewares;
     }
 
-    // ─────────────────────────────────────────────────────────
-    //  DESPACHO DE LA PETICIÓN
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
+    //  DESPACHO DE LA PETICIÃN
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 
     /**
      * Lee la petición HTTP actual, busca la ruta coincidente y la despacha.
@@ -188,7 +188,7 @@ final class Router
         $method = $this->resolveHttpMethod();
         $uri    = $this->resolveRequestUri();
 
-        // ── 1. Buscar ruta coincidente ───────────────────────────────────
+        // â¬â¬ 1. Buscar ruta coincidente â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
         $matchedRoutes = [];   // Rutas cuyo patrón URI coincide (sin importar método).
 
         foreach ($this->routes as $route) {
@@ -203,20 +203,20 @@ final class Router
                 ARRAY_FILTER_USE_KEY
             );
 
-            // URI coincide — registrar el método que acepta.
+            // URI coincide â¬ registrar el método que acepta.
             $matchedRoutes[] = [
                 'route'  => $route,
                 'params' => $params,
             ];
 
             if ($route['method'] === $method || $route['method'] === 'ANY') {
-                // ✅ Coincidencia exacta de URI + método → despachar.
+                // âS& Coincidencia exacta de URI + método â  despachar.
                 $this->runMiddlewaresAndHandler($route, $params);
                 return;
             }
         }
 
-        // ── 2. URI coincide pero método no → 405 Method Not Allowed ─────
+        // â¬â¬ 2. URI coincide pero método no â  405 Method Not Allowed â¬â¬â¬â¬â¬
         if ($matchedRoutes !== []) {
             $allowed = array_unique(
                 array_map(static fn($m) => $m['route']['method'], $matchedRoutes)
@@ -234,7 +234,7 @@ final class Router
             );
         }
 
-        // ── 3. URI no coincide con ninguna ruta → 404 Not Found ─────────
+        // â¬â¬ 3. URI no coincide con ninguna ruta â  404 Not Found â¬â¬â¬â¬â¬â¬â¬â¬â¬
         GlobalExceptionHandler::emitRfc7807Response(
             httpStatus : 404,
             type       : 'https://carolinamoraestetica.com/errors/not-found',
@@ -245,9 +245,9 @@ final class Router
         );
     }
 
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
     //  REGISTRO INTERNO DE RUTAS
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 
     /**
      * Convierte el patrón de URI en una expresión regular con grupos con nombre
@@ -270,8 +270,8 @@ final class Router
         $paramNames = $paramMatches[1];
 
         // Convertir patrón a regex:
-        //   {id}        → (?P<id>[^/]+)
-        //   {uuid}      → (?P<uuid>[^/]+)
+        //   {id}        â  (?P<id>[^/]+)
+        //   {uuid}      â  (?P<uuid>[^/]+)
         $regex = preg_replace('/\{(\w+)\}/', '(?P<$1>[^/]+)', $fullUri);
         $regex = '@^' . $regex . '$@';
 
@@ -287,9 +287,9 @@ final class Router
         return $this;
     }
 
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
     //  DESPACHO CON PIPELINE DE MIDDLEWARES
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 
     /**
      * Ejecuta la cadena de middlewares (si los hay) y luego el handler final.
@@ -324,7 +324,7 @@ final class Router
      * Resuelve e invoca el handler final.
      * Soporta dos formatos:
      *   - Callable closure: fn(array $params): void
-     *   - Array [ClassName::class, 'methodName']  →  instanciado vía container
+     *   - Array [ClassName::class, 'methodName']  â   instanciado vía container
      *
      * @param callable|array{class-string, string} $handler
      * @param array<string, string>                $params
@@ -350,9 +350,9 @@ final class Router
         $controllerInstance->$method($params);
     }
 
-    // ─────────────────────────────────────────────────────────
-    //  RESOLVERS DE LA PETICIÓN HTTP
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
+    //  RESOLVERS DE LA PETICIÃN HTTP
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 
     /**
      * Obtiene y normaliza el método HTTP real.

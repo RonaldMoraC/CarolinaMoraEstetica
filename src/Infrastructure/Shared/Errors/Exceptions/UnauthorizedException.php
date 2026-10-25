@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Shared\Errors\Exceptions;
 
 /**
- * UnauthorizedException — HTTP 401
+ * UnauthorizedException â¬ HTTP 401
  *
  * Se lanza cuando la petición carece de credenciales válidas de autenticación.
  * El GlobalExceptionHandler la mapea automáticamente a HTTP 401 + RFC 7807.

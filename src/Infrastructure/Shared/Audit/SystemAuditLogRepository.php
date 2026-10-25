@@ -10,25 +10,25 @@ use PDO;
  *
  * Repositorio de auditoría forense del sistema.
  *
- * DISEÑO INMUTABLE POR ARQUITECTURA (Skill 9):
+ * DISEÃO INMUTABLE POR ARQUITECTURA (Skill 9):
  *   Este repositorio expone EXCLUSIVAMENTE el método insert().
  *   No existe ningún método update() ni delete() por diseño deliberado.
  *   Cualquier intento de modificar o borrar registros de auditoría
  *   debe fallar en tiempo de compilación (método no existe).
  *
  * Cumple:
- *  - Skill 9  → INSERT-only, captura IP real (Cloudflare), old/new JSON diff
- *  - Skill 7  → DateTimeImmutable + America/Bogota para executed_at
- *  - Skill 10 → Prepared statements con bindValue en cada campo
- *  - Skill 1  → strict_types, inyección PDO por constructor
+ *  - Skill 9  â  INSERT-only, captura IP real (Cloudflare), old/new JSON diff
+ *  - Skill 7  â  DateTimeImmutable + America/Bogota para executed_at
+ *  - Skill 10 â  Prepared statements con bindValue en cada campo
+ *  - Skill 1  â  strict_types, inyección PDO por constructor
  */
 final class SystemAuditLogRepository implements AuditLogRepositoryInterface
 {
     public function __construct(private readonly PDO $pdo) {}
 
-    // ─────────────────────────────────────────────────────────
-    //  MÉTODO ÚNICO: INSERT (inmutable por diseño)
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
+    //  MÃ0TODO ÃaNICO: INSERT (inmutable por diseño)
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 
     /**
      * Registra una mutación crítica de datos en el log de auditoría.
@@ -89,13 +89,13 @@ final class SystemAuditLogRepository implements AuditLogRepositoryInterface
         $stmt->execute();
     }
 
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
     //  HELPERS PRIVADOS
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 
     /**
      * Detecta la IP real del cliente teniendo en cuenta:
-     *   - Cloudflare (CF-Connecting-IP) — máxima prioridad en producción
+     *   - Cloudflare (CF-Connecting-IP) â¬ máxima prioridad en producción
      *   - Proxies genéricos (X-Forwarded-For)
      *   - Conexión directa (REMOTE_ADDR)
      */

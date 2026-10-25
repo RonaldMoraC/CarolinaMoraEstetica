@@ -32,7 +32,7 @@ use App\Infrastructure\Shared\Errors\GlobalExceptionHandler;
 
 /** @var Router $router */
 
-// --- RUTAS DE NAVEGACIÓN (VISTAS) ---
+// --- RUTAS DE NAVEGACIÃN (VISTAS) ---
 
 // Ruta raíz: Sirve la landing page
 $router->get('/', function() {
@@ -49,7 +49,7 @@ $router->get('/register', function() {
     include __DIR__ . '/../Views/register.php';
 });
 
-// --- RUTAS DE ADMINISTRACIÓN (VISTAS) ---
+// --- RUTAS DE ADMINISTRACIÃN (VISTAS) ---
 $router->group('/admin', function(Router $r) {
     $r->get('/{view}', function($params) {
         $view = $params['view'] ?? 'dashboard';
@@ -65,6 +65,10 @@ $router->group('/admin', function(Router $r) {
                 instance: $_SERVER['REQUEST_URI']
             );
         }
+
+        // Limpiamos cualquier salida previa accidental para no romper strict_types en la vista
+        if (ob_get_level() > 0) ob_clean();
+
         include $filePath;
     });
 }, [ViewAuthMiddleware::class]);
@@ -93,7 +97,7 @@ $router->group('/app', function(Router $r) {
 $router->post('/api/v1/auth/login', [LoginController::class, 'handle']);
 $router->post('/api/v1/auth/register', [RegisterController::class, 'handle']);
 
-// --- RUTAS DE GESTIÓN DE USUARIOS (ADMIN IAM) ---
+// --- RUTAS DE GESTIÃN DE USUARIOS (ADMIN IAM) ---
 $router->group('/api/v1/iam', function(Router $r) {
     $r->get('/users', [UserController::class, 'handle']);
     $r->post('/users', [UserController::class, 'handle']);
@@ -101,7 +105,7 @@ $router->group('/api/v1/iam', function(Router $r) {
     $r->patch('/users/{id}', [UserController::class, 'handle']);
 }, [AuthMiddleware::class]);
 
-// --- RUTAS DE GESTIÓN DE CAPACIDADES TÉCNICAS (Staff & Skills) ---
+// --- RUTAS DE GESTIÃN DE CAPACIDADES TÃ0CNICAS (Staff & Skills) ---
 $router->group('/api/v1/iam/professionals', function(Router $r) {
     $r->get('/{id}/services', [ProfessionalServiceController::class, 'handle']);
     $r->post('/{id}/services', [ProfessionalServiceController::class, 'handle']);
@@ -145,7 +149,7 @@ $router->group('/api/v1/admin', function(Router $r) {
     $r->get('/analytics', [AdminAnalyticsController::class, 'handle']);
 }, [AuthMiddleware::class]);
 
-// Rutas del Catálogo — Listado público (PWA + Admin), mutaciones protegidas
+// Rutas del Catálogo â¬ Listado público (PWA + Admin), mutaciones protegidas
 $router->get('/api/v1/catalog/services', [BrowseCatalogController::class, 'handle']);
 $router->get('/api/v1/admin/services', [AdminServicesController::class, 'getAll']);
 $router->get('/api/v1/catalog/services/{id}', [BrowseCatalogController::class, 'show']);

@@ -10,7 +10,7 @@ use PDO;
 use PDOException;
 
 /**
- * PdoAppointmentRepository — Implementación de Infraestructura
+ * PdoAppointmentRepository â¬ Implementación de Infraestructura
  *
  * Persiste y recupera citas contra MySQL usando PDO con sentencias preparadas.
  * sentencias preparadas (Skill 10).

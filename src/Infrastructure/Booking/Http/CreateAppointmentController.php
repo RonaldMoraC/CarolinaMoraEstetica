@@ -7,7 +7,7 @@ use App\Application\Booking\CreateBooking\CreateAppointmentUseCase;
 use App\Infrastructure\Shared\Helpers\ResponseHelper;
 
 /**
- * CreateAppointmentController — Controlador HTTP
+ * CreateAppointmentController â¬ Controlador HTTP
  *
  * POST /api/v1/booking/appointments
  *
@@ -26,9 +26,9 @@ use App\Infrastructure\Shared\Helpers\ResponseHelper;
  *   }
  *
  * Cumple:
- *  - Skill 1  → strict_types, inyección por constructor
- *  - Skill 4  → Errores via ResponseHelper (RFC 7807 compatible)
- *  - Skill 10 → Casteo explícito defensivo en la periferia
+ *  - Skill 1  â  strict_types, inyección por constructor
+ *  - Skill 4  â  Errores via ResponseHelper (RFC 7807 compatible)
+ *  - Skill 10 â  Casteo explícito defensivo en la periferia
  */
 final class CreateAppointmentController
 {
@@ -70,7 +70,7 @@ final class CreateAppointmentController
             );
         }
 
-        // Skill 10 — Casteo explícito defensivo
+        // Skill 10 â¬ Casteo explícito defensivo
         $serviceId = (int) ($body['service_id'] ?? 0);
         $professionalProfileId = (int) ($body['professional_profile_id'] ?? 0);
         $branchId = (int) ($body['branch_id'] ?? 1);

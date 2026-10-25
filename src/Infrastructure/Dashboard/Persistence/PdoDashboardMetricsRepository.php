@@ -16,7 +16,7 @@ final class PdoDashboardMetricsRepository implements DashboardMetricsRepositoryI
 {
     public function __construct(private PDO $pdo) {}
 
-    // ── KPIs requeridos por GetDashboardMetricsUseCase ──────────────────
+    // â¬â¬ KPIs requeridos por GetDashboardMetricsUseCase â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 
     /**
      * Ingresos del mes actual (final_price de citas completadas).
@@ -164,7 +164,7 @@ final class PdoDashboardMetricsRepository implements DashboardMetricsRepositoryI
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // ── Métodos para analíticas avanzadas ────────────────────────────────
+    // â¬â¬ Métodos para analíticas avanzadas â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 
     /**
      * Obtiene KPIs principales: Ingresos, Citas totales, Clientes únicos y No-shows.

@@ -8,7 +8,7 @@ use PDO;
  * PdoCategoryRepository
  *
  * Retorna las categorías de servicios desde la tabla service_category.
- * Cumple Skill 10 → Sentencias preparadas, Skill 12 → Query indexada.
+ * Cumple Skill 10 â  Sentencias preparadas, Skill 12 â  Query indexada.
  */
 final class PdoCategoryRepository
 {

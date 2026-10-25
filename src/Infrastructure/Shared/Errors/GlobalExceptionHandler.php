@@ -15,19 +15,19 @@ use InvalidArgumentException;
  * (Problem Details for HTTP APIs).
  *
  * Cumple:
- *  - Skill 4 → RFC 7807 estricto: type, title, status, detail, instance
- *  - Skill 4 → En producción oculta stack traces; en local los expone para DX
- *  - Skill 1 → strict_types, sin dependencias externas
- *  - Skill 9 → Registro de incidencias en log PSR-3 compatible
+ *  - Skill 4 â  RFC 7807 estricto: type, title, status, detail, instance
+ *  - Skill 4 â  En producción oculta stack traces; en local los expone para DX
+ *  - Skill 1 â  strict_types, sin dependencias externas
+ *  - Skill 9 â  Registro de incidencias en log PSR-3 compatible
  *
  * Uso en bootstrap:
  *   GlobalExceptionHandler::register(isProduction: true);
  */
 final class GlobalExceptionHandler
 {
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
     //  REGISTRO DE HANDLERS GLOBALES
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 
     /**
      * Registra los handlers de set_exception_handler y set_error_handler
@@ -40,14 +40,14 @@ final class GlobalExceptionHandler
         bool   $isProduction = false,
         string $logFilePath  = ''
     ): void {
-        // ── Captura de excepciones no atrapadas ──────────────────────────
+        // â¬â¬ Captura de excepciones no atrapadas â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
         set_exception_handler(
             static function (Throwable $throwable) use ($isProduction, $logFilePath): void {
                 self::handle($throwable, $isProduction, $logFilePath);
             }
         );
 
-        // ── Convierte errores PHP fatales en excepciones capturables ─────
+        // â¬â¬ Convierte errores PHP fatales en excepciones capturables â¬â¬â¬â¬â¬
         set_error_handler(
             static function (
                 int    $severity,
@@ -63,7 +63,7 @@ final class GlobalExceptionHandler
             }
         );
 
-        // ── Captura de errores fatales que no lanza set_error_handler ────
+        // â¬â¬ Captura de errores fatales que no lanza set_error_handler â¬â¬â¬â¬
         register_shutdown_function(static function () use ($isProduction, $logFilePath): void {
             $error = error_get_last();
             if ($error !== null && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
@@ -84,9 +84,9 @@ final class GlobalExceptionHandler
         });
     }
 
-    // ─────────────────────────────────────────────────────────
-    //  MÉTODO DE DESPACHO CENTRAL
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
+    //  MÃ0TODO DE DESPACHO CENTRAL
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 
     /**
      * Clasifica la excepción, determina el código HTTP apropiado
@@ -97,10 +97,10 @@ final class GlobalExceptionHandler
         bool      $isProduction = false,
         string    $logFilePath  = ''
     ): void {
-        // ── 1. Clasificación semántica de la excepción ───────────────────
+        // â¬â¬ 1. Clasificación semántica de la excepción â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
         [$httpStatus, $type, $title] = self::classify($throwable);
 
-        // ── 2. Construcción del campo 'detail' según el entorno ──────────
+        // â¬â¬ 2. Construcción del campo 'detail' según el entorno â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
         // Siempre proporcionar detalles completos del error para depuración en desarrollo.
         $detail = $throwable->getMessage();
         $extra  = [
@@ -114,7 +114,7 @@ final class GlobalExceptionHandler
             ),
         ];
 
-        // ── 3. Log asíncrono del incidente (siempre, en ambos entornos) ──
+        // â¬â¬ 3. Log asíncrono del incidente (siempre, en ambos entornos) â¬â¬
         if ($logFilePath !== '') {
             self::writeToLog(
                 $logFilePath,
@@ -126,7 +126,7 @@ final class GlobalExceptionHandler
             );
         }
 
-        // ── 4. Emisión de respuesta RFC 7807 ────────────────────────────
+        // â¬â¬ 4. Emisión de respuesta RFC 7807 â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
         self::emitRfc7807Response(
             httpStatus : $httpStatus,
             type       : $type,
@@ -137,9 +137,9 @@ final class GlobalExceptionHandler
         );
     }
 
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
     //  CLASIFICADOR DE EXCEPCIONES
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 
     /**
      * Mapea el tipo de excepción a [httpStatus, typeUri, title].
@@ -151,39 +151,39 @@ final class GlobalExceptionHandler
         $baseUri = 'https://carolinamoraestetica.com/errors';
 
         return match (true) {
-            // 422 — Reglas de negocio violadas (lanzadas desde Domain)
+            // 422 â¬ Reglas de negocio violadas (lanzadas desde Domain)
             $throwable instanceof DomainException
                 => [422, "{$baseUri}/business-rule-violation", 'Violación de Regla de Negocio'],
 
-            // 400 — Datos de entrada inválidos
+            // 400 â¬ Datos de entrada inválidos
             $throwable instanceof InvalidArgumentException
                 => [400, "{$baseUri}/invalid-input", 'Datos de Entrada Inválidos'],
 
-            // 401 — No autenticado
+            // 401 â¬ No autenticado
             $throwable instanceof \App\Infrastructure\Shared\Errors\Exceptions\UnauthorizedException
                 => [401, "{$baseUri}/unauthorized", 'No Autorizado'],
 
-            // 403 — Autenticado pero sin permisos
+            // 403 â¬ Autenticado pero sin permisos
             $throwable instanceof \App\Infrastructure\Shared\Errors\Exceptions\ForbiddenException
                 => [403, "{$baseUri}/forbidden", 'Acceso Prohibido'],
 
-            // 404 — Recurso no encontrado
+            // 404 â¬ Recurso no encontrado
             $throwable instanceof \App\Infrastructure\Shared\Errors\Exceptions\NotFoundException
                 => [404, "{$baseUri}/not-found", 'Recurso No Encontrado'],
 
-            // 409 — Conflicto de idempotencia o concurrencia
+            // 409 â¬ Conflicto de idempotencia o concurrencia
             $throwable instanceof \App\Infrastructure\Shared\Errors\Exceptions\ConflictException
                 => [409, "{$baseUri}/conflict", 'Conflicto de Estado'],
 
-            // 500 — Cualquier fallo de infraestructura no mapeado
+            // 500 â¬ Cualquier fallo de infraestructura no mapeado
             default
                 => [500, "{$baseUri}/internal-server-error", 'Error Interno del Servidor'],
         };
     }
 
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
     //  EMISOR RFC 7807
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 
     /**
      * Emite headers HTTP y payload JSON bajo RFC 7807.
@@ -219,16 +219,16 @@ final class GlobalExceptionHandler
             'instance' => $instance,
         ];
 
-        // Fusionar datos extra SÓLO en entornos no productivos.
+        // Fusionar datos extra SÃLO en entornos no productivos.
         $payload['debug'] = $extraData; // Incluir siempre la información de depuración por ahora.
 
         echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         exit;
     }
 
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
     //  HELPERS PRIVADOS
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 
     /**
      * Devuelve un mensaje seguro para producción según el código HTTP.

@@ -9,7 +9,7 @@ use PDO;
 use Exception;
 
 /**
- * CashRegisterController — Controlador POS y Caja Chica
+ * CashRegisterController â¬ Controlador POS y Caja Chica
  *
  * Administra aperturas de caja, cierres de turno y pagos idempotentes en el POS.
  */

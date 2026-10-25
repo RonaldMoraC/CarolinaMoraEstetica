@@ -17,18 +17,18 @@ use RuntimeException;
  *   3. Lanzar RuntimeException (nunca exponer credenciales) ante cualquier fallo.
  *
  * Cumple:
- *  - Skill 1  → strict_types, sin acoplamiento a clases concretas externas
- *  - Skill 10 → ATTR_EMULATE_PREPARES = false bloquea inyección SQL de segundo orden
- *  - Skill 7  → charset utf8mb4 + timezone de sesión forzada a America/Bogota
+ *  - Skill 1  â  strict_types, sin acoplamiento a clases concretas externas
+ *  - Skill 10 â  ATTR_EMULATE_PREPARES = false bloquea inyección SQL de segundo orden
+ *  - Skill 7  â  charset utf8mb4 + timezone de sesión forzada a America/Bogota
  */
 final class ConnectionFactory
 {
     /** No se permite instanciar esta clase; es una fábrica puramente estática. */
     private function __construct() {}
 
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
     //  FACTORY METHOD PRINCIPAL
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 
     /**
      * Crea y devuelve una instancia PDO configurada a partir de las variables
@@ -42,7 +42,7 @@ final class ConnectionFactory
      */
     public static function createFromEnv(): PDO
     {
-        // ── 1. Lectura y validación de variables de entorno ──────────────
+        // â¬â¬ 1. Lectura y validación de variables de entorno â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
         $required = ['DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASS'];
 
         foreach ($required as $key) {
@@ -60,12 +60,12 @@ final class ConnectionFactory
         $user   = (string) self::env('DB_USER');
         $pass   = (string) self::env('DB_PASS');
 
-        // ── 2. Construcción del DSN ──────────────────────────────────────
+        // â¬â¬ 2. Construcción del DSN â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
         // charset=utf8mb4 garantiza soporte completo de emojis y caracteres
         // multibyte sin corrupción silenciosa al persistir.
         $dsn = "mysql:host={$host};port={$port};dbname={$dbName};charset=utf8mb4";
 
-        // ── 3. Atributos de conexión obligatorios ────────────────────────
+        // â¬â¬ 3. Atributos de conexión obligatorios â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
         $options = [
             // Convierte errores PDO en excepciones PHP (nunca fallos silenciosos).
             PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
@@ -86,11 +86,11 @@ final class ConnectionFactory
             PDO::ATTR_TIMEOUT            => 5,
         ];
 
-        // ── 4. Apertura de conexión con manejo defensivo ─────────────────
+        // â¬â¬ 4. Apertura de conexión con manejo defensivo â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
         try {
             $pdo = new PDO($dsn, $user, $pass, $options);
 
-            // Skill 7 — Forzar zona horaria de sesión MySQL a America/Bogota
+            // Skill 7 â¬ Forzar zona horaria de sesión MySQL a America/Bogota
             // para garantizar coherencia absoluta en columnas DATETIME/TIMESTAMP.
             // Se usa UTC-5 fijo para evitar problemas con el cambio de horario.
             $pdo->exec("SET time_zone = '-05:00'");
@@ -113,9 +113,9 @@ final class ConnectionFactory
         }
     }
 
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
     //  HELPER PRIVADO
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 
     /**
      * Lee una variable del entorno priorizando $_ENV sobre getenv().

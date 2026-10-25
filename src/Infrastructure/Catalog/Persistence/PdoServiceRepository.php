@@ -13,9 +13,9 @@ use PDO;
  * Soporta paginación server-side, búsqueda LIKE y filtro por categoría.
  *
  * Cumple:
- *  - Skill 1  → strict_types, inyección PDO por constructor
- *  - Skill 10 → Sentencias preparadas con bindValue, ZERO concatenación SQL
- *  - Skill 12 → Índice idx_service_lookup (is_active, category_id) para
+ *  - Skill 1  â  strict_types, inyección PDO por constructor
+ *  - Skill 10 â  Sentencias preparadas con bindValue, ZERO concatenación SQL
+ *  - Skill 12 â  Índice idx_service_lookup (is_active, category_id) para
  *                renderización paginada de alta velocidad
  */
 final class PdoServiceRepository implements ServiceRepositoryInterface
@@ -27,13 +27,13 @@ final class PdoServiceRepository implements ServiceRepositoryInterface
         $this->pdo = $pdo;
     }
 
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
     //  CONSULTA PAGINADA CON FILTROS
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 
     public function getPaginated(int $page = 1, int $perPage = 15, string $search = '', ?int $categoryId = null, ?bool $isActive = null): array
     {
-        // Skill 12 — Construcción dinámica de WHERE con bindValue
+        // Skill 12 â¬ Construcción dinámica de WHERE con bindValue
         // para mantener sentencias preparadas sin concatenación SQL.
         $whereParts = [];
         $bindParams = [];
@@ -57,7 +57,7 @@ final class PdoServiceRepository implements ServiceRepositoryInterface
             ? 'WHERE ' . implode(' AND ', $whereParts)
             : '';
 
-        // ── COUNT total ──────────────────────────────────────────────
+        // â¬â¬ COUNT total â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
         $countSql = "SELECT COUNT(*) AS total
                      FROM service s
                      {$whereClause}";
@@ -72,8 +72,8 @@ final class PdoServiceRepository implements ServiceRepositoryInterface
         $totalPages   = $perPage > 0 ? (int) max(1, ceil($totalRecords / $perPage)) : 1;
         $offset       = ($page - 1) * $perPage;
 
-        // ── DATA paginada ────────────────────────────────────────────
-        // Skill 12 — JOIN con service_category para enriquecer la
+        // â¬â¬ DATA paginada â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
+        // Skill 12 â¬ JOIN con service_category para enriquecer la
         // respuesta sin N+1 (una sola consulta masiva indexada).
         $dataSql = "SELECT
                         s.service_id,
@@ -115,7 +115,7 @@ final class PdoServiceRepository implements ServiceRepositoryInterface
 
     /**
      * Obtiene todos los servicios activos del catálogo.
-     * Útil para asignaciones masivas y filtros.
+     * Ãatil para asignaciones masivas y filtros.
      */
     public function findAllActive(): array
     {
@@ -151,9 +151,9 @@ final class PdoServiceRepository implements ServiceRepositoryInterface
         return $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
     //  CONSULTA POR ID
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 
     public function findById(int $serviceId): ?array
     {
@@ -190,9 +190,9 @@ final class PdoServiceRepository implements ServiceRepositoryInterface
         return $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     }
     
-    // ─────────────────────────────────────────────────────────
-    //  CREACIÓN
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
+    //  CREACIÃN
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
     
     public function create(array $data): int
     {
@@ -212,9 +212,9 @@ final class PdoServiceRepository implements ServiceRepositoryInterface
         return (int) $this->pdo->lastInsertId();
     }
     
-    // ─────────────────────────────────────────────────────────
-    //  ACTUALIZACIÓN
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
+    //  ACTUALIZACIÃN
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
     
     /**
      * Actualiza un servicio de forma atómica.
@@ -293,9 +293,9 @@ final class PdoServiceRepository implements ServiceRepositoryInterface
         }
     }
     
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
     //  TOGGLE ACTIVO / INACTIVO
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
     
     /**
      * Cambia el estado de activación delegando en el método update

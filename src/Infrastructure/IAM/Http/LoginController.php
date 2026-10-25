@@ -101,7 +101,7 @@ final class LoginController
             $role = strtoupper(trim((string) $roleRaw));
 
             $redirectPath = match (true) {
-                in_array($role, ['SUPER_ADMIN', 'BRANCH_ADMIN', 'RECEPCIONIST', '1', 'ADMIN'], true) => '/admin/dashboard',
+                in_array($role, ['SUPER_ADMIN', 'MANAGER', 'ESPECIALIST', 'RECEPCIONIST', '1', 'ADMIN'], true) => '/admin/dashboard',
                 default => '/app/dashboard',
             };
 

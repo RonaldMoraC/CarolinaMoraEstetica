@@ -27,7 +27,7 @@
         </div>
 
         <div class="glass p-8 md:p-10 rounded-sm shadow-2xl">
-            <h1 class="text-3xl font-serif italic text-slate-900 dark:text-white mb-2 text-center">Únete a la Exclusividad</h1>
+            <h1 class="text-3xl font-serif italic text-slate-900 dark:text-white mb-2 text-center">Ãanete a la Exclusividad</h1>
             <p class="text-[10px] tracking-[0.2em] uppercase text-brand-goldDark dark:text-brand-gold text-center mb-10 font-bold">Crea tu cuenta de cliente</p>
 
             <form id="registerForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -55,7 +55,7 @@
                     <label for="password" class="block text-[10px] uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2 font-bold">Contraseña</label>
                     <div class="relative">
                         <input type="password" id="password" required autocomplete="new-password" 
-                            class="w-full bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 p-4 text-sm rounded-sm focus:border-brand-gold outline-none transition-all dark:text-white pr-12" placeholder="••••••••">
+                            class="w-full bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 p-4 text-sm rounded-sm focus:border-brand-gold outline-none transition-all dark:text-white pr-12" placeholder="⬢⬢⬢⬢⬢⬢⬢⬢">
                         <button type="button" onclick="togglePassword()" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-brand-gold">
                             <svg id="eye-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -87,7 +87,7 @@
 
     <script>
         /**
-         * basePath — Detecta el subdirectorio del proyecto dinámicamente.
+         * basePath â¬ Detecta el subdirectorio del proyecto dinámicamente.
          */
         const basePath = (function() {
             const segments = window.location.pathname.split('/').filter(Boolean);
@@ -133,7 +133,7 @@
             statusMessage.classList.add('hidden');
 
             // Validaciones de Integridad (Skill 10: Sanitización Perimetral)
-            const nameRegex = /^[a-zA-ZÀ-ÿ\s]{2,40}$/;
+            const nameRegex = /^[a-zA-Zì-ÿ\s]{2,40}$/;
             if (!nameRegex.test(fields.firstName.value.trim())) {
                 fields.firstName.classList.add('border-red-500');
                 showError('El nombre debe contener solo letras y al menos 2 caracteres.');

@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Shared\Errors\Exceptions;
 
 /**
- * ForbiddenException — HTTP 403
+ * ForbiddenException â¬ HTTP 403
  *
  * Se lanza cuando el usuario está autenticado pero no tiene permisos
  * suficientes para ejecutar la acción solicitada (control de roles).

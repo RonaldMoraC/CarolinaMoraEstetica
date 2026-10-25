@@ -5,9 +5,9 @@ declare(strict_types=1);
     <div class="container mx-auto px-6">
         <div class="flex flex-col items-center text-center mb-16">
             <div class="flex items-center space-x-1 mb-2">
-                <div class="text-brand-gold">✦</div>
+                <div class="text-brand-gold">âS¦</div>
                 <span class="text-brand-goldDark dark:text-brand-gold font-bold text-xs uppercase tracking-[0.25em]">Estudio Clínico</span>
-                <div class="text-brand-gold">✦</div>
+                <div class="text-brand-gold">âS¦</div>
             </div>
             <h2 class="text-4xl font-bold text-slate-950 dark:text-white font-serif">Nuestro Equipo de Especialistas</h2>
             <div class="w-16 h-1 bg-gradient-to-r from-brand-goldDark to-brand-gold mx-auto mt-4 mb-4"></div>

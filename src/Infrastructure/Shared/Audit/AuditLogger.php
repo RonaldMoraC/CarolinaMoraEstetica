@@ -10,11 +10,11 @@ namespace App\Infrastructure\Shared\Audit;
  * Provee métodos semánticos con nombres de acción estandarizados
  * para que los Casos de Uso no construyan los strings de acción manualmente.
  *
- * Patrón: Fachada (Facade) — no añade lógica de negocio, solo simplifica la API.
+ * Patrón: Fachada (Facade) â¬ no añade lógica de negocio, solo simplifica la API.
  *
  * Cumple:
- *  - Skill 9  → Inyecta el repositorio INSERT-only por constructor
- *  - Skill 1  → strict_types, sin instanciaciones internas
+ *  - Skill 9  â  Inyecta el repositorio INSERT-only por constructor
+ *  - Skill 1  â  strict_types, sin instanciaciones internas
  */
 final class AuditLogger
 {
@@ -22,9 +22,9 @@ final class AuditLogger
         private readonly SystemAuditLogRepository $repository
     ) {}
 
-    // ─────────────────────────────────────────────────────────
-    //  MÉTODOS SEMÁNTICOS POR CONTEXTO
-    // ─────────────────────────────────────────────────────────
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
+    //  MÃ0TODOS SEMÁNTICOS POR CONTEXTO
+    // â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 
     /**
      * Registra cualquier mutación de forma genérica.
@@ -43,7 +43,7 @@ final class AuditLogger
         $this->repository->insert($actorId, $action, $entityType, $entityId, $oldValues, $newValues);
     }
 
-    // ── IAM ──────────────────────────────────────────────────
+    // â¬â¬ IAM â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 
     /** @param array<string, mixed> $newUserData */
     public function userRegistered(string $actorId, int $userId, array $newUserData): void
@@ -57,7 +57,7 @@ final class AuditLogger
         $this->repository->insert($actorId, 'ROLE_ASSIGNED', 'user', $userId, $oldRole, $newRole);
     }
 
-    // ── Booking ──────────────────────────────────────────────
+    // â¬â¬ Booking â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 
     /** @param array<string, mixed> $appointmentData */
     public function appointmentCreated(string $actorId, int $appointmentId, array $appointmentData): void
@@ -94,7 +94,7 @@ final class AuditLogger
         $this->repository->insert($actorId, $action, 'appointment', $appointmentId, $oldState, $newState);
     }
 
-    // ── Billing ──────────────────────────────────────────────
+    // â¬â¬ Billing â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 
     /** @param array<string, mixed> $paymentData */
     public function paymentRegistered(string $actorId, int $paymentId, array $paymentData): void
@@ -123,7 +123,7 @@ final class AuditLogger
         $this->repository->insert($actorId, 'CASH_REGISTER_CLOSED', 'cash_register_session', $sessionId, $sessionData, []);
     }
 
-    // ── Catalog ──────────────────────────────────────────────
+    // â¬â¬ Catalog â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 
     /**
      * @param array<string, mixed> $oldValues

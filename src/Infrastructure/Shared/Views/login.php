@@ -5,6 +5,7 @@ declare(strict_types=1);
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acceso Exclusivo - Carolina Mora Estética</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -32,11 +33,11 @@ declare(strict_types=1);
     </style>
     <script>
         /**
-         * basePath — Detecta el subdirectorio del proyecto dinámicamente.
+         * basePath â¬ Detecta el subdirectorio del proyecto dinámicamente.
          * Ejemplo: para http://localhost/CarolinaMoraEstetica/login
-         *   → basePath = '/CarolinaMoraEstetica'
+         *   â  basePath = '/CarolinaMoraEstetica'
          * Para http://localhost/login (producción en root)
-         *   → basePath = ''
+         *   â  basePath = ''
          */
         const basePath = (function() {
             const segments = window.location.pathname.split('/').filter(Boolean);
@@ -59,7 +60,7 @@ declare(strict_types=1);
             const role = (localStorage.getItem('user_role') || '').toUpperCase().trim();
 
             if (token && role) {
-                const target = ['SUPER_ADMIN', 'BRANCH_ADMIN', 'RECEPCIONIST', 'ADMIN', '1'].includes(role)
+                const target = ['SUPER_ADMIN', 'RECEPCIONIST', 'RECEPCIONIST', 'ADMIN', '1'].includes(role)
                     ? basePath + '/admin/dashboard'
                     : basePath + '/app/dashboard';
 
@@ -103,7 +104,7 @@ declare(strict_types=1);
                     <div class="relative">
                         <input type="password" id="password" name="password" required autocomplete="current-password"
                             class="w-full bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 p-4 text-sm rounded-sm focus:border-brand-gold outline-none transition-all dark:text-white pr-12"
-                            placeholder="••••••••">
+                            placeholder="⬢⬢⬢⬢⬢⬢⬢⬢">
                         <button type="button" onclick="togglePassword()" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-brand-gold transition-colors">
                             <svg id="eye-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />

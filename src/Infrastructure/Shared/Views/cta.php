@@ -12,7 +12,7 @@ declare(strict_types=1);
         </p>
         <div class="inline-flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6">
             <a href="https://wa.me/573218915292" target="_blank" class="bg-gradient-to-r from-brand-goldDark to-brand-gold text-white px-12 py-6 rounded-sm font-bold text-sm tracking-[0.25em] uppercase shadow-2xl hover:brightness-110 transform hover:scale-[1.03] transition-all duration-300">
-                RESERVAR VALORACIÓN GRATUITA
+                RESERVAR VALORACIÃN GRATUITA
             </a>
         </div>
         

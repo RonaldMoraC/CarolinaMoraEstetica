@@ -8,7 +8,7 @@ use App\Infrastructure\Shared\Helpers\ResponseHelper;
 use App\Infrastructure\Shared\Security\AuthMiddleware;
 
 /**
- * CancelAppointmentController — Controlador HTTP
+ * CancelAppointmentController â¬ Controlador HTTP
  *
  * DELETE /api/v1/booking/appointments/{id}
  *
@@ -16,9 +16,9 @@ use App\Infrastructure\Shared\Security\AuthMiddleware;
  * Verifica ownership mediante el auth_user inyectado por AuthMiddleware.
  *
  * Cumple:
- *  - Skill 1  → strict_types, inyección por constructor
- *  - Skill 4  → Errores via ResponseHelper (RFC 7807 compatible)
- *  - Skill 10 → Casteo explícito defensivo en la periferia
+ *  - Skill 1  â  strict_types, inyección por constructor
+ *  - Skill 4  â  Errores via ResponseHelper (RFC 7807 compatible)
+ *  - Skill 10 â  Casteo explícito defensivo en la periferia
  */
 final class CancelAppointmentController
 {

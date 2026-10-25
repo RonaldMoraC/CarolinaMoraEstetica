@@ -6,7 +6,7 @@ namespace App\Infrastructure\Shared\Security;
 use App\Infrastructure\Shared\Security\JwtTokenManager;
 
 /**
- * AuthMiddleware — Guardia de Seguridad Perimetral
+ * AuthMiddleware â¬ Guardia de Seguridad Perimetral
  * 
  * Valida la identidad del solicitante mediante JWT antes de permitir
  * el acceso a la lógica de negocio.

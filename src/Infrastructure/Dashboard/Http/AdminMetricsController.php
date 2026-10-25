@@ -14,9 +14,9 @@ use App\Infrastructure\Shared\Logging\AppLogger;
  * Orquesta la obtención de KPIs del Dashboard y emite la respuesta JSON.
  *
  * Cumple:
- *  - Skill 1  → strict_types, inyección por constructor, sin acoplamiento directo
- *  - Skill 4  → Errores formateados bajo RFC 7807 via ResponseHelper
- *  - Skill 10 → No recibe datos de entrada que requieran sanitización (endpoint GET)
+ *  - Skill 1  â  strict_types, inyección por constructor, sin acoplamiento directo
+ *  - Skill 4  â  Errores formateados bajo RFC 7807 via ResponseHelper
+ *  - Skill 10 â  No recibe datos de entrada que requieran sanitización (endpoint GET)
  */
 final class AdminMetricsController
 {

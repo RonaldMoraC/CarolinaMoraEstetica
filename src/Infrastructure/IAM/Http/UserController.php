@@ -84,7 +84,7 @@ final class UserController
         if (!$input) throw new \InvalidArgumentException('Cuerpo de petición inválido');
 
         if ($id) {
-            // ── MODO UPDATE ────────────────────────────────────────────────────
+            // â¬â¬ MODO UPDATE â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
             $setClauses = [];
             $bindings   = [];
 
@@ -138,7 +138,7 @@ final class UserController
             $stmt->execute([$id]);
 
         } else {
-            // ── MODO INSERT ────────────────────────────────────────────────────
+            // â¬â¬ MODO INSERT â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
             $email = trim((string)($input['email'] ?? ''));
             if ($email === '') throw new \InvalidArgumentException('El correo electrónico es obligatorio.');
 

@@ -101,7 +101,8 @@ class InventarioController
         $categoriaId = isset($_GET['categoria_id']) && $_GET['categoria_id'] !== '' ? (int)$_GET['categoria_id'] : null;
         $estadoStock = $_GET['estado_stock'] ?? null;
 
-        $productos = $this->productoModel->obtenerTodos($busqueda, $categoriaId, $estadoStock);
+        $incluirInactivos = isset($_GET['incluir_inactivos']) && $_GET['incluir_inactivos'] === '1';
+        $productos = $this->productoModel->obtenerTodos($busqueda, $categoriaId, $estadoStock, $incluirInactivos);
         $metricas = $this->productoModel->obtenerMetricas();
 
         echo json_encode([
@@ -143,7 +144,7 @@ class InventarioController
             $nuevoId = $this->productoModel->crear($data);
 
             if ($data['current_stock'] > 0) {
-                $this->movimientoModel->registrar($nuevoId, $_SESSION['usuarioSesion']['id'] ?? null, 'ENTRADA_INICIAL', $data['current_stock'], 'Stock inicial al crear producto');
+                $this->movimientoModel->registrar($nuevoId, $_SESSION['usuarioSesion']['id'] ?? null, 'ENTRADA_COMPRA', $data['current_stock'], 'Stock inicial al crear producto');
             }
 
             echo json_encode(['status' => 'success', 'message' => 'Producto creado correctamente.', 'id' => $nuevoId]);
@@ -160,8 +161,12 @@ class InventarioController
             return;
         }
 
-        $this->productoModel->eliminar($id);
-        echo json_encode(['status' => 'success', 'message' => 'Producto eliminado correctamente.']);
+        $resultado = $this->productoModel->eliminarConReglaIntegridad($id);
+        echo json_encode([
+            'status' => 'success',
+            'action' => $resultado['action'],
+            'message' => $resultado['message']
+        ]);
     }
 
     private function registrarMovimiento(): void

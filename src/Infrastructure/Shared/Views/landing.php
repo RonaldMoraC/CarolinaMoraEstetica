@@ -194,7 +194,7 @@ declare(strict_types=1);
                 data.list.forEach(item => {
                     const li = document.createElement('li');
                     li.className = 'flex items-center space-x-3 text-sm text-slate-700 dark:text-slate-300';
-                    li.innerHTML = `<span class="text-brand-gold">✔</span><span>${item}</span>`;
+                    li.innerHTML = `<span class="text-brand-gold">âS</span><span>${item}</span>`;
                     list.appendChild(li);
                 });
 
@@ -277,7 +277,7 @@ declare(strict_types=1);
             const icon = document.getElementById(`icon-${id}`);
             if (answer.classList.contains('hidden')) {
                 answer.classList.remove('hidden');
-                icon.innerText = '−';
+                icon.innerText = 'âÆ';
             } else {
                 answer.classList.add('hidden');
                 icon.innerText = '+';
@@ -315,8 +315,8 @@ declare(strict_types=1);
                 return '/' + segments.slice(0, pubIdx).join('/');
             }
             // Sin 'public': el primer segmento es el nombre del proyecto.
-            // Ejemplo: /CarolinaMoraEstetica/  → '/CarolinaMoraEstetica'
-            // Ejemplo: /CarolinaMoraEstetica/login → '/CarolinaMoraEstetica'
+            // Ejemplo: /CarolinaMoraEstetica/  â  '/CarolinaMoraEstetica'
+            // Ejemplo: /CarolinaMoraEstetica/login â  '/CarolinaMoraEstetica'
             return segments.length > 0 ? '/' + segments[0] : '';
         }
 
@@ -339,7 +339,7 @@ declare(strict_types=1);
             if (token && role && authZone) {
                 const base = getProjectBase();
                 
-                const target = (role === 'SUPER_ADMIN' || role === 'BRANCH_ADMIN' || role === 'RECEPCIONIST')
+                const target = (role === 'SUPER_ADMIN' || role === 'MANAGER' || role === 'ESPECIALIST' || role === 'RECEPCIONIST')
                     ? '/admin/dashboard' : '/app/dashboard';
 
                 const fullPath = base + target;
