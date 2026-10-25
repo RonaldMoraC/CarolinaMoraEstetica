@@ -1,16 +1,17 @@
-﻿<?php declare(strict_types=1);
+﻿<?php
+
 /**
- * GestiÃ³n de Promociones - Panel Administrativo
- * EstÃ©tica Carolina Mora - CarolinaMoraEstetica
+ * Gestión de Promociones - Panel Administrativo
+ * Estética Carolina Mora - CarolinaMoraEstetica
  *
- * CreaciÃ³n y administraciÃ³n de campaÃ±as de descuento y cÃ³digos promocionales.
+ * Creación y administración de campañas de descuento y códigos promocionales.
  * Consume: /api/v1/catalog/promotions
  */
 
 define('ADMIN_LAYOUT_LOADED', true);
 
 $pageTitle = 'Estrategias y Promociones';
-$pageSubtitle = 'DiseÃ±e campaÃ±as de marketing digital y cÃ³digos de descuento para el autoservicio del cliente.';
+$pageSubtitle = 'Diseñe campañas de marketing digital y códigos de descuento para el autoservicio del cliente.';
 $activeModule = 'promociones';
 
 $extraCSS = <<<CSS
@@ -32,24 +33,21 @@ $extraCSS = <<<CSS
 }
 CSS;
 
-ob_start();
-?>
+// Leer el rol desde la cookie para verificar privilegios de edición.
+$userRole = $_COOKIE['user_role'] ?? '';
+$isAdmin = in_array($userRole, ['SUPER_ADMIN', 'MANAGER'], true);
 
-<?php
-// Hardening de seguridad: Verificar rol en el servidor
-// Suponiendo que el layout de admin proporciona $user o acceso a la sesiÃ³n.
-// Si no, definimos una bandera basada en el rol.
-$isAdmin = isset($userRole) && in_array($userRole, ['SUPER_ADMIN', 'MANAGER', '1'], true);
+ob_start();
 ?>
 
 <div class="layout-split">
     <?php if ($isAdmin): ?>
-    <!-- Formulario de creaciÃ³n (Solo Admin) -->
+    <!-- Formulario de creación (Solo Admin) -->
     <section class="card promo-form-section">
-        <h3 class="card__title">Crear Nueva CampaÃ±a</h3>
+        <h3 class="card__title">Crear Nueva Campaña</h3>
         <form id="promoForm" novalidate>
             <!-- ... campos del formulario ... -->
-            <button type="submit" class="btn btn--primary btn--block mt-4">Crear CampaÃ±a</button>
+            <button type="submit" class="btn btn--primary btn--block mt-4">Crear Campaña</button>
         </form>
     </section>
     <?php endif; ?>
@@ -57,7 +55,7 @@ $isAdmin = isset($userRole) && in_array($userRole, ['SUPER_ADMIN', 'MANAGER', '1
     <!-- Historial de promociones -->
     <section class="card" style="flex:2;">
         <div class="d-flex justify-between align-center" style="margin-bottom:16px;">
-            <h3 class="card__title" style="margin:0;border:none;padding:0;">Historial de CampaÃ±as</h3>
+            <h3 class="card__title" style="margin:0;border:none;padding:0;">Historial de Campañas</h3>
             <div>
                 <select id="filtroEstado" class="form-control" style="width:auto;">
                     <option value="todos">Todas</option>
@@ -71,7 +69,7 @@ $isAdmin = isset($userRole) && in_array($userRole, ['SUPER_ADMIN', 'MANAGER', '1
             <table class="table">
                 <thead>
                     <tr>
-                        <th>CÃ³digo</th>
+                        <th>Código</th>
                         <th>Descuento</th>
                         <th>Servicios</th>
                         <th>Periodo de Validez</th>
@@ -90,7 +88,7 @@ $isAdmin = isset($userRole) && in_array($userRole, ['SUPER_ADMIN', 'MANAGER', '1
 <?php
 $pageContent = ob_get_clean();
 
-$extraJS = <<<JS
+$extraJS = <<<'JS'
 document.addEventListener('DOMContentLoaded', () => {
     const api = window.adminApi;
     const alerts = window.adminAlerts;
@@ -102,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarServiciosParaSelect();
     cargarPromociones();
 
-        // Inyectar bandera de admin desde el contexto de la sesiÃ³n o PHP
+        // Inyectar bandera de admin desde el contexto de la sesión o PHP
         const isAdmin = <?php echo json_encode($isAdmin); ?>;
 
         // Listener delegado para las acciones de la tabla
@@ -116,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // ValidaciÃ³n dinÃ¡mica de fechas
+        // Validación dinámica de fechas
         const inputInicio = document.getElementById('fecha_inicio');
         const inputFin = document.getElementById('fecha_fin');
 
@@ -144,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
                 if (new Date(fin) < new Date(inicio)) {
-                    alerts.error('La fecha de finalizaciÃ³n no puede ser anterior a la de inicio.');
+                    alerts.error('La fecha de finalización no puede ser anterior a la de inicio.');
                     return;
                 }
 
@@ -168,18 +166,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (api) {
                         const res = await api.post('/catalog/promotions', payload);
                         if (res.success) {
-                            alerts.success('CampaÃ±a "' + codigo + '" registrada exitosamente.');
+                            alerts.success('Campaña "' + codigo + '" registrada exitosamente.');
                             document.getElementById('promoForm').reset();
                             await cargarPromociones();
                             return;
                         } else {
-                            throw new Error(res.detail || 'No se pudo registrar la campaÃ±a.');
+                            throw new Error(res.detail || 'No se pudo registrar la campaña.');
                         }
                     }
-                    alerts.success('CampaÃ±a "' + codigo + '" registrada (simulaciÃ³n).');
+                    alerts.success('Campaña "' + codigo + '" registrada (simulación).');
                     document.getElementById('promoForm').reset();
                 } catch (error) {
-                    alerts.error(error.message || 'Error al crear la campaÃ±a.');
+                    alerts.error(error.message || 'Error al crear la campaña.');
                 } finally {
                     btnSubmit.disabled = false;
                     btnSubmit.textContent = textoOriginal;
@@ -256,7 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Calcula el estado de una promociÃ³n segÃºn sus fechas
+     * Calcula el estado de una promoción según sus fechas
      * @param {string} inicio
      * @param {string} fin
      * @returns {string}
@@ -304,10 +302,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td><span class="promo-code">\${escapeHtml(p.name)}</span></td>
                     <td class="fw-bold">\${p.discount_percentage}% OFF</td>
                     <td class="text-muted">\${p.services_count} servicios</td>
-                    <td class="text-muted" style="font-size:0.85rem;">\${fechaInicio} â€” \${fechaFin}</td>
+                    <td class="text-muted" style="font-size:0.85rem;">\${fechaInicio} — \${fechaFin}</td>
                     <td><span class="badge \${status.class}">\${status.label}</span></td>
                     \${isAdmin ? \`<td style="text-align:center;">
-                        <button class="btn btn--ghost btn--sm" onclick="eliminarPromocion(\${p.promotion_id})" title="Eliminar">ðŸ—‘ï¸</button>
+                        <button class="btn btn--ghost btn--sm" onclick="eliminarPromocion(\${p.promotion_id})" title="Eliminar">🗑️</button>
                     </td>\` : ''}
                 </tr>
             \`;
@@ -315,32 +313,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Elimina una promociÃ³n (baja lÃ³gica)
+     * Elimina una promoción (baja lógica)
      * @param {number} id
      */
     window.eliminarPromocion = async function(id) {
         const promo = promociones.find(p => p.promotion_id === id);
         if (!promo) return;
 
-        if (!confirm(\`Â¿Eliminar la campaÃ±a "\${promo.name}"? Esta acciÃ³n desactivarÃ¡ el cÃ³digo de descuento permanentemente.\`)) return;
+        if (!confirm(\`¿Eliminar la campaña "\${promo.name}"? Esta acción desactivará el código de descuento permanentemente.\`)) return;
 
         try {
             if (api) {
                 const res = await api.delete(\`/catalog/promotions/\${id}\`);
                 if (res.success) {
-                    alerts.success(\`CampaÃ±a "\${promo.name}" eliminada correctamente.\`);
+                    alerts.success(\`Campaña "\${promo.name}" eliminada correctamente.\`);
                     promociones = promociones.filter(p => p.promotion_id !== id);
                     renderPromociones();
                     return;
                 }
             }
 
-            // SimulaciÃ³n
+            // Simulación
             promociones = promociones.filter(p => p.promotion_id !== id);
             renderPromociones();
-            alerts.success(\`CampaÃ±a "\${promo.name}" eliminada (simulaciÃ³n).\`);
+            alerts.success(\`Campaña "\${promo.name}" eliminada (simulación).\`);
         } catch (error) {
-            alerts.error(error.message || 'Error al eliminar la promociÃ³n.');
+            alerts.error(error.message || 'Error al eliminar la promoción.');
         }
     };
 

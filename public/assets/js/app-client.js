@@ -1,6 +1,6 @@
-﻿/**
- * MÃ³dulo Principal del Panel Cliente (PWA)
- * EstÃ©tica Carolina Mora - CarolinaMoraEstetica
+/**
+ * Módulo Principal del Panel Cliente (PWA)
+ * Estética Carolina Mora - CarolinaMoraEstetica
  *
  * Arquitectura JS modular separada del backend PHP.
  * Comunica con la API REST mediante fetch + JWT.
@@ -57,7 +57,7 @@ class ApiClient {
         try {
             const response = await fetch(url, config);
 
-            // Manejo de expiraciÃ³n o token no vÃ¡lido con intento de Refresh Token automÃ¡tico
+            // Manejo de expiración o token no válido con intento de Refresh Token automático
             if (response.status === 401 && !isRetry && !endpoint.includes('/auth/refresh') && !endpoint.includes('/login')) {
                 const refreshed = await this.tryRefreshToken();
                 if (refreshed) {
@@ -75,7 +75,7 @@ class ApiClient {
             }
 
             if (response.status === 403) {
-                throw new Error('No tienes permisos para realizar esta acciÃ³n.');
+                throw new Error('No tienes permisos para realizar esta acción.');
             }
 
             const data = await response.json();
@@ -88,7 +88,7 @@ class ApiClient {
             return data;
         } catch (error) {
             if (error.name === 'TypeError' && error.message.includes('fetch')) {
-                throw new Error('Error de conexiÃ³n. Verifica tu red e intenta nuevamente.');
+                throw new Error('Error de conexión. Verifica tu red e intenta nuevamente.');
             }
             throw error;
         }
@@ -99,7 +99,7 @@ class ApiClient {
             const response = await fetch(this.baseUrl + '/auth/refresh', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                credentials: 'include' // EnvÃ­a la cookie HTTP-Only con el Refresh Token
+                credentials: 'include' // Envía la cookie HTTP-Only con el Refresh Token
             });
 
             if (response.ok) {
@@ -285,25 +285,25 @@ class CatalogView {
         this.allCategories = [];
 
         this.SERVICE_ICONS = {
-            cabello: 'ðŸ’‡â€â™€ï¸', unas: 'ðŸ’…', facial: 'ðŸ§–â€â™€ï¸', cuidado: 'ðŸ§´',
-            colorimetria: 'ðŸŽ¨', estilismo: 'âœ‚ï¸', cejas: 'ðŸ‘ï¸',
-            'estetica facial y avanzada': 'ðŸ§–â€â™€ï¸',
-            micropigmentacion: 'ðŸŽ¨',
-            'cejas pestaÃ±as y cera': 'ðŸ‘ï¸',
-            depilacion: 'ðŸ§´',
-            laser: 'âš¡',
-            default: 'âœ¨'
+            cabello: 'ðx!⬍â"¬️', unas: 'ðx&', facial: 'ðx§⬍â"¬️', cuidado: 'ðx§´',
+            colorimetria: 'ðx}¨', estilismo: 'âS️', cejas: 'ðx️',
+            'estetica facial y avanzada': 'ðx§⬍â"¬️',
+            micropigmentacion: 'ðx}¨',
+            'cejas pestañas y cera': 'ðx️',
+            depilacion: 'ðx§´',
+            laser: 'âa¡',
+            default: 'âS¨'
         };
 
         this.CATEGORY_ICONS = {
-            cabello: 'ðŸ’‡â€â™€ï¸', unas: 'ðŸ’…', facial: 'ðŸ§–â€â™€ï¸', cuidado: 'ðŸ§´',
-            colorimetria: 'ðŸŽ¨', estilismo: 'âœ‚ï¸', cejas: 'ðŸ‘ï¸',
-            'estetica facial y avanzada': 'ðŸ§–â€â™€ï¸',
-            micropigmentacion: 'ðŸŽ¨',
-            'cejas pestaÃ±as y cera': 'ðŸ‘ï¸',
-            depilacion: 'ðŸ§´',
-            laser: 'âš¡',
-            default: 'âœ¨'
+            cabello: 'ðx!⬍â"¬️', unas: 'ðx&', facial: 'ðx§⬍â"¬️', cuidado: 'ðx§´',
+            colorimetria: 'ðx}¨', estilismo: 'âS️', cejas: 'ðx️',
+            'estetica facial y avanzada': 'ðx§⬍â"¬️',
+            micropigmentacion: 'ðx}¨',
+            'cejas pestañas y cera': 'ðx️',
+            depilacion: 'ðx§´',
+            laser: 'âa¡',
+            default: 'âS¨'
         };
     }
 
@@ -360,8 +360,8 @@ class CatalogView {
         const SHORT_LABELS = {
             'estetica facial y avanzada': 'Facial',
             'micropigmentacion': 'Micropig.',
-            'cejas pestaÃ±as y cera': 'Cejas/PestaÃ±as',
-            'depilacion laser': 'LÃ¡ser',
+            'cejas pestañas y cera': 'Cejas/Pestañas',
+            'depilacion laser': 'Láser',
         };
 
         // Normalize for matching: strip accents and commas
@@ -369,19 +369,19 @@ class CatalogView {
             return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/,/g, '').trim();
         }
 
-        // "Todos" button â€” spans full width
+        // "Todos" button â¬ spans full width
         const todosBtn = document.createElement('button');
         todosBtn.className = 'cat-filter col-span-2 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-sm font-semibold text-slate-700 dark:text-slate-300 text-center'
             + (this.currentCategory === 'todos' ? ' active' : '');
         todosBtn.setAttribute('data-cat', 'todos');
-        todosBtn.textContent = 'âœ¨ Todos los servicios';
+        todosBtn.textContent = 'âS¨ Todos los servicios';
         todosBtn.addEventListener('click', () => this.filterByCategory('todos'));
         container.appendChild(todosBtn);
 
         // Category buttons from API
         this.allCategories.forEach(cat => {
             const catName = normalize(cat.name || '');
-            const catLabel = SHORT_LABELS[normalize(cat.name || '')] || SHORT_LABELS[catName] || cat.name || 'CategorÃ­a';
+            const catLabel = SHORT_LABELS[normalize(cat.name || '')] || SHORT_LABELS[catName] || cat.name || 'Categoría';
             const catIcon = this.CATEGORY_ICONS[catName] || this.CATEGORY_ICONS[normalize(cat.name || '')] || this.CATEGORY_ICONS.default;
 
             const btn = document.createElement('button');
@@ -497,7 +497,7 @@ class CatalogView {
                         ${professionals.map(prof => `
                             <button class="professional-btn px-3 py-2 border border-slate-200 dark:border-white/10 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-brand-cyanLight hover:text-brand-cyan hover:border-brand-cyan transition text-left"
                                 data-prof-id="${prof.professional_profile_id}" onclick="AppClient.catalogView.selectProfessional(${prof.professional_profile_id}, '${escapeHtml(prof.display_name)}')">
-                                ðŸ‘©â€âš•ï¸ ${escapeHtml(prof.display_name)}
+                                ðx©⬍âa"️ ${escapeHtml(prof.display_name)}
                             </button>
                         `).join('')}
                     </div>
@@ -515,7 +515,7 @@ class CatalogView {
         const bodyHTML = `
             <div class="space-y-4">
                 <div class="flex items-center gap-3 p-3 bg-brand-cyanLight rounded-xl">
-                    <span class="text-2xl">${this.SERVICE_ICONS[(this.store.getState().services.find(s => (s.id || s.service_id) === id)?.category || '').toLowerCase()] || 'âœ¨'}</span>
+                    <span class="text-2xl">${this.SERVICE_ICONS[(this.store.getState().services.find(s => (s.id || s.service_id) === id)?.category || '').toLowerCase()] || 'âS¨'}</span>
                     <div>
                         <strong class="text-slate-900 dark:text-white">${escapeHtml(name)}</strong>
                         <p class="text-xs text-slate-400">$${escapeHtml(price)}</p>
@@ -629,7 +629,7 @@ class CatalogView {
                 notes: notesInput ? notesInput.value.trim() : null
             });
 
-            this.alerts.success('Â¡Cita creada exitosamente! Fecha: ' + escapeHtml(result.scheduled_date) + ' a las ' + escapeHtml(result.scheduled_time));
+            this.alerts.success('¡Cita creada exitosamente! Fecha: ' + escapeHtml(result.scheduled_date) + ' a las ' + escapeHtml(result.scheduled_time));
 
             sessionStorage.removeItem('servicio_seleccionado_id');
             sessionStorage.removeItem('servicio_seleccionado_nombre');
@@ -730,12 +730,12 @@ class CitasView {
             detailsDiv.className = 'text-xs text-slate-500 dark:text-slate-400 font-semibold space-y-1 mb-3';
 
             const dateP = document.createElement('p');
-            dateP.textContent = 'ðŸ“… ' + date;
+            dateP.textContent = 'ðx& ' + date;
             const timeP = document.createElement('p');
-            timeP.textContent = 'â° ' + time;
+            timeP.textContent = '⏰ ' + time;
             const priceP = document.createElement('p');
             priceP.className = 'text-slate-700 dark:text-slate-300';
-            priceP.textContent = 'ðŸ’° Costo: $' + price;
+            priceP.textContent = 'ðx° Costo: $' + price;
 
             detailsDiv.appendChild(dateP);
             detailsDiv.appendChild(timeP);
@@ -785,11 +785,11 @@ class CitasView {
     cancelAppointment(id) {
         this.modal.open({
             title: 'Cancelar Cita',
-            body: `<p class="text-slate-600 dark:text-slate-400">Â¿EstÃ¡ seguro de que desea cancelar la cita #${escapeHtml(String(id))}? Esta acciÃ³n no se puede revertir.</p>`,
+            body: `<p class="text-slate-600 dark:text-slate-400">¿Está seguro de que desea cancelar la cita #${escapeHtml(String(id))}? Esta acción no se puede revertir.</p>`,
             buttons: [
                 { label: 'No, mantener', class: 'px-4 py-2 border-2 border-slate-300 text-slate-600 text-sm font-semibold rounded-xl hover:bg-slate-100 transition' },
                 {
-                    label: 'SÃ­, cancelar',
+                    label: 'Sí, cancelar',
                     class: 'px-4 py-2 bg-red-500 text-white text-sm font-semibold rounded-xl hover:bg-red-600 transition',
                     onClick: () => this.doCancel(id),
                     close: false
@@ -800,7 +800,7 @@ class CitasView {
 
     async doCancel(id) {
         this.modal.close();
-        this.alerts.info('Procesando cancelaciÃ³n...');
+        this.alerts.info('Procesando cancelación...');
 
         try {
             await this.api.delete('/booking/appointments/' + id);
@@ -873,7 +873,7 @@ class ProfileView {
     async save() {
         const btnGuardar = document.getElementById('btnGuardarPerfil');
 
-        // FunciÃ³n auxiliar de sanitizaciÃ³n local
+        // Función auxiliar de sanitización local
         const sanitize = (str) => {
             if (typeof str !== 'string') return '';
             return str.replace(/[&<>"']/g, (m) => ({
@@ -893,12 +893,12 @@ class ProfileView {
         }
 
         if (newPhone && !/^[0-9+\-\s()]{7,20}$/.test(newPhone)) {
-            this.alerts.error('El nÃºmero de telÃ©fono ingresado no tiene un formato vÃ¡lido.');
+            this.alerts.error('El número de teléfono ingresado no tiene un formato válido.');
             return;
         }
 
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
-            this.alerts.error('El correo electrÃ³nico ingresado no es vÃ¡lido.');
+            this.alerts.error('El correo electrónico ingresado no es válido.');
             return;
         }
 
@@ -915,7 +915,7 @@ class ProfileView {
             document.getElementById('profileName').textContent = newName;
             document.getElementById('headerUserName').textContent = newFirstName || newName;
 
-            this.alerts.success('Â¡Perfil actualizado con Ã©xito!');
+            this.alerts.success('¡Perfil actualizado con éxito!');
         } catch (error) {
             // Fallback: save locally if API not available
             localStorage.setItem('user_name', newName);
@@ -923,7 +923,7 @@ class ProfileView {
             document.getElementById('profileName').textContent = newName;
             document.getElementById('headerUserName').textContent = newFirstName || newName;
 
-            this.alerts.warning('Perfil guardado localmente. La sincronizaciÃ³n con el servidor estarÃ¡ disponible prÃ³ximamente.');
+            this.alerts.warning('Perfil guardado localmente. La sincronización con el servidor estará disponible próximamente.');
         } finally {
             btnGuardar.disabled = false;
             btnGuardar.textContent = 'Guardar Cambios';
@@ -988,7 +988,7 @@ class OfflineIndicator {
     constructor() {
         this.bar = document.createElement('div');
         this.bar.className = 'app-offline-bar';
-        this.bar.textContent = 'Sin conexiÃ³n â€” Los datos pueden no estar actualizados';
+        this.bar.textContent = 'Sin conexión â¬ Los datos pueden no estar actualizados';
         document.body.appendChild(this.bar);
 
         window.addEventListener('offline', () => this.show());

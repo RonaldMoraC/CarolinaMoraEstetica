@@ -1,6 +1,6 @@
-﻿/**
- * MÃ³dulo Principal del Panel Administrativo
- * EstÃ©tica Carolina Mora - CarolinaMoraEstetica
+/**
+ * Módulo Principal del Panel Administrativo
+ * Estética Carolina Mora - CarolinaMoraEstetica
  *
  * Arquitectura JS modular separada del backend PHP.
  * Comunica con la API REST mediante fetch + JWT.
@@ -19,9 +19,9 @@ class ApiClient {
         // el baseUrl debe ser /CarolinaMoraEstetica/api/v1
         if (baseUrl === null) {
             const scriptName = document.currentScript?.src || '';
-            // Alternativa: detectar desde la URL actual de la pÃ¡gina
+            // Alternativa: detectar desde la URL actual de la página
             const currentPath = window.location.pathname;
-            // Buscar el patrÃ³n /public/ o /admin/ para determinar el proyecto root
+            // Buscar el patrón /public/ o /admin/ para determinar el proyecto root
             const publicIndex = currentPath.indexOf('/public');
             const adminIndex = currentPath.indexOf('/admin');
             const cutIndex = Math.min(
@@ -44,7 +44,7 @@ class ApiClient {
     }
 
     /**
-     * Construye headers base con autenticaciÃ³n
+     * Construye headers base con autenticación
      * @param {object} extraHeaders
      * @returns {object}
      */
@@ -54,7 +54,7 @@ class ApiClient {
             ...extraHeaders
         };
 
-        // Agregar override para mÃ©todos que no son GET/POST
+        // Agregar override para métodos que no son GET/POST
         if (!['GET', 'POST'].includes(method.toUpperCase())) {
             headers['X-HTTP-Method-Override'] = method.toUpperCase();
         }
@@ -69,7 +69,7 @@ class ApiClient {
     }
 
     /**
-     * Request genÃ©rico con manejo de errores estandarizado
+     * Request genérico con manejo de errores estandarizado
      * @param {string} method
      * @param {string} endpoint
      * @param {object|null} body
@@ -80,10 +80,10 @@ class ApiClient {
             ? endpoint
             : `${this.baseUrl}${endpoint}`;
 
-        // TÃ©cnica de Method Spoofing (Skill 10: Robustez Perimetral)
-        // Si el mÃ©todo es PUT, PATCH o DELETE, lo enviamos como POST para evitar que 
-        // Apache/XAMPP bloquee la peticiÃ³n o elimine las cabeceras de autorizaciÃ³n.
-        // El Router.php detectarÃ¡ la intenciÃ³n real mediante X-HTTP-Method-Override.
+        // Técnica de Method Spoofing (Skill 10: Robustez Perimetral)
+        // Si el método es PUT, PATCH o DELETE, lo enviamos como POST para evitar que 
+        // Apache/XAMPP bloquee la petición o elimine las cabeceras de autorización.
+        // El Router.php detectará la intención real mediante X-HTTP-Method-Override.
         const fetchMethod = ['GET', 'POST'].includes(method.toUpperCase()) ? method.toUpperCase() : 'POST';
 
         const config = {
@@ -100,19 +100,19 @@ class ApiClient {
 
             // Manejo de errores HTTP
             if (response.status === 401) {
-                // Token expirado o invÃ¡lido
+                // Token expirado o inválido
                 localStorage.removeItem('auth_token');
                 localStorage.removeItem('user_role');
                 
-                // Detectar subcarpeta del proyecto para redirecciÃ³n correcta
+                // Detectar subcarpeta del proyecto para redirección correcta
                 const projectRoot = this.baseUrl.replace('/api/v1', '');
                 window.location.href = projectRoot + '/login';
                 
-                throw new Error('SesiÃ³n expirada. Redirigiendo al login...');
+                throw new Error('Sesión expirada. Redirigiendo al login...');
             }
 
             if (response.status === 403) {
-                throw new Error('No tienes permisos para realizar esta acciÃ³n.');
+                throw new Error('No tienes permisos para realizar esta acción.');
             }
 
             const data = await response.json();
@@ -125,13 +125,13 @@ class ApiClient {
             return data;
         } catch (error) {
             if (error.name === 'TypeError' && error.message.includes('fetch')) {
-                throw new Error('Error de conexiÃ³n. Verifica tu red e intenta nuevamente.');
+                throw new Error('Error de conexión. Verifica tu red e intenta nuevamente.');
             }
             throw error;
         }
     }
 
-    // MÃ©todos semÃ¡nticos
+    // Métodos semánticos
     async get(endpoint) {
         return this.request('GET', endpoint);
     }
@@ -167,7 +167,7 @@ class AdminStore {
             currentModule: null,
             loading: false,
             error: null,
-            // Datos cacheados por mÃ³dulo
+            // Datos cacheados por módulo
             services: [],
             professionals: [],
             branches: [],
@@ -245,11 +245,11 @@ class AdminStore {
      */
     isAdmin() {
         const role = this.state.role;
-        return role === 'SUPER_ADMIN' || role === 'BRANCH_ADMIN' || role === '1';
+        return role === 'SUPER_ADMIN' || role === 'MANAGER' || role === '1';
     }
 
     /**
-     * Verificar permisos especÃ­ficos
+     * Verificar permisos específicos
      * @param {string} requiredRole
      * @returns {boolean}
      */
@@ -324,7 +324,7 @@ class ModalManager {
     }
 
     /**
-     * Abre un modal con contenido dinÃ¡mico
+     * Abre un modal con contenido dinámico
      * @param {object} options
      * @param {string} options.title
      * @param {string} options.body - HTML del cuerpo
@@ -403,7 +403,7 @@ class ModalManager {
 }
 
 /* ============================================================
-   5. TABLA DINÃMICA
+   5. TABLA DINÁMICA
    ============================================================ */
 class DynamicTable {
     /**
@@ -412,7 +412,7 @@ class DynamicTable {
     constructor(selector) {
         this.tbody = document.querySelector(selector);
         if (!this.tbody) {
-            console.warn(`DynamicTable: No se encontrÃ³ tbody con selector "${selector}"`);
+            console.warn(`DynamicTable: No se encontró tbody con selector "${selector}"`);
         }
     }
 
@@ -485,7 +485,7 @@ const AdminApp = (() => {
             window.adminAlerts = alerts;
             window.adminModal = modal;
 
-            // Verificar autenticaciÃ³n
+            // Verificar autenticación
             this.checkAuth();
 
             console.log('[AdminApp] Panel administrativo inicializado');
@@ -495,11 +495,11 @@ const AdminApp = (() => {
             const token = localStorage.getItem('auth_token');
             const role = localStorage.getItem('user_role');
 
-            // Roles de staff vÃ¡lidos para acceso al admin
+            // Roles de staff válidos para acceso al admin
             const staffRoles = ['SUPER_ADMIN', 'MANAGER', 'ESPECIALIST', 'RECEPCIONIST'];
 
             if (!token || !staffRoles.includes(role)) {
-                console.warn('[AdminApp] Sin autenticaciÃ³n vÃ¡lida, redirigiendo al login...');
+                console.warn('[AdminApp] Sin autenticación válida, redirigiendo al login...');
                 const projectRoot = window.location.pathname.split('/public/')[0] || window.location.pathname.split('/admin/')[0] || '';
                 window.location.href = projectRoot + '/login';
             }

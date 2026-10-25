@@ -1,15 +1,17 @@
-﻿<?php declare(strict_types=1);
+<?php
+use App\Infrastructure\Shared\Utils\AppPath;
+
 /**
  * Dashboard Principal del Panel Administrativo
- * EstÃ©tica Carolina Mora - CarolinaMoraEstetica
+ * Estética Carolina Mora - CarolinaMoraEstetica
  *
- * Vista adaptada para supervisiÃ³n operativa y del rol de RecepciÃ³n.
+ * Vista adaptada para supervisión operativa y del rol de Recepción.
  */
 
 define('ADMIN_LAYOUT_LOADED', true);
 
 $pageTitle = 'Dashboard Operativo';
-$pageSubtitle = 'Resumen de la actividad diaria y acceso rÃ¡pido al control de recepciÃ³n.';
+$pageSubtitle = 'Resumen de la actividad diaria y acceso rápido al control de recepción.';
 $activeModule = 'dashboard';
 
 $extraCSS = <<<CSS
@@ -40,13 +42,13 @@ CSS;
 ob_start();
 ?>
 
-<!-- Accesos RÃ¡pidos Operativos -->
+<!-- Accesos Rápidos Operativos -->
 <div class="dashboard-actions">
     <a href="<?php echo AppPath::url('/admin/recepcion'); ?>" class="btn-action-quick">
-        <span>ðŸ“‹ Ir al Control de RecepciÃ³n y Check-in</span>
+        <span>📋 Ir al Control de Recepción y Check-in</span>
     </a>
     <a href="<?php echo AppPath::url('/admin/calendario'); ?>" class="btn-action-quick" style="background-color: var(--color-info-light); color: var(--color-info);">
-        <span>ðŸ“… Ver Calendario General</span>
+        <span>📅 Ver Calendario General</span>
     </a>
 </div>
 
@@ -55,11 +57,11 @@ ob_start();
     <div class="card metric-card" style="border-left-color: #2ecc71;">
         <span class="metric-card__label">Ingresos del Mes</span>
         <div class="metric-card__value" id="kpiIngresos">$0.00</div>
-        <span class="metric-card__trend text-success" id="kpiIngresosTrend">â€”</span>
+        <span class="metric-card__trend text-success" id="kpiIngresosTrend">—</span>
     </div>
 
     <div class="card metric-card" style="border-left-color: var(--color-accent);">
-        <span class="metric-card__label">Citas del DÃ­a</span>
+        <span class="metric-card__label">Citas del Día</span>
         <div class="metric-card__value" id="kpiCitas">0</div>
         <span class="metric-card__trend text-info" id="kpiCitasTrend">Programadas para hoy</span>
     </div>
@@ -71,7 +73,7 @@ ob_start();
     </div>
 
     <div class="card metric-card" style="border-left-color: #f1c40f;">
-        <span class="metric-card__label">CalificaciÃ³n Promedio</span>
+        <span class="metric-card__label">Calificación Promedio</span>
         <div class="metric-card__value" id="kpiRating">0.0</div>
         <span class="metric-card__trend text-warning" id="kpiRatingTrend">Estrellas</span>
     </div>
@@ -82,7 +84,7 @@ ob_start();
     <section class="card" style="flex: 2;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
             <h3 class="card__title" style="margin:0; border:none; padding:0;">Citas Programadas para Hoy</h3>
-            <a href="<?php echo AppPath::url('/admin/recepcion'); ?>" style="font-size: 0.85rem; font-weight: 600; color: var(--color-accent); text-decoration: none;">Gestionar Estados â†’</a>
+            <a href="<?php echo AppPath::url('/admin/recepcion'); ?>" style="font-size: 0.85rem; font-weight: 600; color: var(--color-accent); text-decoration: none;">Gestionar Estados →</a>
         </div>
         <div class="table-container">
             <table class="table">
@@ -98,7 +100,7 @@ ob_start();
                 <tbody id="tablaCitasHoy">
                     <tr>
                         <td colspan="5" class="text-center text-muted p-5">
-                            Cargando citas del dÃ­a...
+                            Cargando citas del día...
                         </td>
                     </tr>
                 </tbody>
@@ -110,7 +112,7 @@ ob_start();
 <?php
 $pageContent = ob_get_clean();
 
-// â”€â”€ JS del Dashboard â€” inyectado via $extraJS dentro del <body> â”€â”€
+// ── JS del Dashboard — inyectado via $extraJS dentro del <body> ──
 $extraJS = <<<'JS'
 async function loadDashboard() {
     const api = window.adminApi;
@@ -118,12 +120,12 @@ async function loadDashboard() {
 
     try {
         if (!api) {
-            console.warn('[Dashboard] AdminApp no inicializado. Mostrando estado vacÃ­o.');
+            console.warn('[Dashboard] AdminApp no inicializado. Mostrando estado vacío.');
             renderEmptyState();
             return;
         }
 
-        // Pausa mÃ­nima para asegurar que los headers de Auth estÃ©n inyectados
+        // Pausa mínima para asegurar que los headers de Auth estén inyectados
         if (!window.dashboardInitialized) await new Promise(r => setTimeout(r, 100));
         window.dashboardInitialized = true;
 
@@ -153,7 +155,7 @@ async function loadDashboard() {
                 const tr = document.createElement('tr');
 
                 const tdHora = document.createElement('td');
-                tdHora.textContent = cita.time || cita.hora || 'â€”';
+                tdHora.textContent = cita.time || cita.hora || '—';
 
                 const tdCliente = document.createElement('td');
                 tdCliente.textContent = cita.client_name || cita.cliente || 'Cliente';
@@ -180,7 +182,7 @@ async function loadDashboard() {
             });
         }
     } catch (error) {
-        if (alerts) alerts.error('Error al cargar mÃ©tricas del dashboard: ' + error.message);
+        if (alerts) alerts.error('Error al cargar métricas del dashboard: ' + error.message);
         renderEmptyState();
     }
 }

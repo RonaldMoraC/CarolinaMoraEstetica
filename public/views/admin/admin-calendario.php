@@ -1,15 +1,16 @@
-﻿<?php declare(strict_types=1);
+<?php
+
 /**
  * Calendario Maestro - Panel Administrativo
- * EstÃ©tica Carolina Mora - CarolinaMoraEstetica
+ * Estética Carolina Mora - CarolinaMoraEstetica
  *
- * Vista global semanal de ocupaciÃ³n de agenda por profesional.
+ * Vista global semanal de ocupación de agenda por profesional.
  */
 
 define('ADMIN_LAYOUT_LOADED', true);
 
 $pageTitle = 'Calendario Maestro';
-$pageSubtitle = 'Vista global y semanal de la ocupaciÃ³n fÃ­sica y tÃ©cnica de la estÃ©tica.';
+$pageSubtitle = 'Vista global y semanal de la ocupación física y técnica de la estética.';
 $activeModule = 'calendario';
 
 $extraCSS = <<<CSS
@@ -52,9 +53,9 @@ ob_start();
                 </select>
             </div>
             <div class="d-flex gap-1">
-                <button class="btn btn--outline btn--sm" onclick="cambiarSemana(-1)">â† Anterior</button>
+                <button class="btn btn--outline btn--sm" onclick="cambiarSemana(-1)">← Anterior</button>
                 <button class="btn btn--primary btn--sm" id="btnHoy">Hoy</button>
-                <button class="btn btn--outline btn--sm" onclick="cambiarSemana(1)">Siguiente â†’</button>
+                <button class="btn btn--outline btn--sm" onclick="cambiarSemana(1)">Siguiente →</button>
             </div>
             <span class="text-muted fw-semibold" id="rangoSemanal" style="margin-left: auto;"></span>
         </div>
@@ -67,7 +68,7 @@ ob_start();
 
     <!-- Panel de detalles -->
     <aside class="card panel-detalles" id="panelDetalles">
-        <h3 class="card__title">ðŸ“‹ Detalles de la Cita</h3>
+        <h3 class="card__title">📋 Detalles de la Cita</h3>
         <div id="contenidoDetalles" class="text-muted text-center" style="padding: 20px 0;">
             <p>Seleccione una cita en el calendario para inspeccionar sus detalles.</p>
         </div>
@@ -88,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
         '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM',
         '06:00 PM', '07:00 PM', '08:00 PM'
     ];
-    const DIAS_NOMBRES = ['Dom', 'Lun', 'Mar', 'MiÃ©', 'Jue', 'Vie', 'SÃ¡b'];
+    const DIAS_NOMBRES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
     let semanaActual = new Date();
     let citasData = [];
@@ -106,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cargarCitasSemana();
     });
 
-    // DelegaciÃ³n de eventos para clics en bloques de citas
+    // Delegación de eventos para clics en bloques de citas
     document.getElementById('calendarTimeline').addEventListener('click', (e) => {
         const block = e.target.closest('.appointment-block');
         if (!block) return;
@@ -124,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const inicioSemana = obtenerInicioSemana(semanaActual);
         const timeline = document.getElementById('calendarTimeline');
 
-        // Calcular dÃ­as de la semana (Lun-SÃ¡b, 6 dÃ­as)
+        // Calcular días de la semana (Lun-Sáb, 6 días)
         const dias = [];
         for (let i = 1; i <= 6; i++) {
             const fecha = new Date(inicioSemana);
@@ -199,7 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (res.success && res.data) {
                     profesionales = res.data;
                     const select = document.getElementById('filtroProfesional');
-                    // Mantener opciÃ³n por defecto y aÃ±adir profesionales
+                    // Mantener opción por defecto y añadir profesionales
                     select.innerHTML = '<option value="todos">Todos los profesionales</option>';
                     profesionales.forEach(p => {
                         const option = document.createElement('option');
@@ -267,7 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const cellIdx = dayIdx - 1;
             const hora = fecha.getHours();
 
-            // Mapeo dinÃ¡mico de horas relativas a las 08:00 AM base
+            // Mapeo dinámico de horas relativas a las 08:00 AM base
             const horaIndex = hora - 8;
             if (horaIndex < 0 || horaIndex >= HORAS.length) return;
             const horaStr = HORAS[horaIndex];
@@ -310,7 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'IN_PROGRESS': { label: 'En Curso', class: 'badge--warning' },
             'COMPLETED': { label: 'Completada', class: 'badge--success' },
             'CANCELLED': { label: 'Cancelada', class: 'badge--danger' },
-            'NOSHOW': { label: 'No AsistiÃ³', class: 'badge--neutral' }
+            'NOSHOW': { label: 'No Asistió', class: 'badge--neutral' }
         };
         const status = statusMap[cita.appointment_status] || { label: cita.appointment_status, class: 'badge--neutral' };
 
@@ -325,11 +326,11 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div class="mb-3">
                 <label class="form-label" style="font-size:0.75rem;">HORA PROGRAMADA</label>
-                <div>â° ${cita.scheduled_timestamp}</div>
+                <div>⏰ ${cita.scheduled_timestamp}</div>
             </div>
             <div class="mb-3">
                 <label class="form-label" style="font-size:0.75rem;">PROFESIONAL</label>
-                <div>ðŸ‘¤ ${escapeHtml(cita.professional_name)}</div>
+                <div>👤 ${escapeHtml(cita.professional_name)}</div>
             </div>
             <div class="mb-3">
                 <label class="form-label" style="font-size:0.75rem;">ESTADO</label>
@@ -351,12 +352,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Abre flujo de reprogramaciÃ³n conectado al control de recepciÃ³n/agendamiento
+     * Abre flujo de reprogramación conectado al control de recepción/agendamiento
      * @param {number} id
      */
     window.reprogramarCita = function(id) {
         if (alerts) {
-            alerts.info('Redirigiendo al panel de recepciÃ³n para gestiÃ³n y cambio de estado de la cita #' + id);
+            alerts.info('Redirigiendo al panel de recepción para gestión y cambio de estado de la cita #' + id);
         }
         setTimeout(() => {
             window.location.href = basePath + '/admin/recepcion';
@@ -368,12 +369,12 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {number} id
      */
     window.cancelarCita = async function(id) {
-        if (!confirm('Â¿Confirmar la cancelaciÃ³n de esta cita?')) return;
+        if (!confirm('¿Confirmar la cancelación de esta cita?')) return;
 
         try {
             if (api) {
                 const res = await api.patch(`/booking/appointments/${id}/cancel`, {
-                    change_reason: 'CancelaciÃ³n desde el calendario maestro por recepciÃ³n.'
+                    change_reason: 'Cancelación desde el calendario maestro por recepción.'
                 });
                 if (res.success) {
                     if (alerts) alerts.success('Cita cancelada exitosamente.');
@@ -381,7 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById('contenidoDetalles').innerHTML = '<p class="text-center text-muted" style="padding:20px 0;">Seleccione una cita para ver sus detalles.</p>';
                 }
             } else {
-                if (alerts) alerts.success('Cita cancelada (modo simulaciÃ³n).');
+                if (alerts) alerts.success('Cita cancelada (modo simulación).');
             }
         } catch (error) {
             if (alerts) alerts.error(error.message || 'Error al cancelar la cita.');

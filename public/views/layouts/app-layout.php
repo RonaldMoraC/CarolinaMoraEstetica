@@ -1,17 +1,18 @@
-﻿<?php declare(strict_types=1);
+<?php
+
 /**
  * Layout Base del Panel Cliente (PWA)
- * EstÃ©tica Carolina Mora - CarolinaMoraEstetica
+ * Estética Carolina Mora - CarolinaMoraEstetica
  *
  * Uso: Incluir este archivo al inicio de cada vista /app/*.
  * Proporciona: header sticky, bottom nav, CSS global, JS modular.
  *
  * Variables esperadas:
- *   $pageTitle      - TÃ­tulo de la secciÃ³n (string)
- *   $activeSection  - SecciÃ³n activa en bottom nav (string: 'Catalog'|'Citas'|'Perfil')
+ *   $pageTitle      - Título de la sección (string)
+ *   $activeSection  - Sección activa en bottom nav (string: 'Catalog'|'Citas'|'Perfil')
  *   $pageContent    - Contenido HTML de la vista (string)
- *   $extraCSS       - CSS adicional especÃ­fico de la vista (string, opcional)
- *   $extraJS        - JS adicional especÃ­fico de la vista (string, opcional)
+ *   $extraCSS       - CSS adicional específico de la vista (string, opcional)
+ *   $extraJS        - JS adicional específico de la vista (string, opcional)
  */
 
 $pageTitle = $pageTitle ?? 'Servicios';
@@ -26,7 +27,7 @@ $extraJS = $extraJS ?? '';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     <meta name="theme-color" content="#00d0ff">
-    <title><?= htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8') ?> - Carolina Mora EstÃ©tica</title>
+    <title><?= htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8') ?> - Carolina Mora Estética</title>
 
     <!-- Fuentes -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -101,7 +102,7 @@ $extraJS = $extraJS ?? '';
             }
         })();
 
-        // VerificaciÃ³n perimetral en servidor vÃ­a fetch sÃ­ncrono/asÃ­ncrono opcional o validaciÃ³n de rol reforzada
+        // Verificación perimetral en servidor vía fetch síncrono/asíncrono opcional o validación de rol reforzada
         fetch(basePath + '/api/v1/auth/me', {
             method: 'GET',
             headers: {
@@ -133,20 +134,20 @@ $extraJS = $extraJS ?? '';
         <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
             <div>
                 <h1 class="text-lg font-serif italic text-slate-900 dark:text-white" id="headerTitle"><?= htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8') ?></h1>
-                <p class="text-xs text-slate-400 dark:text-slate-500 font-semibold">Carolina Mora EstÃ©tica</p>
+                <p class="text-xs text-slate-400 dark:text-slate-500 font-semibold">Carolina Mora Estética</p>
             </div>
             <div class="flex items-center gap-3">
-                <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider" id="headerUserName">â€”</span>
+                <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider" id="headerUserName">—</span>
                 <button data-action="logout"
                     class="w-8 h-8 flex items-center justify-center rounded-full bg-red-500 hover:bg-red-600 text-white text-sm font-bold shadow-sm transition transform hover:-translate-y-0.5"
-                    aria-label="Cerrar sesiÃ³n" title="Cerrar sesiÃ³n">â»</button>
+                    aria-label="Cerrar sesión" title="Cerrar sesión">⏻</button>
             </div>
         </div>
     </header>
 
     <!-- ====== MAIN CONTENT ====== -->
     <main class="max-w-2xl mx-auto px-4 pt-4 pb-24" id="appMain">
-        <!-- Alertas dinÃ¡micas -->
+        <!-- Alertas dinámicas -->
         <div class="app-alert" id="globalAlert" role="alert" aria-live="polite"></div>
 
         <!-- Contenido de la vista -->
@@ -157,17 +158,17 @@ $extraJS = $extraJS ?? '';
     <nav class="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-brand-pureBlack border-t border-slate-200 dark:border-white/10 shadow-lg app-bottom-nav">
         <div class="max-w-2xl mx-auto flex justify-around py-2">
             <button class="nav-item <?= ($activeSection === 'Catalog') ? 'active' : '' ?> flex flex-col items-center gap-1 px-4 py-1" data-section="Catalog">
-                <span class="nav-icon text-2xl transition-transform">âœ¨</span>
+                <span class="nav-icon text-2xl transition-transform">✨</span>
                 <span class="nav-label text-xs font-medium text-slate-500 dark:text-slate-400 transition-colors">Servicios</span>
                 <span class="nav-dot w-1 h-1 rounded-full bg-brand-cyan opacity-0 transition-opacity"></span>
             </button>
             <button class="nav-item <?= ($activeSection === 'Citas') ? 'active' : '' ?> flex flex-col items-center gap-1 px-4 py-1" data-section="Citas">
-                <span class="nav-icon text-2xl transition-transform">ðŸ“…</span>
+                <span class="nav-icon text-2xl transition-transform">📅</span>
                 <span class="nav-label text-xs font-medium text-slate-500 dark:text-slate-400 transition-colors">Mis Citas</span>
                 <span class="nav-dot w-1 h-1 rounded-full bg-brand-cyan opacity-0 transition-opacity"></span>
             </button>
             <button class="nav-item <?= ($activeSection === 'Perfil') ? 'active' : '' ?> flex flex-col items-center gap-1 px-4 py-1" data-section="Perfil">
-                <span class="nav-icon text-2xl transition-transform">ðŸ‘¤</span>
+                <span class="nav-icon text-2xl transition-transform">👤</span>
                 <span class="nav-label text-xs font-medium text-slate-500 dark:text-slate-400 transition-colors">Perfil</span>
                 <span class="nav-dot w-1 h-1 rounded-full bg-brand-cyan opacity-0 transition-opacity"></span>
             </button>

@@ -1,17 +1,18 @@
-﻿<?php declare(strict_types=1);
+<?php
+
 /**
- * Control de RecepciÃ³n - Panel Administrativo
- * EstÃ©tica Carolina Mora - CarolinaMoraEstetica
+ * Control de Recepción - Panel Administrativo
+ * Estética Carolina Mora - CarolinaMoraEstetica
  *
- * Monitoreo y transiciÃ³n de estados de citas del dÃ­a (Check-in, En Curso, Completado).
+ * Monitoreo y transición de estados de citas del día (Check-in, En Curso, Completado).
  * Consume: /api/v1/booking/appointments/{id}/check-in
  *          /api/v1/booking/appointments/{id}/complete
  */
 
 define('ADMIN_LAYOUT_LOADED', true);
 
-$pageTitle = 'Control de RecepciÃ³n';
-$pageSubtitle = 'Monitoreo y actualizaciÃ³n del estado de las citas del dÃ­a de hoy.';
+$pageTitle = 'Control de Recepción';
+$pageSubtitle = 'Monitoreo y actualización del estado de las citas del día de hoy.';
 $activeModule = 'recepcion';
 
 $extraCSS = <<<CSS
@@ -72,14 +73,14 @@ CSS;
 ob_start();
 ?>
 
-<!-- Indicadores rÃ¡pidos del dÃ­a -->
+<!-- Indicadores rápidos del día -->
 <section class="metrics-grid" style="margin-bottom: 24px;">
     <div class="card metric-card" style="border-left-color: var(--color-accent);">
         <span class="metric-card__label">Citas Hoy</span>
         <div class="metric-card__value" id="totalHoy">0</div>
     </div>
     <div class="card metric-card" style="border-left-color: #d4a373;">
-        <span class="metric-card__label">En AtenciÃ³n</span>
+        <span class="metric-card__label">En Atención</span>
         <div class="metric-card__value" id="enAtencion">0</div>
     </div>
     <div class="card metric-card" style="border-left-color: var(--color-success);">
@@ -92,10 +93,10 @@ ob_start();
     </div>
 </section>
 
-<!-- Tabla de citas del dÃ­a -->
+<!-- Tabla de citas del día -->
 <section class="card">
     <div class="recepcion-header" style="margin-bottom: 16px;">
-        <h3 class="card__title" style="margin: 0; border: none; padding: 0;">Agenda del DÃ­a</h3>
+        <h3 class="card__title" style="margin: 0; border: none; padding: 0;">Agenda del Día</h3>
         <span class="fecha-badge" id="fechaHoy"></span>
     </div>
     <div class="table-container">
@@ -107,12 +108,12 @@ ob_start();
                     <th>Servicio</th>
                     <th>Especialista</th>
                     <th>Estado</th>
-                    <th style="text-align: center;">AcciÃ³n de Flujo</th>
+                    <th style="text-align: center;">Acción de Flujo</th>
                 </tr>
             </thead>
             <tbody id="tablaRecepcion">
                 <tr>
-                    <td colspan="6" class="text-center text-muted p-5">Cargando citas del dÃ­a...</td>
+                    <td colspan="6" class="text-center text-muted p-5">Cargando citas del día...</td>
                 </tr>
             </tbody>
         </table>
@@ -130,23 +131,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const STATUS_MAP = {
         'PENDING':     { label: 'Programada',     class: 'badge--info',     flujo: 'llego' },
         'CONFIRMED':   { label: 'Confirmada',     class: 'badge--info',     flujo: 'llego' },
-        'IN_PROGRESS': { label: 'En AtenciÃ³n',    class: 'badge--warning',  flujo: 'completado' },
+        'IN_PROGRESS': { label: 'En Atención',    class: 'badge--warning',  flujo: 'completado' },
         'COMPLETED':   { label: 'Completada',     class: 'badge--success',  flujo: null },
         'CANCELLED':   { label: 'Cancelada',      class: 'badge--danger',   flujo: null },
-        'NOSHOW':      { label: 'No AsistiÃ³',     class: 'badge--neutral',  flujo: null },
+        'NOSHOW':      { label: 'No Asistió',     class: 'badge--neutral',  flujo: null },
     };
 
     let citas = [];
 
     // Mostrar fecha de hoy
     const hoy = new Date().toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-    document.getElementById('fechaHoy').textContent = 'ðŸ“† ' + hoy;
+    document.getElementById('fechaHoy').textContent = '📆 ' + hoy;
 
     // Cargar citas
     cargarCitasHoy();
 
     /**
-     * Carga las citas del dÃ­a desde la API
+     * Carga las citas del día desde la API
      */
     async function cargarCitasHoy() {
         try {
@@ -187,23 +188,23 @@ document.addEventListener('DOMContentLoaded', () => {
             if (status.flujo === 'llego') {
                 accionesHtml = `
                     <button class="btn-flujo btn-flujo--llego" data-id="${cita.appointment_id}" data-action="check-in">
-                        âœ… LlegÃ³
+                        ✅ Llegó
                     </button>
                     <button class="btn-flujo btn-flujo--cancelar" style="margin-left:4px;" data-id="${cita.appointment_id}" data-action="cancel">
-                        âŒ Cancelar
+                        ❌ Cancelar
                     </button>
                 `;
             } else if (status.flujo === 'completado') {
                 accionesHtml = `
                     <button class="btn-flujo btn-flujo--completado" data-id="${cita.appointment_id}" data-action="complete">
-                        ðŸ Finalizar
+                        🏁 Finalizar
                     </button>
                     <button class="btn-flujo btn-flujo--cancelar" style="margin-left:4px;" data-id="${cita.appointment_id}" data-action="noshow">
-                        âš ï¸ No AsistiÃ³
+                        ⚠️ No Asistió
                     </button>
                 `;
             } else {
-                accionesHtml = '<span class="text-muted" style="font-size:0.85rem;">âœ… Atendido</span>';
+                accionesHtml = '<span class="text-muted" style="font-size:0.85rem;">✅ Atendido</span>';
             }
 
             return `
@@ -246,7 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Ejecuta una transiciÃ³n de estado sobre una cita
+     * Ejecuta una transición de estado sobre una cita
      * @param {number} citaId
      * @param {string} accion - check-in, complete, cancel, noshow
      */
@@ -261,8 +262,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const bodyMap = {
             'check-in': {},
             'complete': {},
-            'cancel': { change_reason: 'CancelaciÃ³n por recepciÃ³n' },
-            'noshow': { change_reason: 'Cliente no se presentÃ³ en la sucursal' },
+            'cancel': { change_reason: 'Cancelación por recepción' },
+            'noshow': { change_reason: 'Cliente no se presentó en la sucursal' },
         };
 
         try {
@@ -270,10 +271,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const res = await api.patch(endpointMap[accion], bodyMap[accion]);
                 if (res.success) {
                     const mensajes = {
-                        'check-in': 'Cliente registrado en recepciÃ³n. AtenciÃ³n iniciada.',
+                        'check-in': 'Cliente registrado en recepción. Atención iniciada.',
                         'complete': 'Servicio finalizado. Proceder al cobro en caja.',
                         'cancel': 'Cita cancelada exitosamente.',
-                        'noshow': 'Cita marcada como No AsistiÃ³.',
+                        'noshow': 'Cita marcada como No Asistió.',
                     };
                     if (alerts) alerts.success(mensajes[accion]);
                     await cargarCitasHoy();
