@@ -10,7 +10,7 @@ use App\Domain\Shared\Exceptions\DomainException;
 
 /**
  * Caso de uso: ExecuteCheckInUseCase
- * Registra la llegada física del cliente a la sucursal (TRANSICIÓN: CONFIRMED -> IN_PROGRESS).
+ * Registra la llegada física del cliente a la sucursal (TRANSICIÃN: CONFIRMED -> IN_PROGRESS).
  */
 final class ExecuteCheckInUseCase
 {

@@ -16,16 +16,17 @@ class MovimientoInventario
 
     public function registrar(int $productoId, ?int $usuarioId, string $tipo, int $cantidad, ?string $razon): bool
     {
-        $sql = "INSERT INTO movimientos_inventario (product_id, user_id, movement_type, quantity, reason, created_at)
-                VALUES (:product_id, :user_id, :movement_type, :quantity, :reason, NOW())";
+        // Validar tipo de movimiento contra el ENUM soportado en DB
+        $validTypes = ['ENTRADA_COMPRA', 'SALIDA_VENTA', 'CONSUMO_INTERNO', 'MERMA', 'AJUSTE'];
+        if (!in_array($tipo, $validTypes, true)) {
+            $tipo = 'AJUSTE'; // Fallback seguro para inicialización u otros ajustes
+        }
+
+        $sql = "INSERT INTO inventory_movement (product_id, movement_type, quantity, reason, movement_date)
+                VALUES (:product_id, :movement_type, :quantity, :reason, NOW())";
 
         $stmt = $this->db->prepare($sql);
         $stmt->bindValue(':product_id', $productoId, PDO::PARAM_INT);
-        if ($usuarioId !== null) {
-            $stmt->bindValue(':user_id', $usuarioId, PDO::PARAM_INT);
-        } else {
-            $stmt->bindValue(':user_id', null, PDO::PARAM_NULL);
-        }
         $stmt->bindValue(':movement_type', $tipo, PDO::PARAM_STR);
         $stmt->bindValue(':quantity', $cantidad, PDO::PARAM_INT);
         $stmt->bindValue(':reason', $razon, PDO::PARAM_STR);
@@ -35,12 +36,12 @@ class MovimientoInventario
 
     public function obtenerHistorial(int $limite = 50): array
     {
-        $sql = "SELECT m.movement_id, m.product_id, m.user_id, m.movement_type, m.quantity, m.reason, m.created_at,
-                       p.name as producto_nombre, u.first_name as usuario_nombre
-                FROM movimientos_inventario m
-                LEFT JOIN productos p ON m.product_id = p.id
-                LEFT JOIN user u ON m.user_id = u.user_id
-                ORDER BY m.created_at DESC
+        $sql = "SELECT m.id, m.product_id, m.movement_type, m.quantity, m.reason, m.movement_date,
+                       m.movement_date as created_at,
+                       p.name as producto_nombre
+                FROM inventory_movement m
+                LEFT JOIN product p ON m.product_id = p.id
+                ORDER BY m.movement_date DESC
                 LIMIT :limite";
 
         $stmt = $this->db->prepare($sql);
@@ -49,4 +50,13 @@ class MovimientoInventario
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function contarMovimientosPorProducto(int $productoId): int
+    {
+        $stmt = $this->db->prepare("SELECT COUNT(*) FROM inventory_movement WHERE product_id = :pid");
+        $stmt->bindValue(':pid', $productoId, PDO::PARAM_INT);
+        $stmt->execute();
+        return (int) $stmt->fetchColumn();
+    }
 }
+

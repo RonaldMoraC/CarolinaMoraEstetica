@@ -7,16 +7,16 @@ namespace App\Domain\Booking\Events;
 use App\Domain\Shared\Events\DomainEventInterface;
 
 /**
- * AppointmentCancelledEvent — Evento de Dominio: Cita Cancelada
+ * AppointmentCancelledEvent â¬ Evento de Dominio: Cita Cancelada
  *
  * Se despacha cuando una cita existente es cancelada, ya sea por el cliente,
  * el profesional, o el sistema administrativo.
  *
  * Consumidores esperados:
- * - NotificationQueueWorker → Notifica al cliente y al profesional la cancelación.
- * - AuditLogListener        → Registra el old_status y new_status en system_audit_log.
- * - ScheduleListener        → Libera el bloque horario en la malla de disponibilidad.
- * - BillingListener         → Evalúa política de reembolso según timing de cancelación.
+ * - NotificationQueueWorker â  Notifica al cliente y al profesional la cancelación.
+ * - AuditLogListener        â  Registra el old_status y new_status en system_audit_log.
+ * - ScheduleListener        â  Libera el bloque horario en la malla de disponibilidad.
+ * - BillingListener         â  Evalúa política de reembolso según timing de cancelación.
  *
  * @see EventDispatcher::dispatch()
  */

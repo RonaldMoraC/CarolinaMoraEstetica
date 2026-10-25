@@ -7,7 +7,7 @@ namespace App\Domain\Shared\ValueObjects;
 use App\Domain\Shared\Exceptions\DomainException;
 
 /**
- * Money — Value Object Monetario Inmutable
+ * Money â¬ Value Object Monetario Inmutable
  *
  * Encapsula un valor monetario con precisión de céntimos (int en lugar de float)
  * para evitar errores de coma flotante en operaciones financieras críticas.
@@ -105,7 +105,7 @@ final class Money
 
     /**
      * Retorna el monto como decimal de punto flotante.
-     * Útil para almacenarlo como DECIMAL(10,2) en MySQL.
+     * Ãatil para almacenarlo como DECIMAL(10,2) en MySQL.
      */
     public function toDecimal(): float
     {
@@ -129,7 +129,7 @@ final class Money
     }
 
     // -------------------------------------------------------------------------
-    // Operaciones Aritméticas — Retornan nuevas instancias (Inmutabilidad)
+    // Operaciones Aritméticas â¬ Retornan nuevas instancias (Inmutabilidad)
     // -------------------------------------------------------------------------
 
     /**

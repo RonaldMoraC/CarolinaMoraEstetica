@@ -10,7 +10,7 @@ use App\Domain\Shared\Exceptions\DomainException;
 
 /**
  * Caso de uso: CompleteServiceUseCase
- * Registra la finalización del servicio técnico (TRANSICIÓN: IN_PROGRESS -> COMPLETED).
+ * Registra la finalización del servicio técnico (TRANSICIÃN: IN_PROGRESS -> COMPLETED).
  */
 final class CompleteServiceUseCase
 {

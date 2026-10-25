@@ -7,7 +7,7 @@ namespace App\Domain\Shared\ValueObjects;
 use App\Domain\Shared\Exceptions\DomainException;
 
 /**
- * UuidVO — Value Object para Identificadores UUID v4
+ * UuidVO â¬ Value Object para Identificadores UUID v4
  *
  * Encapsula y valida identificadores únicos en formato UUID v4.
  * Garantiza que ningún ID de entidad del dominio sea un string arbitrario.
@@ -29,7 +29,7 @@ final class UuidVO
     /**
      * Expresión regular para validar UUID v4 (RFC 4122).
      * Formato: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
-     * donde y ∈ {8, 9, a, b}.
+     * donde y âÆÆ {8, 9, a, b}.
      */
     private const UUID_V4_PATTERN =
         '/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i';
@@ -111,7 +111,7 @@ final class UuidVO
 
     /**
      * Retorna el UUID como string sin guiones (32 caracteres hex).
-     * Útil para almacenamiento en columnas BINARY(16) de MySQL.
+     * Ãatil para almacenamiento en columnas BINARY(16) de MySQL.
      */
     public function toHex(): string
     {

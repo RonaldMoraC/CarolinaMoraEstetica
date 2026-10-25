@@ -11,7 +11,7 @@ use DateTimeImmutable;
 use DateTimeZone;
 
 /**
- * CancelAppointmentUseCase — Caso de Uso de Aplicación
+ * CancelAppointmentUseCase â¬ Caso de Uso de Aplicación
  *
  * Orquesta la cancelación de una cita existente:
  *   1. Validación de entrada

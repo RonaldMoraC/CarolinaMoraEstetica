@@ -27,8 +27,8 @@ final class GetBusinessAnalyticsUseCase
         // Ingresos mes anterior para tendencia
         $prevRevenue = $this->repository->getPreviousMonthRevenue($prevMonth);
         $ingresosTrend = $prevRevenue > 0
-            ? ($ingresosMes >= $prevRevenue ? '▲ +' : '▼ ') . round((abs($ingresosMes - $prevRevenue) / $prevRevenue) * 100) . '% vs mes anterior'
-            : '— Sin datos previos';
+            ? ($ingresosMes >= $prevRevenue ? 'â² +' : 'â¼ ') . round((abs($ingresosMes - $prevRevenue) / $prevRevenue) * 100) . '% vs mes anterior'
+            : 'â¬ Sin datos previos';
 
         $ticketPromedio = $citasMes > 0 ? $ingresosMes / $citasMes : 0.0;
 
@@ -41,7 +41,7 @@ final class GetBusinessAnalyticsUseCase
             'ingresos_mensuales' => $ingresosMes,
             'ingresos_trend' => $ingresosTrend,
             'citas_mes' => $citasMes,
-            'citas_trend' => "🎯 {$citasMes} citas registradas en el periodo",
+            'citas_trend' => "ðx}¯ {$citasMes} citas registradas en el periodo",
             'clientes_recurrentes_pct' => $recurrentesPct,
             'clientes_trend' => "⭐ {$recurrentes} clientes recurrentes",
             'ticket_promedio' => $ticketPromedio,

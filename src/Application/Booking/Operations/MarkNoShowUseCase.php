@@ -9,7 +9,7 @@ use App\Infrastructure\Shared\Errors\Exceptions\NotFoundException;
 
 /**
  * Caso de uso: MarkNoShowUseCase
- * Registra que el cliente no se presentó a la cita (TRANSICIÓN: CONFIRMED -> NOSHOW).
+ * Registra que el cliente no se presentó a la cita (TRANSICIÃN: CONFIRMED -> NOSHOW).
  */
 final class MarkNoShowUseCase
 {

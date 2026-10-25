@@ -5,13 +5,13 @@ namespace App\Application\Shared\Audit;
 use App\Infrastructure\Shared\Audit\SystemAuditLogRepository;
 
 /**
- * AuditService — Servicio de Aplicación para Auditoría
+ * AuditService â¬ Servicio de Aplicación para Auditoría
  *
  * Centraliza la lógica de registro de auditoría forense para ser usado
  * por los Casos de Uso. Provee una abstracción sobre el repositorio
  * de infraestructura.
  *
- * Cumple Skill 9 → Trazabilidad y Auditoría.
+ * Cumple Skill 9 â  Trazabilidad y Auditoría.
  */
 final class AuditService
 {

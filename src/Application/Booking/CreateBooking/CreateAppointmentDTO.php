@@ -3,7 +3,7 @@
 namespace App\Application\Booking\CreateBooking;
 
 /**
- * CreateAppointmentDTO — Objeto de Transferencia de Datos
+ * CreateAppointmentDTO â€” Objeto de Transferencia de Datos
  *
  * Transporta los datos de entrada del endpoint POST /api/v1/booking/appointments
  * desde la periferia HTTP hacia el caso de uso sin exponer la entidad de dominio.

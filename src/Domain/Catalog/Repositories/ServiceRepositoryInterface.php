@@ -8,7 +8,7 @@ namespace App\Domain\Catalog\Repositories;
  *
  * Contrato del Dominio para la persistencia del catálogo de servicios.
  *
- * Cumple Skill 1 → Interface pura, sin dependencias de infraestructura.
+ * Cumple Skill 1 â  Interface pura, sin dependencias de infraestructura.
  */
 interface ServiceRepositoryInterface
 {

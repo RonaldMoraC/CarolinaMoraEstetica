@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace App\Application\IAM\RegisterClient;
 
 /**
- * RegisterClientDTO — Objeto inmutable de transporte de datos de registro.
+ * RegisterClientDTO â€” Objeto inmutable de transporte de datos de registro.
  */
 final readonly class RegisterClientDTO
 {

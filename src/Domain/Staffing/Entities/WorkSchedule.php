@@ -7,7 +7,7 @@ namespace App\Domain\Staffing\Entities;
 use App\Domain\Shared\Exceptions\DomainException;
 
 /**
- * WorkSchedule — Bloque de Malla Horaria Ordinaria
+ * WorkSchedule â¬ Bloque de Malla Horaria Ordinaria
  *
  * Representa la jornada laboral repetitiva de un profesional en una
  * sucursal para un día de la semana específico.

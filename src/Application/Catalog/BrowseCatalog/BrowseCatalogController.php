@@ -20,9 +20,9 @@ use App\Infrastructure\Shared\Helpers\ResponseHelper;
  *   - category_id (int)    Filtro por categoría
  *
  * Cumple:
- *  - Skill 1  → strict_types, inyección por constructor
- *  - Skill 10 → Casteo explícito y saneo de query params perimetral
- *  - Skill 4  → Errores via ResponseHelper (RFC 7807 compatible)
+ *  - Skill 1  â  strict_types, inyección por constructor
+ *  - Skill 10 â  Casteo explícito y saneo de query params perimetral
+ *  - Skill 4  â  Errores via ResponseHelper (RFC 7807 compatible)
  */
 final class BrowseCatalogController
 {
@@ -38,13 +38,13 @@ final class BrowseCatalogController
     }
 
     /**
-     * GET /api/v1/catalog/services — Listado paginado con filtros.
+     * GET /api/v1/catalog/services â¬ Listado paginado con filtros.
      *
      * @param array<string, string> $params Parámetros de ruta inyectados por Router.
      */
     public function handle(array $params = []): void
     {
-        // Skill 10 — Casteo explícito defensivo en la periferia
+        // Skill 10 â¬ Casteo explícito defensivo en la periferia
         $page       = (int) ($_GET['page'] ?? 1);
         $perPage    = (int) ($_GET['per_page'] ?? 15);
         $search     = (string) ($_GET['search'] ?? '');
@@ -84,7 +84,7 @@ final class BrowseCatalogController
     }
 
     /**
-     * GET /api/v1/catalog/services/{id} — Detalle de un servicio.
+     * GET /api/v1/catalog/services/{id} â¬ Detalle de un servicio.
      *
      * @param array<string, string> $params Parámetros de ruta ({id} inyectado por Router).
      */

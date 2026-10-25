@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Shared\Exceptions;
 
 /**
- * DomainException — Excepción Base del Dominio
+ * DomainException â¬ Excepción Base del Dominio
  *
  * Excepción semántica raíz para todas las violaciones de invariantes
  * de negocio dentro de la capa de Dominio (DDD).
@@ -16,7 +16,7 @@ namespace App\Domain\Shared\Exceptions;
  * Las capas de Application e Infrastructure capturan esta excepción
  * y la formatean bajo el estándar RFC 7807 (Problem Details).
  *
- * @see GlobalExceptionHandler — formatea DomainException → HTTP 422
+ * @see GlobalExceptionHandler â¬ formatea DomainException â  HTTP 422
  */
 class DomainException extends \DomainException
 {

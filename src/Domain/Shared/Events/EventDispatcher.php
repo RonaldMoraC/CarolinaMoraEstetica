@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Shared\Events;
 
 /**
- * EventDispatcher — Despachador de Eventos de Dominio
+ * EventDispatcher â¬ Despachador de Eventos de Dominio
  *
  * Implementación in-process del patrón Observer para desacoplar
  * el núcleo de negocio (Booking, Billing) de los efectos secundarios
@@ -100,7 +100,7 @@ final class EventDispatcher
 
     /**
      * Elimina todos los listeners de un evento específico.
-     * Útil en pruebas unitarias para aislar comportamientos.
+     * Ãatil en pruebas unitarias para aislar comportamientos.
      *
      * @param string $eventName Nombre del evento a limpiar.
      */
@@ -111,7 +111,7 @@ final class EventDispatcher
 
     /**
      * Elimina todos los listeners registrados.
-     * Útil en entornos de prueba.
+     * Ãatil en entornos de prueba.
      */
     public function clearAll(): void
     {

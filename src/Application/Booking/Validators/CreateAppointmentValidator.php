@@ -5,7 +5,7 @@ namespace App\Application\Booking\Validators;
 use InvalidArgumentException;
 
 /**
- * CreateAppointmentValidator — Validación perimetral
+ * CreateAppointmentValidator â¬ Validación perimetral
  *
  * Verifica que los datos del DTO cumplan las reglas de formato
  * antes de pasar al caso de uso.

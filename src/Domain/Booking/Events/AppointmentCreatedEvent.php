@@ -7,15 +7,15 @@ namespace App\Domain\Booking\Events;
 use App\Domain\Shared\Events\DomainEventInterface;
 
 /**
- * AppointmentCreatedEvent — Evento de Dominio: Cita Creada
+ * AppointmentCreatedEvent â¬ Evento de Dominio: Cita Creada
  *
  * Se despacha cuando una nueva cita (Appointment) es confirmada en el sistema,
  * independientemente del canal de origen (PWA, WhatsApp Bot, Admin).
  *
  * Consumidores esperados:
- * - NotificationQueueWorker → Encola mensaje de confirmación WhatsApp al cliente.
- * - AuditLogListener        → Registra en system_audit_log con old/new values.
- * - AnalyticsListener       → Actualiza métricas de agendamiento en tiempo real.
+ * - NotificationQueueWorker â  Encola mensaje de confirmación WhatsApp al cliente.
+ * - AuditLogListener        â  Registra en system_audit_log con old/new values.
+ * - AnalyticsListener       â  Actualiza métricas de agendamiento en tiempo real.
  *
  * @see EventDispatcher::dispatch()
  */

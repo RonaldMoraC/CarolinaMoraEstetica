@@ -3,7 +3,7 @@
 namespace App\Application\Booking\CancelBooking;
 
 /**
- * CancelAppointmentDTO — Objeto de Transferencia de Datos
+ * CancelAppointmentDTO â¬ Objeto de Transferencia de Datos
  *
  * Transporta los datos de entrada para la cancelación de una cita.
  */

@@ -7,7 +7,7 @@ namespace App\Domain\Staffing\Entities;
 use App\Domain\Shared\ValueObjects\TimeRange;
 
 /**
- * ScheduleException — Excepción de Agenda (Anomalías)
+ * ScheduleException â¬ Excepción de Agenda (Anomalías)
  *
  * Modela un bloqueo de disponibilidad temporal o por todo el día para un profesional
  * debido a vacaciones, licencias médicas o emergencias.

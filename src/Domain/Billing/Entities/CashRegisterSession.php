@@ -9,7 +9,7 @@ use App\Domain\Shared\Exceptions\DomainException;
 use DateTimeImmutable;
 
 /**
- * CashRegisterSession — Entidad de Sesión de Caja (POS)
+ * CashRegisterSession â¬ Entidad de Sesión de Caja (POS)
  *
  * Modela la apertura, control de efectivo inicial/final y cierre de caja
  * para una sucursal y un cajero o recepcionista específico.

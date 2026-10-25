@@ -7,7 +7,7 @@ namespace App\Domain\Shared\ValueObjects;
 use App\Domain\Shared\Exceptions\DomainException;
 
 /**
- * TimeRange — Value Object para Rangos de Tiempo Inmutables
+ * TimeRange â¬ Value Object para Rangos de Tiempo Inmutables
  *
  * Encapsula un intervalo de tiempo con hora de inicio y hora de fin.
  * Garantiza que los rangos horarios sean coherentes (start < end) y
@@ -27,7 +27,7 @@ use App\Domain\Shared\Exceptions\DomainException;
  *     new DateTimeImmutable('2025-09-01 10:00:00', $tz),
  *     new DateTimeImmutable('2025-09-01 11:00:00', $tz)
  * );
- * $turno->overlapsWith($cita); // true  → conflicto de agenda
+ * $turno->overlapsWith($cita); // true  â  conflicto de agenda
  * $turno->getDurationInMinutes(); // 150
  * ```
  *
@@ -147,7 +147,7 @@ final class TimeRange
     }
 
     // -------------------------------------------------------------------------
-    // Lógica de Negocio — Solapamiento (Crítica para la Malla Horaria)
+    // Lógica de Negocio â¬ Solapamiento (Crítica para la Malla Horaria)
     // -------------------------------------------------------------------------
 
     /**
@@ -172,7 +172,7 @@ final class TimeRange
      * Determina si este rango contiene completamente al otro.
      *
      * @param TimeRange $other El rango que se comprueba si está contenido.
-     * @return bool true si [other.start, other.end] ⊆ [this.start, this.end].
+     * @return bool true si [other.start, other.end] â`  [this.start, this.end].
      */
     public function contains(TimeRange $other): bool
     {
@@ -211,7 +211,7 @@ final class TimeRange
     public function __toString(): string
     {
         return sprintf(
-            '[%s → %s]',
+            '[%s â  %s]',
             $this->start->format('Y-m-d H:i:s'),
             $this->end->format('Y-m-d H:i:s')
         );

@@ -15,14 +15,18 @@ class Producto
         $this->db = $db;
     }
 
-    public function obtenerTodos(?string $busqueda = null, ?int $categoriaId = null, ?string $estadoStock = null): array
+    public function obtenerTodos(?string $busqueda = null, ?int $categoriaId = null, ?string $estadoStock = null, bool $incluirInactivos = false): array
     {
         $sql = "SELECT p.*, c.name as categoria_nombre, b.name as marca_nombre, s.name as proveedor_nombre
-                FROM productos p
+                FROM product p
                 LEFT JOIN product_category c ON p.category_id = c.id
                 LEFT JOIN product_brand b ON p.brand_id = b.id
                 LEFT JOIN product_supplier s ON p.supplier_id = s.id
                 WHERE 1=1";
+
+        if (!$incluirInactivos && $estadoStock !== 'inactivo') {
+            $sql .= " AND p.is_active = 1";
+        }
 
         $params = [];
 
@@ -45,6 +49,8 @@ class Producto
             $sql .= " AND p.current_stock = 0";
         } elseif ($estadoStock === 'ok') {
             $sql .= " AND p.current_stock > p.minimum_stock";
+        } elseif ($estadoStock === 'inactivo') {
+            $sql .= " AND p.is_active = 0";
         }
 
         $sql .= " ORDER BY p.name ASC";
@@ -56,8 +62,8 @@ class Producto
 
     public function obtenerPorId(int $id): ?array
     {
-        $sql = "SELECT id, sku, name, description, category_id, brand_id, supplier_id, cost_price, unit_price, current_stock, minimum_stock, created_at, updated_at
-                FROM productos
+        $sql = "SELECT id, sku, name, description, category_id, brand_id, supplier_id, cost_price, unit_price, current_stock, minimum_stock, is_active, created_at, updated_at
+                FROM product
                 WHERE id = :id";
         $stmt = $this->db->prepare($sql);
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
@@ -68,8 +74,8 @@ class Producto
 
     public function crear(array $data): int
     {
-        $sql = "INSERT INTO productos (sku, name, description, category_id, brand_id, supplier_id, cost_price, unit_price, current_stock, minimum_stock, created_at, updated_at)
-                VALUES (:sku, :name, :description, :category_id, :brand_id, :supplier_id, :cost_price, :unit_price, :current_stock, :minimum_stock, NOW(), NOW())";
+        $sql = "INSERT INTO product (sku, name, description, category_id, brand_id, supplier_id, cost_price, unit_price, current_stock, minimum_stock, is_active, created_at, updated_at)
+                VALUES (:sku, :name, :description, :category_id, :brand_id, :supplier_id, :cost_price, :unit_price, :current_stock, :minimum_stock, :is_active, NOW(), NOW())";
 
         $stmt = $this->db->prepare($sql);
         $stmt->bindValue(':sku', $data['sku'] ?? null, PDO::PARAM_STR);
@@ -82,6 +88,7 @@ class Producto
         $stmt->bindValue(':unit_price', (float)($data['unit_price'] ?? 0.00), PDO::PARAM_STR);
         $stmt->bindValue(':current_stock', (int)($data['current_stock'] ?? 0), PDO::PARAM_INT);
         $stmt->bindValue(':minimum_stock', (int)($data['minimum_stock'] ?? 5), PDO::PARAM_INT);
+        $stmt->bindValue(':is_active', isset($data['is_active']) ? (int)$data['is_active'] : 1, PDO::PARAM_INT);
 
         $stmt->execute();
 
@@ -90,8 +97,8 @@ class Producto
 
     public function actualizar(int $id, array $data): bool
     {
-        $sql = "UPDATE productos
-                SET sku = :sku, name = :name, description = :description, category_id = :category_id, brand_id = :brand_id, supplier_id = :supplier_id, cost_price = :cost_price, unit_price = :unit_price, minimum_stock = :minimum_stock, updated_at = NOW()
+        $sql = "UPDATE product
+                SET sku = :sku, name = :name, description = :description, category_id = :category_id, brand_id = :brand_id, supplier_id = :supplier_id, cost_price = :cost_price, unit_price = :unit_price, minimum_stock = :minimum_stock, is_active = :is_active, updated_at = NOW()
                 WHERE id = :id";
 
         $stmt = $this->db->prepare($sql);
@@ -104,6 +111,7 @@ class Producto
         $stmt->bindValue(':cost_price', (float)($data['cost_price'] ?? 0.00), PDO::PARAM_STR);
         $stmt->bindValue(':unit_price', (float)($data['unit_price'] ?? 0.00), PDO::PARAM_STR);
         $stmt->bindValue(':minimum_stock', (int)($data['minimum_stock'] ?? 5), PDO::PARAM_INT);
+        $stmt->bindValue(':is_active', isset($data['is_active']) ? (int)$data['is_active'] : 1, PDO::PARAM_INT);
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
 
         return $stmt->execute();
@@ -111,24 +119,61 @@ class Producto
 
     public function actualizarStock(int $id, int $nuevoStock): bool
     {
-        $stmt = $this->db->prepare("UPDATE productos SET current_stock = :stock, updated_at = NOW() WHERE id = :id");
+        $stmt = $this->db->prepare("UPDATE product SET current_stock = :stock, updated_at = NOW() WHERE id = :id");
         $stmt->bindValue(':stock', $nuevoStock, PDO::PARAM_INT);
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
         return $stmt->execute();
     }
 
+    /**
+     * Elimina un producto protegiendo la integridad referencial:
+     * - Si tiene movimientos o registros en el historial, aplica BORRADO LÓGICO (is_active = 0).
+     * - Si NO tiene movimientos asociados, realiza un BORRADO FÍSICO (DELETE FROM product).
+     *
+     * @return array{action: string, message: string}
+     */
+    public function eliminarConReglaIntegridad(int $id): array
+    {
+        // 1. Contar movimientos de inventario asociados
+        $stmtMov = $this->db->prepare("SELECT COUNT(*) FROM inventory_movement WHERE product_id = :id");
+        $stmtMov->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmtMov->execute();
+        $totalMovimientos = (int)$stmtMov->fetchColumn();
+
+        // 2. Si cuenta con movimientos registrados, aplicar BORRADO LÓGICO
+        if ($totalMovimientos > 0) {
+            $stmtUpdate = $this->db->prepare("UPDATE product SET is_active = 0, updated_at = NOW() WHERE id = :id");
+            $stmtUpdate->bindValue(':id', $id, PDO::PARAM_INT);
+            $stmtUpdate->execute();
+
+            return [
+                'action' => 'soft_delete',
+                'message' => 'El producto tiene movimientos registrados en el historial. Se ha archivado (borrado lógico) para proteger la trazabilidad y la integridad referencial de los datos.'
+            ];
+        }
+
+        // 3. Si no tiene relaciones, proceder con BORRADO FÍSICO
+        $stmtDelete = $this->db->prepare("DELETE FROM product WHERE id = :id");
+        $stmtDelete->bindValue(':id', $id, PDO::PARAM_INT);
+        $stmtDelete->execute();
+
+        return [
+            'action' => 'hard_delete',
+            'message' => 'Producto eliminado físicamente del catálogo de inventario.'
+        ];
+    }
+
     public function eliminar(int $id): bool
     {
-        $stmt = $this->db->prepare("DELETE FROM productos WHERE id = :id");
-        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
-        return $stmt->execute();
+        $this->eliminarConReglaIntegridad($id);
+        return true;
     }
 
     public function obtenerMetricas(): array
     {
-        $sqlTotal = $this->db->query("SELECT COUNT(*) as total, SUM(current_stock * cost_price) as valor FROM productos")->fetch(PDO::FETCH_ASSOC);
-        $sqlBajo = $this->db->query("SELECT COUNT(*) as bajo FROM productos WHERE current_stock <= minimum_stock")->fetch(PDO::FETCH_ASSOC);
-        $sqlMovsHoy = $this->db->query("SELECT COUNT(*) as hoy FROM movimientos_inventario WHERE DATE(created_at) = CURDATE()")->fetch(PDO::FETCH_ASSOC);
+        $sqlTotal = $this->db->query("SELECT COUNT(*) as total, COALESCE(SUM(current_stock * cost_price), 0) as valor FROM product WHERE is_active = 1")->fetch(PDO::FETCH_ASSOC);
+        $sqlBajo = $this->db->query("SELECT COUNT(*) as bajo FROM product WHERE is_active = 1 AND current_stock <= minimum_stock")->fetch(PDO::FETCH_ASSOC);
+        $sqlMovsHoy = $this->db->query("SELECT COUNT(*) as hoy FROM inventory_movement WHERE DATE(movement_date) = CURDATE()")->fetch(PDO::FETCH_ASSOC);
 
         return [
             'total_productos' => (int)($sqlTotal['total'] ?? 0),
@@ -138,3 +183,4 @@ class Producto
         ];
     }
 }
+

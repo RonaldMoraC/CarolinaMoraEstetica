@@ -7,7 +7,7 @@ namespace App\Domain\Staffing\Entities;
 use App\Domain\Shared\Exceptions\DomainException;
 
 /**
- * ProfessionalProfile — Perfil Operativo del Profesional
+ * ProfessionalProfile â¬ Perfil Operativo del Profesional
  *
  * Representa al especialista en la capa de agendamiento y staffing.
  * Gestiona el estado operativo (activo/inactivo) y la tasa de comisión

@@ -9,7 +9,7 @@ use App\Domain\Shared\Exceptions\DomainException;
 use DateTimeImmutable;
 
 /**
- * Payment — Entidad Raíz de Agregado Financiero
+ * Payment â¬ Entidad Raíz de Agregado Financiero
  *
  * Modela un cobro o transacción monetaria asociada a una cita.
  * Cumple con la regla de inmutabilidad financiera (Append-Only):

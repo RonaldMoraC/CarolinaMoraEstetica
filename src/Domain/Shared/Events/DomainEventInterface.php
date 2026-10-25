@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Shared\Events;
 
 /**
- * DomainEventInterface — Contrato de Evento de Dominio
+ * DomainEventInterface â¬ Contrato de Evento de Dominio
  *
  * Define el contrato mínimo que todo evento de dominio debe implementar
  * para ser despachado por el EventDispatcher y consumido por los listeners.

@@ -23,8 +23,8 @@ final class GetDashboardMetricsUseCase
         $rev = $this->repository->getMonthRevenue($currentMonth);
         $prevRev = $this->repository->getPreviousMonthRevenue($prevMonth);
         $revTrend = $prevRev > 0 
-            ? ($rev >= $prevRev ? '▲' : '▼') . ' ' . round((abs($rev - $prevRev) / $prevRev) * 100) . '% vs mes ant.'
-            : '— Sin datos previos';
+            ? ($rev >= $prevRev ? 'â²' : 'â¼') . ' ' . round((abs($rev - $prevRev) / $prevRev) * 100) . '% vs mes ant.'
+            : 'â¬ Sin datos previos';
 
         // 2. Citas y Ocupación
         $totalCitas = $this->repository->getMonthAppointmentCount($currentMonth);

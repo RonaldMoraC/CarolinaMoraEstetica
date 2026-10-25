@@ -16,7 +16,7 @@ use PDO;
 use PDOException;
 
 /**
- * CreateAppointmentUseCase — Caso de Uso de Aplicación
+ * CreateAppointmentUseCase â¬ Caso de Uso de Aplicación
  *
  * Orquesta la creación de una nueva cita con protección estricta anti-overbooking:
  *   1. Validación perimetral

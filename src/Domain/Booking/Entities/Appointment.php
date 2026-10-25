@@ -5,15 +5,15 @@ namespace App\Domain\Booking\Entities;
 use DateTimeImmutable;
 
 /**
- * Appointment — Entidad de Dominio del Eje Transaccional
+ * Appointment â¬ Entidad de Dominio del Eje Transaccional
  *
  * Representa una cita programada entre un cliente, un profesional,
  * una sucursal y un servicio del catálogo.
  *
  * Estados del ciclo de vida (máquina de estados):
- *   PENDING → CONFIRMED → IN_PROGRESS → COMPLETED
- *   PENDING → CONFIRMED → CANCELLED
- *   CONFIRMED → NOSHOW
+ *   PENDING â  CONFIRMED â  IN_PROGRESS â  COMPLETED
+ *   PENDING â  CONFIRMED â  CANCELLED
+ *   CONFIRMED â  NOSHOW
  */
 class Appointment
 {
