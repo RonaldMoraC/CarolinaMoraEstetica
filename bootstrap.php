@@ -584,6 +584,9 @@ $lazyContainer = new class($logFilePath) {
                     $this->get(\App\Application\Billing\CashRegister\CloseCashRegisterUseCase::class)
                 ),
 
+            \App\Infrastructure\Inventory\Http\InventarioController::class =>
+                new \App\Infrastructure\Inventory\Http\InventarioController($this->getPdo()),
+
             \App\Infrastructure\Integration\WhatsApp\Http\WhatsAppWebhookController::class =>
                 new \App\Infrastructure\Integration\WhatsApp\Http\WhatsAppWebhookController(
                     $this->getWhatsAppWebhookSignatureValidator(),

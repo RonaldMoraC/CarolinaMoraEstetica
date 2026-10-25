@@ -1,4 +1,4 @@
-# Estado Actual del Proyecto
+# Estado Actual del Proyecto y Roadmap Estratégico
 
 ## Funcionalidades Implementadas
 
@@ -78,7 +78,7 @@
 
 ---
 
-## Deuda Técnica
+## Deuda Técnica y Brechas de Arquitectura
 
 ### Arquitectura
 * **Ausencia de Objetos de Valor (Value Objects) en Domain:** Los archivos `Money.php`, `TimeRange.php`, `UuidVO.php` están declarados pero vacíos. Toda la lógica del sistema maneja tipos primitivos directamente en lugar de estructurar estas invariantes en el dominio.
@@ -112,72 +112,42 @@
 ### Prioridad Alta
 * **Tarea H1: Implementación de la Capa de Dominio Base (Value Objects y Eventos)**
   * *Objetivo:* Completar la lógica de Value Objects (`Money`, `TimeRange`, `UuidVO`) y el despachador de eventos de dominio (`EventDispatcher`) para desacoplar el ecosistema.
-  * *Dependencias:* Ninguna.
-  * *Área responsable:* Backend.
 * **Tarea H2: Motor de Mallas Horarias y Excepciones (Staffing Core)**
   * *Objetivo:* Desarrollar las entidades del dominio de personal, configurar mallas horarias, registrar bloqueos o vacaciones, y calcular ranuras disponibles (`GetAvailableSlotsUseCase`).
-  * *Dependencias:* Tarea H1.
-  * *Área responsable:* Backend / Database.
 * **Tarea H3: Ciclo de Vida Avanzado del Agendamiento (Booking Core)**
   * *Objetivo:* Completar las operaciones de check-in de llegada (`ExecuteCheckInUseCase`), fin de servicio (`CompleteServiceUseCase`), inasistencias (`MarkNoShowUseCase`) y reprogramación atómica (`RescheduleAppointmentUseCase`).
-  * *Dependencias:* Tarea H2.
-  * *Área responsable:* Backend.
 
 ### Prioridad Media
 * **Tarea M1: Facturación Inmutable, POS y Caja Chica (Billing Core)**
   * *Objetivo:* Implementar entidades de facturación, abonos, e inmutabilidad de pagos de solo inserción, con lógica de apertura, flujos de caja y arqueos.
-  * *Dependencias:* Tarea H3.
-  * *Área responsable:* Backend / Database.
 * **Tarea M2: Webhook de Pagos Online e Idempotencia**
   * *Objetivo:* Desarrollar el webhook receptor de pasarela de pagos con control de idempotencia transaccional y bloqueos pesimistas para evitar cobros dobles.
-  * *Dependencias:* Tarea M1.
-  * *Área responsable:* Backend / DevOps.
 * **Tarea M3: Service Worker Avanzado y Soporte Offline de PWA**
   * *Objetivo:* Implementar almacenamiento IndexedDB en el cliente, caché Stale-While-Revalidate en `sw.js` y sincronización Background Sync.
-  * *Dependencias:* Tarea H3, API estable.
-  * *Área responsable:* Frontend / PWA.
 
 ### Prioridad Baja
 * **Tarea B1: WhatsApp Webhook, parser y Máquina de Estados**
   * *Objetivo:* Desarrollar el webhook receptor de WhatsApp con validación de firmas, parser de payloads Meta y máquina de estados conversacionales interactiva en BD.
-  * *Dependencias:* Tarea H2.
-  * *Área responsable:* Integraciones / Backend.
 * **Tarea B2: Cola de Notificaciones y CLI Batch Worker**
   * *Objetivo:* Implementar el worker CLI resiliente con límites de ejecución de 45 segundos, semáforos flock y reintentos automáticos con respaldo exponencial.
-  * *Dependencias:* Tarea B1.
-  * *Área responsable:* Integraciones / DevOps.
 * **Tarea B3: Cobertura de Testing y Mocking de Base de Datos**
   * *Objetivo:* Construir la suite de pruebas unitarias de negocio y resolver los mocks del ciclo de vida del test de integración de base de datos.
-  * *Dependencias:* Todas las anteriores.
-  * *Área responsable:* Testing / DevOps.
+
+---
+
+## Oportunidades de Innovación
+1. **Dashboard Financiero y de Productividad del Personal:** Panel analítico gerencial para calcular productividad en cabina, comisiones y ocupación de salas en tiempo real.
+2. **Sistema Automatizado de Lista de Espera Inteligente (Waitlist Engine):** Notificación automática vía WhatsApp a clientes en lista de espera cuando surge una cancelación en alta demanda.
+3. **Módulo de Auditoría de Rendimiento de Hostinger:** Monitor interno de uso de RAM y conexiones PDO para evitar suspensiones por exceso de recursos.
 
 ---
 
 ## Tareas Paralelizables
-
-### Backend
-* Desarrollo de la capa de Dominio Base (Value Objects y Bus de Eventos) puede ejecutarse de forma aislada.
-* Implementación del CRUD de catálogo de servicios e inventario (`ManageServiceInventoryUseCase`) es independiente del agendamiento y facturación.
-* Caso de uso para reseñas post-servicio (`SubmitServiceRatingUseCase`) y su persistencia.
-
-### Frontend
-* Maquetación y estilos Vanilla CSS de los paneles de administración y vistas cliente.
-* Integración del Service Worker básico y lógica de visualización del catálogo offline en IndexedDB (independiente de la lógica transaccional del backend).
-
-### Base de Datos
-* Creación de scripts de seeders y configuradores de datos maestros iniciales (servicios, categorías, roles y permisos).
-
-### APIs
-* Desarrollo del endpoint `LogoutController` para revocación de JWT e invalidación de sesiones de usuario en base de datos.
-
-### Integraciones
-* Desarrollo del cliente de Meta Cloud API (`MetaApiClient`) y su respectivo formateador de plantillas HSM (independiente del agendamiento conversacional).
-
-### DevOps
-* Implementación de scripts de rotación de logs en producción e integración de logs estructurados PSR-3.
-
-### Seguridad
-* Implementación del servicio de encriptación simétrica bidireccional (`EncryptionService`) para datos clínicos de clientes.
-
-### Testing
-* Creación de pruebas unitarias para entidades de negocio ya existentes (`User`, `Role`, `Appointment`).
+* **Backend:** Desarrollo de capa de dominio, CRUD inventario, caso de uso de reseñas post-servicio.
+* **Frontend:** Maquetación de paneles y vistas, integración inicial de Service Worker offline.
+* **Base de Datos:** Scripts de seeders y configuradores de datos maestros.
+* **APIs:** `LogoutController` para revocación de JWT.
+* **Integraciones:** Cliente Meta Cloud API (`MetaApiClient`).
+* **DevOps:** Scripts de rotación de logs y logs estructurados PSR-3.
+* **Seguridad:** Servicio de encriptación (`EncryptionService`) para datos clínicos.
+* **Testing:** Pruebas unitarias para entidades de negocio (`User`, `Role`, `Appointment`).

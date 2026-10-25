@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 /**
  * ============================================================
- *  src/bootstrap.php — Kernel de Arranque del Sistema
- *  Ecosistema Digital — Estética Carolina Mora
+ *  src/bootstrap.php â¬ Kernel de Arranque del Sistema
+ *  Ecosistema Digital â¬ Estética Carolina Mora
  * ============================================================
  *
  *  Responsabilidad única de este archivo:
@@ -41,26 +41,26 @@ declare(strict_types=1);
  * ============================================================
  */
 
-// ─────────────────────────────────────────────────────────────
-//  PASO 1 — AUTOLOADER PSR-4 (Composer)
-// ─────────────────────────────────────────────────────────────
+// â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
+//  PASO 1 â¬ AUTOLOADER PSR-4 (Composer)
+// â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 //
 //  Ruta desde src/ hacia la raíz del proyecto: __DIR__/.. = raíz
 //  Estructura esperada:
 //    raíz/
-//    ├── vendor/autoload.php   ← generado por `composer install`
-//    └── src/bootstrap.php     ← este archivo
+//    âSâ¬â¬ vendor/autoload.php   â  generado por `composer install`
+//    ââ¬â¬ src/bootstrap.php     â  este archivo
 
 $autoloaderPath = __DIR__ . '/../vendor/autoload.php';
 
 if (!file_exists($autoloaderPath)) {
     // Fallo crítico pre-autoloader: el GlobalExceptionHandler aún no
-    // está disponible. Único punto donde se permite un echo directo.
+    // está disponible. Ãanico punto donde se permite un echo directo.
     http_response_code(500);
     header('Content-Type: application/problem+json; charset=utf-8');
     echo json_encode([
         'type'     => 'https://carolinamoraestetica.com/errors/bootstrap-failure',
-        'title'    => 'Fallo de Inicialización — Autoloader no encontrado',
+        'title'    => 'Fallo de Inicialización â¬ Autoloader no encontrado',
         'status'   => 500,
         'detail'   => 'El autoloader de Composer no fue encontrado en vendor/autoload.php. '
                     . 'Ejecuta: composer install',
@@ -72,9 +72,9 @@ if (!file_exists($autoloaderPath)) {
 require_once $autoloaderPath;
 
 
-// ─────────────────────────────────────────────────────────────
-//  PASO 2 — PARSER DE VARIABLES DE ENTORNO (.env)
-// ─────────────────────────────────────────────────────────────
+// â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
+//  PASO 2 â¬ PARSER DE VARIABLES DE ENTORNO (.env)
+// â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 //
 //  Implementación propia sin dependencias externas.
 //  Prioridad de lectura (mayor a menor):
@@ -82,12 +82,12 @@ require_once $autoloaderPath;
 //    b) Variables del archivo .env
 //
 //  Características del parser:
-//    ✓ Soporta comentarios inline  (CLAVE=valor # comentario)
-//    ✓ Soporta comillas dobles con escapes (\n \t \" \\)
-//    ✓ Soporta comillas simples sin escapes (literal puro)
-//    ✓ Soporta prefijo 'export ' (compatibilidad con bash)
-//    ✓ NO sobreescribe variables ya definidas en getenv()
-//    ✗ No soporta variables multilínea (innecesario para este proyecto)
+//    âS Soporta comentarios inline  (CLAVE=valor # comentario)
+//    âS Soporta comillas dobles con escapes (\n \t \" \\)
+//    âS Soporta comillas simples sin escapes (literal puro)
+//    âS Soporta prefijo 'export ' (compatibilidad con bash)
+//    âS NO sobreescribe variables ya definidas en getenv()
+//    âS No soporta variables multilínea (innecesario para este proyecto)
 
 (static function (): void {
     // La ruta al .env es relativa a la raíz del proyecto (src/../.env)
@@ -126,7 +126,7 @@ require_once $autoloaderPath;
         $key   = trim(substr($line, 0, $eqPos));
         $value = trim(substr($line, $eqPos + 1));
 
-        // ── Procesado del valor ────────────────────────────
+        // â¬â¬ Procesado del valor â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
         // Eliminar comentarios inline solo si el valor NO está entre comillas.
         if ($value !== '' && $value[0] !== '"' && $value[0] !== "'") {
             $commentPos = strpos($value, ' #');
@@ -161,18 +161,18 @@ require_once $autoloaderPath;
 })();
 
 
-// ─────────────────────────────────────────────────────────────
-//  PASO 3 — REGISTRO DEL MANEJADOR GLOBAL DE EXCEPCIONES
-// ─────────────────────────────────────────────────────────────
+// â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
+//  PASO 3 â¬ REGISTRO DEL MANEJADOR GLOBAL DE EXCEPCIONES
+// â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 //
 //  Se registra INMEDIATAMENTE después del autoloader para que
 //  cualquier excepción no capturada en los pasos siguientes
 //  (PDO, instanciación de servicios, etc.) sea interceptada
-//  y devuelta como RFC 7807 — nunca como HTML de error de PHP.
+//  y devuelta como RFC 7807 â¬ nunca como HTML de error de PHP.
 //
 //  Comportamiento según APP_ENV:
-//    local/development → Incluye stack trace completo en la respuesta JSON
-//    production        → Devuelve mensaje seguro genérico al cliente
+//    local/development â  Incluye stack trace completo en la respuesta JSON
+//    production        â  Devuelve mensaje seguro genérico al cliente
 //                        y escribe el stack trace real en el log del servidor
 
 use App\Infrastructure\Shared\Errors\GlobalExceptionHandler;
@@ -188,24 +188,24 @@ GlobalExceptionHandler::register(
 );
 
 
-// ─────────────────────────────────────────────────────────────
-//  PASO 4 — CONEXIÓN PDO FUNDACIONAL
-// ─────────────────────────────────────────────────────────────
+// â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
+//  PASO 4 â¬ CONEXIÃN PDO FUNDACIONAL
+// â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 //
 //  ConnectionFactory.createFromEnv() lee las variables ya
 //  registradas en $_ENV por el parser del Paso 2.
 //  Si faltan variables o la conexión falla, lanza RuntimeException
 //  que será capturada por el GlobalExceptionHandler del Paso 3
-//  y devuelta como RFC 7807 HTTP 500 — nunca como error PHP raw.
+//  y devuelta como RFC 7807 HTTP 500 â¬ nunca como error PHP raw.
 
 use App\Infrastructure\Shared\Database\ConnectionFactory;
 
 $pdo = ConnectionFactory::createFromEnv();
 
 
-// ─────────────────────────────────────────────────────────────
+// â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 //  RETORNO DEL KERNEL
-// ─────────────────────────────────────────────────────────────
+// â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬â¬
 //
 //  Devolver un array inmutable con las dependencias fundacionales.
 //  El bootstrap.php (raíz) desestructura este array para
