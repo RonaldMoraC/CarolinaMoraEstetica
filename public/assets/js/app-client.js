@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Módulo Principal del Panel Cliente (PWA)
  * Estética Carolina Mora - CarolinaMoraEstetica
  *
@@ -285,25 +285,25 @@ class CatalogView {
         this.allCategories = [];
 
         this.SERVICE_ICONS = {
-            cabello: 'ðx!⬍â"¬️', unas: 'ðx&', facial: 'ðx§⬍â"¬️', cuidado: 'ðx§´',
-            colorimetria: 'ðx}¨', estilismo: 'âS️', cejas: 'ðx️',
-            'estetica facial y avanzada': 'ðx§⬍â"¬️',
-            micropigmentacion: 'ðx}¨',
-            'cejas pestañas y cera': 'ðx️',
-            depilacion: 'ðx§´',
+            cabello: '', unas: '', facial: '', cuidado: '',
+            colorimetria: '', estilismo: '️', cejas: '',
+            'estetica facial y avanzada': '',
+            micropigmentacion: '',
+            'cejas pestañas y cera': '',
+            depilacion: '',
             laser: 'âa¡',
-            default: 'âS¨'
+            default: ''
         };
 
         this.CATEGORY_ICONS = {
-            cabello: 'ðx!⬍â"¬️', unas: 'ðx&', facial: 'ðx§⬍â"¬️', cuidado: 'ðx§´',
-            colorimetria: 'ðx}¨', estilismo: 'âS️', cejas: 'ðx️',
-            'estetica facial y avanzada': 'ðx§⬍â"¬️',
-            micropigmentacion: 'ðx}¨',
-            'cejas pestañas y cera': 'ðx️',
-            depilacion: 'ðx§´',
+            cabello: '', unas: '', facial: '', cuidado: '',
+            colorimetria: '', estilismo: '️', cejas: '',
+            'estetica facial y avanzada': '',
+            micropigmentacion: '',
+            'cejas pestañas y cera': '',
+            depilacion: '',
             laser: 'âa¡',
-            default: 'âS¨'
+            default: ''
         };
     }
 
@@ -369,12 +369,12 @@ class CatalogView {
             return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/,/g, '').trim();
         }
 
-        // "Todos" button â¬ spans full width
+        // "Todos" button  spans full width
         const todosBtn = document.createElement('button');
         todosBtn.className = 'cat-filter col-span-2 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-sm font-semibold text-slate-700 dark:text-slate-300 text-center'
             + (this.currentCategory === 'todos' ? ' active' : '');
         todosBtn.setAttribute('data-cat', 'todos');
-        todosBtn.textContent = 'âS¨ Todos los servicios';
+        todosBtn.textContent = 'Todos los servicios';
         todosBtn.addEventListener('click', () => this.filterByCategory('todos'));
         container.appendChild(todosBtn);
 
@@ -497,7 +497,7 @@ class CatalogView {
                         ${professionals.map(prof => `
                             <button class="professional-btn px-3 py-2 border border-slate-200 dark:border-white/10 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-brand-cyanLight hover:text-brand-cyan hover:border-brand-cyan transition text-left"
                                 data-prof-id="${prof.professional_profile_id}" onclick="AppClient.catalogView.selectProfessional(${prof.professional_profile_id}, '${escapeHtml(prof.display_name)}')">
-                                ðx©⬍âa"️ ${escapeHtml(prof.display_name)}
+                                "️ ${escapeHtml(prof.display_name)}
                             </button>
                         `).join('')}
                     </div>
@@ -515,7 +515,7 @@ class CatalogView {
         const bodyHTML = `
             <div class="space-y-4">
                 <div class="flex items-center gap-3 p-3 bg-brand-cyanLight rounded-xl">
-                    <span class="text-2xl">${this.SERVICE_ICONS[(this.store.getState().services.find(s => (s.id || s.service_id) === id)?.category || '').toLowerCase()] || 'âS¨'}</span>
+                    <span class="text-2xl">${this.SERVICE_ICONS[(this.store.getState().services.find(s => (s.id || s.service_id) === id)?.category || '').toLowerCase()] || ''}</span>
                     <div>
                         <strong class="text-slate-900 dark:text-white">${escapeHtml(name)}</strong>
                         <p class="text-xs text-slate-400">$${escapeHtml(price)}</p>
@@ -631,6 +631,9 @@ class CatalogView {
 
             this.alerts.success('¡Cita creada exitosamente! Fecha: ' + escapeHtml(result.scheduled_date) + ' a las ' + escapeHtml(result.scheduled_time));
 
+            if (AppClient && AppClient.citasView) {
+                AppClient.citasView.citasLoaded = false;
+            }
             sessionStorage.removeItem('servicio_seleccionado_id');
             sessionStorage.removeItem('servicio_seleccionado_nombre');
             sessionStorage.removeItem('servicio_seleccionado_precio');
@@ -730,12 +733,12 @@ class CitasView {
             detailsDiv.className = 'text-xs text-slate-500 dark:text-slate-400 font-semibold space-y-1 mb-3';
 
             const dateP = document.createElement('p');
-            dateP.textContent = 'ðx& ' + date;
+            dateP.textContent = '' + date;
             const timeP = document.createElement('p');
             timeP.textContent = '⏰ ' + time;
             const priceP = document.createElement('p');
             priceP.className = 'text-slate-700 dark:text-slate-300';
-            priceP.textContent = 'ðx° Costo: $' + price;
+            priceP.textContent = 'Costo: $' + price;
 
             detailsDiv.appendChild(dateP);
             detailsDiv.appendChild(timeP);
@@ -780,6 +783,73 @@ class CitasView {
         cards.forEach(card => {
             card.style.display = card.getAttribute('data-estado') === tab ? 'block' : 'none';
         });
+    }
+
+    openRatingModal(appointmentId, serviceName) {
+        let selectedScore = 5;
+        const bodyHTML = `
+            <div class="space-y-4">
+                <p class="text-sm text-slate-600 dark:text-slate-300">
+                    ¿Cómo fue tu experiencia con <strong>${escapeHtml(serviceName)}</strong>?
+                </p>
+                <div class="flex items-center justify-center gap-2 py-2" id="starRatingContainer">
+                    ${[1, 2, 3, 4, 5].map(star => `
+                        <button type="button" class="star-btn text-2xl transition transform hover:scale-125" data-star="${star}">
+                            ⭐
+                        </button>
+                    `).join('')}
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Comentario (opcional)</label>
+                    <textarea id="ratingComments" rows="3" placeholder="Cuéntanos qué te pareció el resultado..."
+                        class="app-input w-full px-4 py-3 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-700 dark:text-slate-300 resize-none"></textarea>
+                </div>
+            </div>
+        `;
+
+        this.modal.open({
+            title: 'Calificar Cita #' + appointmentId,
+            body: bodyHTML,
+            buttons: [
+                { label: 'Cancelar', class: 'px-4 py-2 border-2 border-slate-300 text-slate-600 text-sm font-semibold rounded-xl hover:bg-slate-100 transition' },
+                {
+                    label: 'Enviar Calificación',
+                    class: 'px-4 py-2 bg-brand-gold text-white font-semibold text-sm rounded-xl hover:brightness-110 transition',
+                    onClick: async () => {
+                        const comments = document.getElementById('ratingComments') ? document.getElementById('ratingComments').value.trim() : null;
+                        this.modal.close();
+                        try {
+                            await this.api.post('/crm/ratings', {
+                                appointment_id: appointmentId,
+                                score: selectedScore,
+                                comments: comments
+                            });
+                            this.alerts.success('¡Muchas gracias por calificar nuestro servicio!');
+                        } catch (err) {
+                            this.alerts.error(err.message || 'Error al registrar calificación.');
+                        }
+                    },
+                    close: false
+                }
+            ]
+        });
+
+        setTimeout(() => {
+            const stars = document.querySelectorAll('.star-btn');
+            const updateStars = (val) => {
+                selectedScore = val;
+                stars.forEach((s, idx) => {
+                    s.style.opacity = (idx < val) ? '1' : '0.3';
+                });
+            };
+            stars.forEach((s) => {
+                s.addEventListener('click', () => {
+                    const val = parseInt(s.getAttribute('data-star'), 10);
+                    updateStars(val);
+                });
+            });
+            updateStars(5);
+        }, 100);
     }
 
     cancelAppointment(id) {
@@ -874,17 +944,10 @@ class ProfileView {
         const btnGuardar = document.getElementById('btnGuardarPerfil');
 
         // Función auxiliar de sanitización local
-        const sanitize = (str) => {
-            if (typeof str !== 'string') return '';
-            return str.replace(/[&<>"']/g, (m) => ({
-                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
-            }[m]));
-        };
-
-        const newFirstName = sanitize(document.getElementById('profileFirstName').value.trim());
-        const newLastName = sanitize(document.getElementById('profileLastName').value.trim());
-        const newPhone = sanitize(document.getElementById('profileTelefono').value.trim());
-        const newEmail = sanitize(document.getElementById('profileCorreo').value.trim());
+        const newFirstName = document.getElementById('profileFirstName').value.trim();
+        const newLastName = document.getElementById('profileLastName').value.trim();
+        const newPhone = document.getElementById('profileTelefono').value.trim();
+        const newEmail = document.getElementById('profileCorreo').value.trim();
 
         // Validaciones robustas del lado del cliente
         if (newFirstName.length < 2 || newLastName.length < 2) {
@@ -988,7 +1051,7 @@ class OfflineIndicator {
     constructor() {
         this.bar = document.createElement('div');
         this.bar.className = 'app-offline-bar';
-        this.bar.textContent = 'Sin conexión â¬ Los datos pueden no estar actualizados';
+        this.bar.textContent = 'Sin conexión  Los datos pueden no estar actualizados';
         document.body.appendChild(this.bar);
 
         window.addEventListener('offline', () => this.show());
@@ -1051,13 +1114,19 @@ const AppClient = (() => {
 
             // Bind logout
             const logoutBtns = document.querySelectorAll('[data-action="logout"]');
-            logoutBtns.forEach(btn => btn.addEventListener('click', () => {
+            logoutBtns.forEach(btn => btn.addEventListener('click', async () => {
+                try {
+                    await api.post('/auth/logout', {});
+                } catch (e) {
+                    // Silencioso en caso de pérdida de conexión
+                }
                 localStorage.clear();
                 window.location.href = basePath + '/login';
             }));
 
-            // Initial load
-            router.navigate('Catalog');
+            // Initial load respetando data-active-section del layout
+            const initialSection = document.body.getAttribute('data-active-section') || 'Catalog';
+            router.navigate(initialSection);
 
             console.log('[AppClient] Panel cliente inicializado');
         },

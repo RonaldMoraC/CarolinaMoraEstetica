@@ -127,7 +127,7 @@ $extraJS = $extraJS ?? '';
     </style>
     <?php endif; ?>
 </head>
-<body class="bg-slate-50 dark:bg-brand-pureBlack min-h-screen font-sans">
+<body class="bg-slate-50 dark:bg-brand-pureBlack min-h-screen font-sans" data-active-section="<?= htmlspecialchars($activeSection, ENT_QUOTES, 'UTF-8') ?>">
 
     <!-- ====== TOP HEADER ====== -->
     <header class="sticky top-0 z-40 bg-white/90 dark:bg-white/5 backdrop-blur-md border-b border-slate-200 dark:border-white/10">

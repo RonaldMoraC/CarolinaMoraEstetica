@@ -1,14 +1,14 @@
 <?php
 
 
-$pageTitle = 'Servicios';
-$activeSection = 'Catalog';
+$pageTitle = $pageTitle ?? 'Servicios';
+$activeSection = $activeSection ?? 'Catalog';
 
 ob_start();
 ?>
 
 <!-- ────── SECTION: CATALOGO DE SERVICIOS ────── -->
-<div id="sectionCatalog" class="section-view visible">
+<div id="sectionCatalog" class="section-view <?= ($activeSection === 'Catalog') ? 'visible' : 'hidden' ?>" data-section="Catalog">
     <!-- Search bar -->
     <div class="flex items-center bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-3 mb-4">
         <span class="text-slate-400 text-lg mr-2">🔍</span>
@@ -26,7 +26,7 @@ ob_start();
 </div>
 
 <!-- ────── SECTION: MIS CITAS ────── -->
-<div id="sectionCitas" class="section-view hidden">
+<div id="sectionCitas" class="section-view <?= ($activeSection === 'Citas') ? 'visible' : 'hidden' ?>" data-section="Citas">
     <!-- Tabs: Próximas / Pasadas -->
     <div class="flex bg-slate-100 dark:bg-white/5 rounded-xl p-1 mb-4">
         <button class="tab-btn active flex-1 py-3 rounded-lg text-sm font-semibold text-slate-500 dark:text-slate-400"
@@ -42,7 +42,7 @@ ob_start();
 </div>
 
 <!-- ────── SECTION: MI PERFIL ────── -->
-<div id="sectionPerfil" class="section-view hidden">
+<div id="sectionPerfil" class="section-view <?= ($activeSection === 'Perfil') ? 'visible' : 'hidden' ?>" data-section="Perfil">
     <div class="bg-white dark:bg-white/5 rounded-2xl shadow-sm border border-slate-200 dark:border-white/10 p-6">
         <!-- Avatar -->
         <div class="text-center mb-6">
