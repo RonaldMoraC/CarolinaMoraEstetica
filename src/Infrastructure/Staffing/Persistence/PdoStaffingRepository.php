@@ -94,4 +94,34 @@ final class PdoStaffingRepository implements StaffingRepositoryInterface
         // Mapeo similar a findSchedules...
         return $stmt->fetchAll(PDO::FETCH_ASSOC); // Simplificado para continuar el flujo
     }
+
+    public function lockProfessionalWorkSchedule(int $professionalId, int $branchId, int $dayOfWeek): ?array
+    {
+        $sql = "SELECT * FROM work_schedule 
+                WHERE professional_profile_id = :prof_id 
+                  AND branch_id = :branch_id 
+                  AND day_of_week = :day
+                FOR UPDATE";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':prof_id', $professionalId, PDO::PARAM_INT);
+        $stmt->bindValue(':branch_id', $branchId, PDO::PARAM_INT);
+        $stmt->bindValue(':day', $dayOfWeek, PDO::PARAM_INT);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row !== false ? $row : null;
+    }
+
+    public function getExceptionsInTimeRange(int $professionalId, string $startTimestamp, string $endTimestamp): array
+    {
+        $sql = "SELECT * FROM schedule_exception
+                WHERE professional_profile_id = :prof_id
+                  AND start_datetime < :end_ts
+                  AND end_datetime > :start_ts";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':prof_id', $professionalId, PDO::PARAM_INT);
+        $stmt->bindValue(':start_ts', $startTimestamp, PDO::PARAM_STR);
+        $stmt->bindValue(':end_ts', $endTimestamp, PDO::PARAM_STR);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

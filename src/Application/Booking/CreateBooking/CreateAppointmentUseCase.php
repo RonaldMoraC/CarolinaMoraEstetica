@@ -5,7 +5,7 @@ namespace App\Application\Booking\CreateBooking;
 use App\Domain\Booking\Entities\Appointment;
 use App\Domain\Booking\Repositories\AppointmentRepositoryInterface;
 use App\Domain\Catalog\Repositories\ServiceRepositoryInterface;
-use App\Infrastructure\Staffing\Persistence\PdoStaffingRepository;
+use App\Domain\Staffing\Repositories\StaffingRepositoryInterface;
 use App\Application\Shared\Audit\AuditService;
 use App\Application\Booking\Validators\CreateAppointmentValidator;
 use App\Infrastructure\Shared\Errors\Exceptions\ConflictException;
@@ -28,14 +28,14 @@ class CreateAppointmentUseCase
 {
     private AppointmentRepositoryInterface $appointmentRepo;
     private ServiceRepositoryInterface     $serviceRepo;
-    private PdoStaffingRepository          $staffingRepo;
+    private StaffingRepositoryInterface    $staffingRepo;
     private AuditService                   $auditService;
     private PDO                            $pdo;
 
     public function __construct(
         AppointmentRepositoryInterface $appointmentRepo,
         ServiceRepositoryInterface     $serviceRepo,
-        PdoStaffingRepository          $staffingRepo,
+        StaffingRepositoryInterface    $staffingRepo,
         AuditService                   $auditService,
         PDO                            $pdo
     ) {

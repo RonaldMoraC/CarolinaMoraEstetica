@@ -211,7 +211,7 @@ final class TimeRange
     public function __toString(): string
     {
         return sprintf(
-            '[%s â  %s]',
+            '[%s → %s]',
             $this->start->format('Y-m-d H:i:s'),
             $this->end->format('Y-m-d H:i:s')
         );

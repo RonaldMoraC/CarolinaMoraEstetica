@@ -30,4 +30,14 @@ interface StaffingRepositoryInterface
      * @return ScheduleException[]
      */
     public function findExceptions(int $professionalId, \DateTimeImmutable $start, \DateTimeImmutable $end): array;
+
+    /**
+     * Bloquea pesimistamente (SELECT ... FOR UPDATE) la malla horaria del profesional para evitar colisiones.
+     */
+    public function lockProfessionalWorkSchedule(int $professionalId, int $branchId, int $dayOfWeek): ?array;
+
+    /**
+     * Obtiene excepciones dentro de un rango de timestamps para validaciones anti-overbooking.
+     */
+    public function getExceptionsInTimeRange(int $professionalId, string $startTimestamp, string $endTimestamp): array;
 }

@@ -2,7 +2,7 @@
 
 namespace App\Application\Shared\Audit;
 
-use App\Infrastructure\Shared\Audit\SystemAuditLogRepository;
+use App\Infrastructure\Shared\Audit\AuditLogRepositoryInterface;
 
 /**
  * AuditService â¬ Servicio de Aplicación para Auditoría
@@ -15,9 +15,9 @@ use App\Infrastructure\Shared\Audit\SystemAuditLogRepository;
  */
 final class AuditService
 {
-    private SystemAuditLogRepository $auditRepo;
+    private AuditLogRepositoryInterface $auditRepo;
 
-    public function __construct(SystemAuditLogRepository $auditRepo)
+    public function __construct(AuditLogRepositoryInterface $auditRepo)
     {
         $this->auditRepo = $auditRepo;
     }

@@ -16,6 +16,7 @@ interface AppointmentRepositoryInterface
     public function cancel(int $appointmentId, int $actorId, string $reason): bool;
     public function getAppointmentsForDateRange(string $startDate, string $endDate, ?int $professionalId = null): array;
     public function getAppointmentsToday(): array;
+    public function findByClientId(int $clientProfileId): array;
 
     /**
      * Verifica si existe alguna cita que se solape con el rango de tiempo dado para un profesional específico.
