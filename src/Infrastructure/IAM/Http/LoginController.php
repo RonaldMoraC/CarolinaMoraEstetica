@@ -85,8 +85,7 @@ final class LoginController
             // Skill 10: Validación de claims para determinar la navegación
             $claims = $this->jwtTokenManager->validate($token);
             
-            // DEBUG: Vamos a ver en los logs qué está llegando realmente en el token
-            error_log("DEBUG JWT CLAIMS para $email: " . print_r($claims, true));
+
 
             // Skill 10: Obtención resiliente del rol desde los claims del JWT
             $roleRaw = $claims['role'] ?? $claims['role_code'] ?? 'CLIENT';
