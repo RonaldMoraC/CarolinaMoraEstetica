@@ -6,13 +6,15 @@ namespace Tests\Unit\Application\Booking;
 
 use App\Application\Booking\CreateBooking\CreateAppointmentDTO;
 use App\Application\Booking\CreateBooking\CreateAppointmentUseCase;
-use App\Application\Staffing\GetAvailableSlots\GetAvailableSlotsUseCase;
 use App\Domain\Booking\Repositories\AppointmentRepositoryInterface;
 use App\Domain\Catalog\Repositories\ServiceRepositoryInterface;
-use App\Domain\Shared\Exceptions\DomainException;
 use App\Domain\Staffing\Repositories\StaffingRepositoryInterface;
+use App\Application\Shared\Audit\AuditService;
 use App\Infrastructure\Shared\Audit\AuditLogRepositoryInterface;
+use App\Infrastructure\Shared\Errors\Exceptions\ConflictException;
 use PHPUnit\Framework\TestCase;
+use PDO;
+use PDOStatement;
 
 final class CreateAppointmentUseCaseTest extends TestCase
 {
@@ -21,25 +23,23 @@ final class CreateAppointmentUseCaseTest extends TestCase
         $appointmentRepo = $this->createMock(AppointmentRepositoryInterface::class);
         $serviceRepo = $this->createMock(ServiceRepositoryInterface::class);
         $staffingRepo = $this->createMock(StaffingRepositoryInterface::class);
-        $staffingPersistenceRepo = $this->createMock(\App\Domain\Staffing\Repositories\StaffingRepositoryInterface::class);
-        $auditRepo = new class implements AuditLogRepositoryInterface {
-            public function insert(
-                ?int $actorId,
-                string $action,
-                string $entityType,
-                string|int $entityId,
-                array $oldValues = [],
-                array $newValues = []
-            ): void {
-            }
-        };
 
-        $staffingRepo->method('findProfessionalProfileById')->willReturn([
+        $auditLogRepo = $this->createMock(AuditLogRepositoryInterface::class);
+        $auditService = new AuditService($auditLogRepo);
+
+        $pdo = $this->createMock(PDO::class);
+        $pdo->method('exec')->willReturn(1);
+        $pdo->method('beginTransaction')->willReturn(true);
+        $pdo->method('inTransaction')->willReturn(true);
+        $pdo->method('rollBack')->willReturn(true);
+
+        $staffingRepo->method('lockProfessionalWorkSchedule')->willReturn([
+            'work_schedule_id' => 1,
             'professional_profile_id' => 10,
-            'operational_status' => 'ACTIVE',
+            'branch_id' => 1,
+            'day_of_week' => 2,
         ]);
-        $staffingRepo->method('getWorkSchedules')->willReturn([]);
-        $staffingPersistenceRepo->method('getWorkSchedules')->willReturn([]);
+        $staffingRepo->method('getExceptionsInTimeRange')->willReturn([]);
 
         $serviceRepo->method('findById')->willReturn([
             'service_id' => 7,
@@ -49,17 +49,15 @@ final class CreateAppointmentUseCaseTest extends TestCase
         ]);
 
         $appointmentRepo->expects($this->once())
-            ->method('hasConflictingAppointment')
-            ->with(10, '2025-09-02 09:00:00', '2025-09-02 10:00:00')
+            ->method('hasOverlappingAppointment')
             ->willReturn(true);
-        $appointmentRepo->expects($this->never())->method('create');
 
         $useCase = new CreateAppointmentUseCase(
             $appointmentRepo,
             $serviceRepo,
-            $staffingPersistenceRepo,
-            $auditRepo,
-            new GetAvailableSlotsUseCase($staffingRepo)
+            $staffingRepo,
+            $auditService,
+            $pdo
         );
 
         $dto = new CreateAppointmentDTO(
@@ -71,8 +69,8 @@ final class CreateAppointmentUseCaseTest extends TestCase
             scheduledTime: '09:00'
         );
 
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Ya existe una cita en ese rango para el profesional.');
+        $this->expectException(ConflictException::class);
+        $this->expectExceptionMessage('El horario seleccionado ya se encuentra ocupado');
 
         $useCase->execute($dto);
     }

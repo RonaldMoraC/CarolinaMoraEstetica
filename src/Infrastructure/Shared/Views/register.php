@@ -27,7 +27,7 @@
         </div>
 
         <div class="glass p-8 md:p-10 rounded-sm shadow-2xl">
-            <h1 class="text-3xl font-serif italic text-slate-900 dark:text-white mb-2 text-center">Ãanete a la Exclusividad</h1>
+            <h1 class="text-3xl font-serif italic text-slate-900 dark:text-white mb-2 text-center">Únete a la Exclusividad</h1>
             <p class="text-[10px] tracking-[0.2em] uppercase text-brand-goldDark dark:text-brand-gold text-center mb-10 font-bold">Crea tu cuenta de cliente</p>
 
             <form id="registerForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">

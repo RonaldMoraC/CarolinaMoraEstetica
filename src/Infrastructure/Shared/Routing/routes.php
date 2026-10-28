@@ -7,6 +7,8 @@ use App\Infrastructure\IAM\Http\RegisterController;
 use App\Infrastructure\IAM\Http\MeController;
 use App\Infrastructure\IAM\Http\UpdateProfileController;
 use App\Infrastructure\IAM\Http\LogoutController;
+use App\Infrastructure\IAM\Http\RefreshTokenController;
+use App\Infrastructure\Booking\Http\GetClientAppointmentsController;
 use App\Infrastructure\IAM\Http\UserController;
 use App\Infrastructure\IAM\Http\ProfessionalServiceController;
 use App\Infrastructure\Shared\Security\AuthMiddleware;
@@ -96,6 +98,7 @@ $router->group('/app', function(Router $r) {
 // Rutas Públicas
 $router->post('/api/v1/auth/login', [LoginController::class, 'handle']);
 $router->post('/api/v1/auth/register', [RegisterController::class, 'handle']);
+$router->post('/api/v1/auth/refresh', [RefreshTokenController::class, 'handle']);
 
 // --- RUTAS DE GESTIÃN DE USUARIOS (ADMIN IAM) ---
 $router->group('/api/v1/iam', function(Router $r) {
@@ -123,12 +126,13 @@ $router->group('/api/v1/staffing', function(Router $r) {
 $router->group('/api/v1/auth', function(Router $r) {
     $r->get('/me', [MeController::class, 'handle']);
     $r->put('/me/profile', [UpdateProfileController::class, 'handle']);
+    $r->patch('/me', [UpdateProfileController::class, 'handle']);
     $r->post('/logout', [LogoutController::class, 'handle']);
 }, [AuthMiddleware::class]);
 
 // Rutas Protegidas para Clientes (/app/*)
 $router->group('/api/v1/app', function(Router $r) {
-    $r->get('/appointments', [GetAppointmentsController::class, 'handle']);
+    $r->get('/appointments', [GetClientAppointmentsController::class, 'handle']);
 }, [AuthMiddleware::class]);
 
 // Rutas Protegidas para Booking (citas accesibles por admin y recepción)
@@ -165,8 +169,10 @@ $router->get('/api/v1/catalog/categories', [GetCategoriesController::class, 'han
 
 // --- RUTAS CRM / RATINGS ---
 $router->get('/api/v1/crm/ratings', [RatingController::class, 'getRatings']);
-$router->post('/api/v1/crm/ratings', [RatingController::class, 'registerRating']);
-$router->patch('/api/v1/crm/ratings/{id}/hide', [RatingController::class, 'hideRating']);
+$router->group('/api/v1/crm/ratings', function(Router $r) {
+    $r->post('', [RatingController::class, 'registerRating']);
+    $r->patch('/{id}/hide', [RatingController::class, 'hideRating']);
+}, [AuthMiddleware::class]);
 
 // --- RUTAS DE INVENTARIO ---
 $router->group('/api/v1/admin/inventory', function(Router $r) {

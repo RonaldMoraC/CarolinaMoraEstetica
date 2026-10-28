@@ -435,6 +435,12 @@ $lazyContainer = new class($logFilePath) {
                     $this->getPdo()
                 ),
 
+            \App\Infrastructure\IAM\Http\RefreshTokenController::class =>
+                new \App\Infrastructure\IAM\Http\RefreshTokenController(
+                    $this->getSecurityJwtTokenManager(),
+                    $this->getPdo()
+                ),
+
             \App\Infrastructure\IAM\Http\RegisterController::class =>
                 new \App\Infrastructure\IAM\Http\RegisterController(
                     $this->get(\App\Application\IAM\RegisterClient\RegisterNewClientUseCase::class)
@@ -540,6 +546,11 @@ $lazyContainer = new class($logFilePath) {
 
             \App\Infrastructure\Booking\Http\GetAppointmentsController::class =>
                 new \App\Infrastructure\Booking\Http\GetAppointmentsController(
+                    $this->get(\App\Infrastructure\Booking\Persistence\PdoAppointmentRepository::class)
+                ),
+
+            \App\Infrastructure\Booking\Http\GetClientAppointmentsController::class =>
+                new \App\Infrastructure\Booking\Http\GetClientAppointmentsController(
                     $this->get(\App\Infrastructure\Booking\Persistence\PdoAppointmentRepository::class)
                 ),
 
