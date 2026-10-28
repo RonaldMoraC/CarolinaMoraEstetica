@@ -40,23 +40,20 @@ final class PdoAppointmentRepository implements AppointmentRepositoryInterface /
     /**
      * @inheritDoc
      */
-    public function getAppointmentsToday(): array
-    {
-        $today = (new \DateTimeImmutable('now', new \DateTimeZone('America/Bogota')))->format('Y-m-d');
-        return $this->getAppointmentsForDateRange($today, $today);
-    }
+
 
     public function findByClientId(int $clientProfileId): array
     {
         $sql = "SELECT a.*, s.name AS service_name, s.base_price AS service_price,
                        s.duration_minutes, sc.name AS category_name,
                        pp.public_biography,
+                       CONCAT(u_prof.first_name, ' ', u_prof.last_name) AS professional_name,
                        b.branch_name
                 FROM appointment a
-                LEFT JOIN professional_service ps ON ps.professional_profile_id = a.professional_profile_id
-                LEFT JOIN service s ON s.service_id = ps.service_id
+                LEFT JOIN service s ON s.service_id = a.service_id
                 LEFT JOIN service_category sc ON sc.category_id = s.category_id
                 LEFT JOIN professional_profile pp ON pp.professional_profile_id = a.professional_profile_id
+                LEFT JOIN user u_prof ON u_prof.user_id = pp.professional_profile_id
                 LEFT JOIN branch b ON b.branch_id = a.branch_id
                 WHERE a.client_profile_id = :clientId
                 ORDER BY a.scheduled_timestamp DESC";
@@ -344,8 +341,14 @@ final class PdoAppointmentRepository implements AppointmentRepositoryInterface /
     }
 
     /**
-     * Convierte un row de DB a array plano para API responses (sin hidratar entidad).
+     * @inheritDoc
      */
+    public function getAppointmentsToday(): array
+    {
+        $todayStart = date('Y-m-d 00:00:00');
+        $todayEnd = date('Y-m-d 23:59:59');
+        return $this->getAppointmentsForDateRange($todayStart, $todayEnd);
+    }
     private function hydrateToArray(array $row): array
     {
         // Ensure scheduled_timestamp is a string before passing to DateTimeImmutable
@@ -365,13 +368,11 @@ final class PdoAppointmentRepository implements AppointmentRepositoryInterface /
             'precio'             => (float) ($row['total_price'] ?? 0),
             'branch_name'        => $row['branch_name'] ?? '',
             'notes'              => $row['notes'],
+            'professional_name'  => trim((string)($row['professional_name'] ?? '')) ?: 'Especialista',
+            'duration_minutes'   => (int)($row['duration_minutes'] ?? 30),
             'professional_bio'   => $row['public_biography'] ?? '',
         ];
     }
 
-    public function getAppointmentsToday(): array
-    {
-        $today = (new \DateTimeImmutable('now', new \DateTimeZone('America/Bogota')))->format('Y-m-d');
-        return $this->getAppointmentsForDateRange($today, $today);
-    }
+
 }

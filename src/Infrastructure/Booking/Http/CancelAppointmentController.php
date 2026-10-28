@@ -5,10 +5,13 @@ namespace App\Infrastructure\Booking\Http;
 use App\Application\Booking\CancelBooking\CancelAppointmentDTO;
 use App\Application\Booking\CancelBooking\CancelAppointmentUseCase;
 use App\Infrastructure\Shared\Helpers\ResponseHelper;
-use App\Infrastructure\Shared\Security\AuthMiddleware;
+use App\Infrastructure\Shared\Errors\GlobalExceptionHandler;
+use App\Infrastructure\Shared\Errors\Exceptions\NotFoundException;
+use App\Domain\Shared\Exceptions\DomainException;
+use InvalidArgumentException;
 
 /**
- * CancelAppointmentController â¬ Controlador HTTP
+ * CancelAppointmentController — Controlador HTTP
  *
  * DELETE /api/v1/booking/appointments/{id}
  *
@@ -16,9 +19,9 @@ use App\Infrastructure\Shared\Security\AuthMiddleware;
  * Verifica ownership mediante el auth_user inyectado por AuthMiddleware.
  *
  * Cumple:
- *  - Skill 1  â  strict_types, inyección por constructor
- *  - Skill 4  â  Errores via ResponseHelper (RFC 7807 compatible)
- *  - Skill 10 â  Casteo explícito defensivo en la periferia
+ *  - Skill 1  — strict_types, inyección por constructor
+ *  - Skill 4  — Errores formateados RFC 7807 compatible
+ *  - Skill 10 — Casteo explícito defensivo y sanitización de entrada JSON
  */
 final class CancelAppointmentController
 {
@@ -40,26 +43,34 @@ final class CancelAppointmentController
         $authUser = $params['auth_user'] ?? null;
 
         if ($appointmentId <= 0) {
-            ResponseHelper::json(
-                statusCode: 400,
-                success: false,
-                message: 'El ID de la cita debe ser un entero positivo.',
-                data: []
+            GlobalExceptionHandler::emitRfc7807Response(
+                httpStatus: 400,
+                type: 'https://carolinamoraestetica.com/errors/invalid-id',
+                title: 'ID de cita inválido',
+                detail: 'El ID de la cita debe ser un entero positivo.',
+                instance: '/api/v1/booking/appointments'
             );
+            return;
         }
 
         if ($authUser === null || !isset($authUser['user_id'])) {
-            ResponseHelper::json(
-                statusCode: 401,
-                success: false,
-                message: 'No se pudo identificar al usuario autenticado.',
-                data: []
+            GlobalExceptionHandler::emitRfc7807Response(
+                httpStatus: 401,
+                type: 'https://carolinamoraestetica.com/errors/unauthorized',
+                title: 'No autorizado',
+                detail: 'No se pudo identificar al usuario autenticado.',
+                instance: '/api/v1/booking/appointments/' . $appointmentId
             );
+            return;
         }
 
         $userId = (int) $authUser['user_id'];
         $userRole = (string) ($authUser['role'] ?? $authUser['user_role'] ?? 'CLIENT');
-        $reason = (string) ($_POST['reason'] ?? $_GET['reason'] ?? '');
+
+        // Leer motivo desde body JSON (estándar REST) o query parameter de respaldo
+        $raw = file_get_contents('php://input');
+        $body = json_decode($raw, true) ?? [];
+        $reason = trim((string) ($body['reason'] ?? $_GET['reason'] ?? ''));
 
         try {
             $dto = new CancelAppointmentDTO($appointmentId, $userId, $userRole, $reason !== '' ? $reason : null);
@@ -71,26 +82,37 @@ final class CancelAppointmentController
                 message: 'Cita cancelada exitosamente.',
                 data: $result
             );
-        } catch (\InvalidArgumentException $e) {
-            ResponseHelper::json(
-                statusCode: 400,
-                success: false,
-                message: $e->getMessage(),
-                data: []
+        } catch (InvalidArgumentException $e) {
+            GlobalExceptionHandler::emitRfc7807Response(
+                httpStatus: 400,
+                type: 'https://carolinamoraestetica.com/errors/invalid-argument',
+                title: 'Parámetro inválido',
+                detail: $e->getMessage(),
+                instance: '/api/v1/booking/appointments/' . $appointmentId
             );
-        } catch (\DomainException $e) {
-            ResponseHelper::json(
-                statusCode: 422,
-                success: false,
-                message: $e->getMessage(),
-                data: []
+        } catch (NotFoundException $e) {
+            GlobalExceptionHandler::emitRfc7807Response(
+                httpStatus: 404,
+                type: 'https://carolinamoraestetica.com/errors/appointment-not-found',
+                title: 'Cita no encontrada',
+                detail: $e->getMessage(),
+                instance: '/api/v1/booking/appointments/' . $appointmentId
+            );
+        } catch (DomainException $e) {
+            GlobalExceptionHandler::emitRfc7807Response(
+                httpStatus: 422,
+                type: 'https://carolinamoraestetica.com/errors/business-rule-conflict',
+                title: 'Operación no permitida',
+                detail: $e->getMessage(),
+                instance: '/api/v1/booking/appointments/' . $appointmentId
             );
         } catch (\Throwable $e) {
-            ResponseHelper::json(
-                statusCode: 500,
-                success: false,
-                message: 'Error interno al cancelar la cita.',
-                data: []
+            GlobalExceptionHandler::emitRfc7807Response(
+                httpStatus: 500,
+                type: 'https://carolinamoraestetica.com/errors/internal-server-error',
+                title: 'Error interno',
+                detail: 'Ocurrió un error inesperado al procesar la cancelación.',
+                instance: '/api/v1/booking/appointments/' . $appointmentId
             );
         }
     }
