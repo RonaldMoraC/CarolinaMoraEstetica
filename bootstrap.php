@@ -509,7 +509,8 @@ $lazyContainer = new class($logFilePath) {
 
             \App\Infrastructure\Staffing\Http\GetSlotsController::class =>
                 new \App\Infrastructure\Staffing\Http\GetSlotsController(
-                    $this->get(\App\Infrastructure\Staffing\Persistence\PdoStaffingRepository::class)
+                    $this->get(\App\Domain\Staffing\Repositories\StaffingRepositoryInterface::class),
+                    $this->get(\App\Application\Staffing\GetAvailableSlots\GetAvailableSlotsUseCase::class)
                 ),
 
             \App\Infrastructure\Staffing\Http\SaveScheduleController::class =>

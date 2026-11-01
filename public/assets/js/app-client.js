@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Módulo Principal del Panel Cliente (PWA)
  * Estética Carolina Mora - CarolinaMoraEstetica
  *
@@ -471,11 +471,13 @@ class CatalogView {
         sessionStorage.setItem('servicio_seleccionado_nombre', name);
         sessionStorage.setItem('servicio_seleccionado_precio', String(price));
 
+        const service = (this.store.getState().services || []).find(s => (s.id || s.service_id) === id);
+        const duration = (service && service.duration_minutes) ? parseInt(service.duration_minutes, 10) : 30;
+        this.currentServiceDuration = duration;
+
         const today = new Date();
         const minDate = today.toISOString().split('T')[0];
         const maxDate = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-
-        const timeSlots = this.generateTimeSlots();
 
         // Fetch professionals for this service
         let professionals = [];
@@ -493,11 +495,12 @@ class CatalogView {
             professionalsHTML = `
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Profesional</label>
-                    <div class="grid grid-cols-1 gap-2" id="bookingProfessionals">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="bookingProfessionals">
                         ${professionals.map(prof => `
-                            <button class="professional-btn px-3 py-2 border border-slate-200 dark:border-white/10 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-brand-cyanLight hover:text-brand-cyan hover:border-brand-cyan transition text-left"
+                            <button type="button" class="professional-btn px-3 py-2 border border-slate-200 dark:border-white/10 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-brand-cyanLight hover:text-brand-cyan hover:border-brand-cyan transition text-left flex items-center gap-2"
                                 data-prof-id="${prof.professional_profile_id}" onclick="AppClient.catalogView.selectProfessional(${prof.professional_profile_id}, '${escapeHtml(prof.display_name)}')">
-                                "️ ${escapeHtml(prof.display_name)}
+                                <i class="fas fa-user-md text-brand-cyan"></i>
+                                <span class="truncate">${escapeHtml(prof.display_name)}</span>
                             </button>
                         `).join('')}
                     </div>
@@ -507,40 +510,42 @@ class CatalogView {
             professionalsHTML = `
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Profesional</label>
-                    <p class="text-xs text-slate-400 py-2">No hay profesionales disponibles para este servicio en este momento.</p>
+                    <p class="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 p-2.5 rounded-xl border border-amber-200 dark:border-amber-800/30">
+                        <i class="fas fa-info-circle mr-1"></i> No hay profesionales asignados para este servicio en este momento.
+                    </p>
                 </div>
             `;
         }
 
         const bodyHTML = `
             <div class="space-y-4">
-                <div class="flex items-center gap-3 p-3 bg-brand-cyanLight rounded-xl">
-                    <span class="text-2xl">${this.SERVICE_ICONS[(this.store.getState().services.find(s => (s.id || s.service_id) === id)?.category || '').toLowerCase()] || ''}</span>
-                    <div>
-                        <strong class="text-slate-900 dark:text-white">${escapeHtml(name)}</strong>
-                        <p class="text-xs text-slate-400">$${escapeHtml(price)}</p>
+                <div class="flex items-center gap-3 p-3 bg-brand-cyanLight dark:bg-brand-cyanLight/10 rounded-xl border border-brand-cyan/20">
+                    <span class="text-2xl">${this.SERVICE_ICONS[(service?.category || '').toLowerCase()] || '✨'}</span>
+                    <div class="flex-1 min-w-0">
+                        <strong class="text-slate-900 dark:text-white block truncate">${escapeHtml(name)}</strong>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">$${escapeHtml(price)} • <i class="far fa-clock ml-1"></i> ${duration} min</p>
                     </div>
                 </div>
                 ${professionalsHTML}
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Fecha</label>
                     <input type="date" id="bookingDate" min="${minDate}" max="${maxDate}" value="${minDate}"
-                        class="app-input w-full px-4 py-3 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-700 dark:text-slate-300">
+                        class="app-input w-full px-4 py-3 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-700 dark:text-slate-300 font-medium">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Hora</label>
-                    <div class="grid grid-cols-4 gap-2" id="bookingTimeSlots">
-                        ${timeSlots.map(slot => `
-                            <button class="time-slot-btn px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-brand-cyanLight hover:text-brand-cyan hover:border-brand-cyan transition"
-                                data-time="${slot}" onclick="AppClient.catalogView.selectTimeSlot('${slot}')">
-                                ${slot}
-                            </button>
-                        `).join('')}
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Horarios Disponibles</label>
+                        <span id="bookingDurationBadge" class="text-[11px] text-slate-400 font-normal">Turnos de ${duration} min</span>
+                    </div>
+                    <div class="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-48 overflow-y-auto p-1" id="bookingTimeSlots">
+                        <div class="col-span-3 sm:col-span-4 text-center py-4 text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/10">
+                            <i class="fas fa-hand-pointer mr-1.5 text-brand-cyan"></i> Selecciona un profesional para consultar horarios disponibles
+                        </div>
                     </div>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Notas (opcional)</label>
-                    <textarea id="bookingNotes" rows="2" placeholder="Observaciones especiales..."
+                    <textarea id="bookingNotes" rows="2" placeholder="Observaciones especiales, alergias o preferencias..."
                         class="app-input w-full px-4 py-3 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-700 dark:text-slate-300 resize-none"></textarea>
                 </div>
             </div>
@@ -553,37 +558,121 @@ class CatalogView {
             title: 'Reservar: ' + escapeHtml(name),
             body: bodyHTML,
             buttons: [
-                { label: 'Cancelar', class: 'px-4 py-2 border-2 border-slate-300 text-slate-600 text-sm font-semibold rounded-xl hover:bg-slate-100 transition' },
+                { label: 'Cancelar', class: 'px-4 py-2 border-2 border-slate-300 dark:border-white/20 text-slate-600 dark:text-slate-300 text-sm font-semibold rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 transition' },
                 {
                     label: 'Confirmar Cita',
-                    class: 'px-4 py-2 bg-brand-cyan text-white font-semibold text-sm rounded-xl hover:bg-brand-cyanHover transition',
+                    class: 'px-4 py-2 bg-brand-cyan text-white font-semibold text-sm rounded-xl hover:bg-brand-cyanHover transition shadow-sm',
                     onClick: () => this.confirmBooking(id, name, price),
                     close: false
                 }
             ]
         });
+
+        // Configurar listener reactivo para cambio de fecha
+        const dateInput = document.getElementById('bookingDate');
+        if (dateInput) {
+            dateInput.addEventListener('change', () => {
+                if (this.selectedProfessionalId) {
+                    this.loadAvailableSlots(this.selectedProfessionalId, dateInput.value, this.currentServiceDuration);
+                }
+            });
+        }
+
+        // Si solo hay un profesional asignado, seleccionarlo automáticamente
+        if (professionals.length === 1) {
+            this.selectProfessional(professionals[0].professional_profile_id, professionals[0].display_name);
+        }
     }
 
     selectProfessional(profId, profName) {
         this.selectedProfessionalId = profId;
         document.querySelectorAll('.professional-btn').forEach(btn => {
-            const isActive = parseInt(btn.getAttribute('data-prof-id')) === profId;
+            const isActive = parseInt(btn.getAttribute('data-prof-id'), 10) === profId;
             btn.classList.toggle('bg-brand-cyan', isActive);
             btn.classList.toggle('text-white', isActive);
             btn.classList.toggle('border-brand-cyan', isActive);
             btn.classList.toggle('bg-brand-cyanLight', !isActive);
         });
+
+        const dateInput = document.getElementById('bookingDate');
+        const selectedDate = dateInput ? dateInput.value : '';
+        this.loadAvailableSlots(profId, selectedDate, this.currentServiceDuration);
     }
 
-    generateTimeSlots() {
-        const slots = [];
-        for (let h = 8; h <= 18; h++) {
-            for (let m = 0; m < 60; m += 30) {
-                if (h === 18 && m > 0) break;
-                slots.push(String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0'));
-            }
+    async loadAvailableSlots(profId, date, duration) {
+        const container = document.getElementById('bookingTimeSlots');
+        if (!container) return;
+
+        if (!profId) {
+            container.innerHTML = `
+                <div class="col-span-3 sm:col-span-4 text-center py-4 text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/10">
+                    <i class="fas fa-hand-pointer mr-1.5 text-brand-cyan"></i> Selecciona un profesional para consultar horarios disponibles
+                </div>
+            `;
+            return;
         }
-        return slots;
+
+        if (!date) {
+            container.innerHTML = `
+                <div class="col-span-3 sm:col-span-4 text-center py-4 text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/10">
+                    <i class="fas fa-calendar-alt mr-1.5 text-brand-cyan"></i> Selecciona una fecha para ver los horarios
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = `
+            <div class="col-span-3 sm:col-span-4 flex items-center justify-center gap-2 py-4 text-xs text-slate-500 dark:text-slate-400">
+                <i class="fas fa-spinner fa-spin text-brand-cyan"></i> Consultando disponibilidad en tiempo real...
+            </div>
+        `;
+
+        try {
+            const endpoint = `/catalog/professionals/${profId}/schedules?date=${encodeURIComponent(date)}&duration=${duration || 30}&branch_id=1`;
+            const response = await this.api.get(endpoint);
+            const slots = (response && response.data && Array.isArray(response.data.slots))
+                ? response.data.slots
+                : ((response && Array.isArray(response.slots)) ? response.slots : []);
+
+            if (slots.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-3 sm:col-span-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 rounded-xl text-center">
+                        <p class="text-xs font-semibold text-amber-800 dark:text-amber-300">
+                            <i class="fas fa-clock mr-1"></i> Sin disponibilidad para esta fecha
+                        </p>
+                        <p class="text-[11px] text-amber-700 dark:text-amber-400 mt-1">
+                            El profesional no tiene turnos libres en este día. Por favor elige otra fecha u otro especialista.
+                        </p>
+                    </div>
+                `;
+                this.selectedBookingTime = null;
+                return;
+            }
+
+            container.innerHTML = slots.map(slot => `
+                <button type="button" class="time-slot-btn px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-brand-cyanLight hover:text-brand-cyan hover:border-brand-cyan transition"
+                    data-time="${slot}" onclick="AppClient.catalogView.selectTimeSlot('${slot}')">
+                    ${slot}
+                </button>
+            `).join('');
+
+            // Si ya se había seleccionado una hora y sigue estando disponible, mantenerla seleccionada
+            if (this.selectedBookingTime && slots.includes(this.selectedBookingTime)) {
+                this.selectTimeSlot(this.selectedBookingTime);
+            } else {
+                this.selectedBookingTime = null;
+            }
+        } catch (error) {
+            container.innerHTML = `
+                <div class="col-span-3 sm:col-span-4 p-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/30 rounded-xl text-center">
+                    <p class="text-xs font-semibold text-rose-700 dark:text-rose-300">
+                        <i class="fas fa-exclamation-triangle mr-1"></i> No se pudo cargar los horarios
+                    </p>
+                    <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">${escapeHtml(error.message)}</p>
+                </div>
+            `;
+            this.selectedBookingTime = null;
+        }
     }
 
     selectTimeSlot(time) {
@@ -612,24 +701,27 @@ class CatalogView {
         }
 
         if (!this.selectedBookingTime) {
-            this.alerts.warning('Por favor selecciona una hora.');
+            this.alerts.warning('Por favor selecciona un horario disponible.');
             return;
         }
 
         this.modal.close();
-        this.alerts.info('Creando cita...');
+        this.alerts.info('Agendando tu cita...');
 
         try {
+            const scheduledDate = dateInput.value;
+            const scheduledTime = this.selectedBookingTime;
+
             const result = await this.api.post('/booking/appointments', {
                 service_id: serviceId,
                 professional_profile_id: this.selectedProfessionalId,
                 branch_id: 1,
-                scheduled_date: dateInput.value,
-                scheduled_time: this.selectedBookingTime,
+                scheduled_date: scheduledDate,
+                scheduled_time: scheduledTime,
                 notes: notesInput ? notesInput.value.trim() : null
             });
 
-            this.alerts.success('¡Cita creada exitosamente! Fecha: ' + escapeHtml(result.scheduled_date) + ' a las ' + escapeHtml(result.scheduled_time));
+            this.alerts.success(`¡Cita agendada exitosamente para el ${escapeHtml(scheduledDate)} a las ${escapeHtml(scheduledTime)}!`);
 
             if (AppClient && AppClient.citasView) {
                 AppClient.citasView.citasLoaded = false;

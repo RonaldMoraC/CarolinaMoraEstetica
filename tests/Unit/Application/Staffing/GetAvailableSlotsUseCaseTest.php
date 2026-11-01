@@ -50,4 +50,70 @@ class GetAvailableSlotsUseCaseTest extends TestCase
             ));
         }
     }
+
+    public function testShouldExcludeLunchBreakAndHandleArrayAppointments(): void
+    {
+        $staffingRepo = $this->createMock(StaffingRepositoryInterface::class);
+        $appointmentRepo = $this->createMock(AppointmentRepositoryInterface::class);
+
+        // Profesional trabaja de 08:00 a 17:00 con almuerzo de 12:00 a 13:00 (Lunes = 1)
+        $schedule = new \App\Domain\Staffing\Entities\WorkSchedule(
+            1, 1, 1, '08:00:00', '17:00:00', '12:00:00', '13:00:00'
+        );
+        $staffingRepo->method('findSchedulesByProfessional')->willReturn([$schedule]);
+        $staffingRepo->method('findExceptions')->willReturn([]);
+
+        // Cita existente como arreglo asociativo (formato retornado por PDO)
+        $rawAppointments = [
+            [
+                'scheduled_timestamp'     => '2026-10-26 09:00:00',
+                'estimated_end_timestamp' => '2026-10-26 10:00:00',
+                'appointment_status'      => 'CONFIRMED'
+            ]
+        ];
+        $appointmentRepo->method('getAppointmentsForDateRange')->willReturn($rawAppointments);
+
+        $useCase = new GetAvailableSlotsUseCase($staffingRepo, $appointmentRepo);
+
+        $slots = $useCase->execute(
+            1, 1,
+            new DateTimeImmutable('2026-10-26 08:00:00', new \DateTimeZone('America/Bogota')),
+            new DateTimeImmutable('2026-10-26 17:00:00', new \DateTimeZone('America/Bogota')),
+            30
+        );
+
+        $this->assertNotEmpty($slots);
+
+        $lunchRange = TimeRange::fromStrings('2026-10-26 12:00:00', '2026-10-26 13:00:00');
+        $bookedRange = TimeRange::fromStrings('2026-10-26 09:00:00', '2026-10-26 10:00:00');
+
+        foreach ($slots as $slot) {
+            $this->assertFalse($slot->overlapsWith($lunchRange), 'Una ranura no puede solaparse con el almuerzo');
+            $this->assertFalse($slot->overlapsWith($bookedRange), 'Una ranura no puede solaparse con citas confirmadas');
+        }
+    }
+
+    public function testShouldUseClinicDefaultScheduleWhenNoneConfigured(): void
+    {
+        $staffingRepo = $this->createMock(StaffingRepositoryInterface::class);
+        $appointmentRepo = $this->createMock(AppointmentRepositoryInterface::class);
+
+        // Sin horarios registrados
+        $staffingRepo->method('findSchedulesByProfessional')->willReturn([]);
+        $staffingRepo->method('findExceptions')->willReturn([]);
+        $appointmentRepo->method('getAppointmentsForDateRange')->willReturn([]);
+
+        $useCase = new GetAvailableSlotsUseCase($staffingRepo, $appointmentRepo);
+
+        // Lunes 2026-10-26
+        $slots = $useCase->execute(
+            1, 1,
+            new DateTimeImmutable('2026-10-26 08:00:00', new \DateTimeZone('America/Bogota')),
+            new DateTimeImmutable('2026-10-26 18:00:00', new \DateTimeZone('America/Bogota')),
+            60
+        );
+
+        $this->assertNotEmpty($slots);
+        $this->assertSame('08:00', $slots[0]->getStart()->format('H:i'));
+    }
 }

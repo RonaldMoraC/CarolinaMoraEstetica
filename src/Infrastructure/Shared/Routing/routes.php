@@ -158,6 +158,7 @@ $router->get('/api/v1/catalog/services', [BrowseCatalogController::class, 'handl
 $router->get('/api/v1/admin/services', [AdminServicesController::class, 'getAll']);
 $router->get('/api/v1/catalog/services/{id}', [BrowseCatalogController::class, 'show']);
 $router->get('/api/v1/catalog/services/{id}/professionals', [GetProfessionalsByServiceController::class, 'handle']);
+$router->get('/api/v1/catalog/professionals/{id}/schedules', [GetSlotsController::class, 'handle']);
 
 $router->group('/api/v1/catalog/services', function(Router $r) {
     $r->post('', [CreateServiceController::class, 'handle']);

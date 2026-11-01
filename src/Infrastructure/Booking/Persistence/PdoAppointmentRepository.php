@@ -313,9 +313,11 @@ final class PdoAppointmentRepository implements AppointmentRepositoryInterface /
 
         $sql .= " ORDER BY a.scheduled_timestamp ASC";
 
+        $startDateStr = str_contains($startDate, ' ') ? $startDate : $startDate . ' 00:00:00';
+        $endDateStr = str_contains($endDate, ' ') ? $endDate : $endDate . ' 23:59:59';
         $stmt = $this->pdo->prepare($sql);
-        $stmt->bindValue(':startDate', $startDate . ' 00:00:00', PDO::PARAM_STR);
-        $stmt->bindValue(':endDate', $endDate . ' 23:59:59', PDO::PARAM_STR);
+        $stmt->bindValue(':startDate', $startDateStr, PDO::PARAM_STR);
+        $stmt->bindValue(':endDate', $endDateStr, PDO::PARAM_STR);
         if ($professionalId !== null) {
             $stmt->bindValue(':professionalId', $professionalId, PDO::PARAM_INT);
         }
