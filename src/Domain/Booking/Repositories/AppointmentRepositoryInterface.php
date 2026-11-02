@@ -14,6 +14,7 @@ interface AppointmentRepositoryInterface
     public function complete(int $appointmentId, int $actorId): bool;
     public function markNoShow(int $appointmentId, int $actorId, string $reason): bool;
     public function cancel(int $appointmentId, int $actorId, string $reason): bool;
+    public function reschedule(int $appointmentId, string $newStartTimestamp, string $newEndTimestamp, int $actorId, string $reason = ''): bool;
     public function getAppointmentsForDateRange(string $startDate, string $endDate, ?int $professionalId = null): array;
     public function getAppointmentsToday(): array;
     public function findByClientId(int $clientProfileId): array;
@@ -21,10 +22,11 @@ interface AppointmentRepositoryInterface
     /**
      * Verifica si existe alguna cita que se solape con el rango de tiempo dado para un profesional específico.
      *
-     * @param int    $professionalId ID del profesional.
-     * @param string $startTimestamp Fecha/Hora inicio 'Y-m-d H:i:s' en America/Bogota.
-     * @param string $endTimestamp   Fecha/Hora fin 'Y-m-d H:i:s' en America/Bogota.
+     * @param int      $professionalId       ID del profesional.
+     * @param string   $startTimestamp       Fecha/Hora inicio 'Y-m-d H:i:s' en America/Bogota.
+     * @param string   $endTimestamp         Fecha/Hora fin 'Y-m-d H:i:s' en America/Bogota.
+     * @param int|null $excludeAppointmentId ID de cita a excluir de la comprobación (ej. la cita siendo reprogramada).
      * @return bool true si existe solapamiento, false si está libre.
      */
-    public function hasOverlappingAppointment(int $professionalId, string $startTimestamp, string $endTimestamp): bool;
+    public function hasOverlappingAppointment(int $professionalId, string $startTimestamp, string $endTimestamp, ?int $excludeAppointmentId = null): bool;
 }

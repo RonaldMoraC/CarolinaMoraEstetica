@@ -260,7 +260,98 @@ final class PdoAppointmentRepository implements AppointmentRepositoryInterface /
     /**
      * @inheritDoc
      */
-    public function hasOverlappingAppointment(int $professionalId, string $startTimestamp, string $endTimestamp): bool
+    public function reschedule(int $appointmentId, string $newStartTimestamp, string $newEndTimestamp, int $actorId, string $reason = ''): bool
+    {
+        try {
+            $this->pdo->exec("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ");
+            $this->pdo->beginTransaction();
+
+            $checkSql = "SELECT professional_profile_id, scheduled_timestamp, estimated_end_timestamp, appointment_status 
+                         FROM appointment 
+                         WHERE appointment_id = :id FOR UPDATE";
+            $checkStmt = $this->pdo->prepare($checkSql);
+            $checkStmt->bindValue(':id', $appointmentId, PDO::PARAM_INT);
+            $checkStmt->execute();
+            $row = $checkStmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($row === false) {
+                $this->pdo->rollBack();
+                return false;
+            }
+
+            $currentStatus = (string)$row['appointment_status'];
+            if (!in_array($currentStatus, ['PENDING', 'CONFIRMED'], true)) {
+                $this->pdo->rollBack();
+                throw new DomainException("La cita #{$appointmentId} no puede ser reprogramada en su estado actual: '{$currentStatus}'.");
+            }
+
+            $profId = (int)$row['professional_profile_id'];
+            $oldStart = (string)$row['scheduled_timestamp'];
+
+            // Skill 2: Verificar colisión con otras citas activas del mismo profesional
+            $conflictSql = "SELECT COUNT(*) FROM appointment 
+                            WHERE professional_profile_id = :prof_id
+                              AND appointment_id != :id
+                              AND scheduled_timestamp < :newEnd
+                              AND estimated_end_timestamp > :newStart
+                              AND appointment_status NOT IN ('CANCELLED', 'NOSHOW')";
+            $conflictStmt = $this->pdo->prepare($conflictSql);
+            $conflictStmt->bindValue(':prof_id', $profId, PDO::PARAM_INT);
+            $conflictStmt->bindValue(':id', $appointmentId, PDO::PARAM_INT);
+            $conflictStmt->bindValue(':newEnd', $newEndTimestamp, PDO::PARAM_STR);
+            $conflictStmt->bindValue(':newStart', $newStartTimestamp, PDO::PARAM_STR);
+            $conflictStmt->execute();
+
+            if ((int)$conflictStmt->fetchColumn() > 0) {
+                $this->pdo->rollBack();
+                throw new ConflictException("El especialista seleccionado ya cuenta con un servicio agendado o en progreso en el rango horario solicitado.", 409);
+            }
+
+            // Actualizar fecha y hora en la tabla appointment
+            $updateSql = "UPDATE appointment 
+                          SET scheduled_timestamp = :newStart,
+                              estimated_end_timestamp = :newEnd,
+                              updated_at = NOW()
+                          WHERE appointment_id = :id";
+            $updateStmt = $this->pdo->prepare($updateSql);
+            $updateStmt->bindValue(':newStart', $newStartTimestamp, PDO::PARAM_STR);
+            $updateStmt->bindValue(':newEnd', $newEndTimestamp, PDO::PARAM_STR);
+            $updateStmt->bindValue(':id', $appointmentId, PDO::PARAM_INT);
+            $updateStmt->execute();
+
+            // Skill 9: Registrar en appointment_history (audit trail)
+            $historyReason = $reason !== '' ? $reason : "Reprogramación de cita de {$oldStart} a {$newStartTimestamp}";
+            $historySql = "INSERT INTO appointment_history (
+                                appointment_id, changed_by_user_id, previous_status, new_status, change_reason
+                            ) VALUES (
+                                :appointmentId, :userId, :prevStatus, :newStatus, :reason
+                            )";
+            $historyStmt = $this->pdo->prepare($historySql);
+            $historyStmt->bindValue(':appointmentId', $appointmentId, PDO::PARAM_INT);
+            $historyStmt->bindValue(':userId', $actorId, PDO::PARAM_INT);
+            $historyStmt->bindValue(':prevStatus', $currentStatus, PDO::PARAM_STR);
+            $historyStmt->bindValue(':newStatus', $currentStatus, PDO::PARAM_STR);
+            $historyStmt->bindValue(':reason', $historyReason, PDO::PARAM_STR);
+            $historyStmt->execute();
+
+            $this->pdo->commit();
+            return true;
+
+        } catch (PDOException $e) {
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+            if ($e->getCode() === '40001' || $e->getCode() === 'HY000') {
+                throw new ConflictException("El recurso está bloqueado temporalmente por otra operación administrativa.", 409);
+            }
+            throw $e;
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function hasOverlappingAppointment(int $professionalId, string $startTimestamp, string $endTimestamp, ?int $excludeAppointmentId = null): bool
     {
         // Dos citas se solapan si A_start < B_end Y B_start < A_end
         // Solo consideramos citas activas (no canceladas ni inasistencias).
@@ -270,10 +361,17 @@ final class PdoAppointmentRepository implements AppointmentRepositoryInterface /
                   AND estimated_end_timestamp > :startTs
                   AND appointment_status NOT IN ('CANCELLED', 'NOSHOW')";
 
+        if ($excludeAppointmentId !== null) {
+            $sql .= " AND appointment_id != :exclude_id";
+        }
+
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindValue(':prof_id', $professionalId, PDO::PARAM_INT);
         $stmt->bindValue(':startTs', $startTimestamp, PDO::PARAM_STR);
         $stmt->bindValue(':endTs', $endTimestamp, PDO::PARAM_STR);
+        if ($excludeAppointmentId !== null) {
+            $stmt->bindValue(':exclude_id', $excludeAppointmentId, PDO::PARAM_INT);
+        }
         $stmt->execute();
 
         return (int) $stmt->fetchColumn() > 0;

@@ -359,6 +359,12 @@ $lazyContainer = new class($logFilePath) {
                     $this->get(\App\Application\Shared\Audit\AuditService::class)
                 ),
 
+            \App\Application\Booking\RescheduleBooking\RescheduleAppointmentUseCase::class =>
+                new \App\Application\Booking\RescheduleBooking\RescheduleAppointmentUseCase(
+                    $this->get(\App\Infrastructure\Booking\Persistence\PdoAppointmentRepository::class),
+                    $this->get(\App\Application\Shared\Audit\AuditService::class)
+                ),
+
             \App\Application\Booking\Operation\ExecuteCheckInUseCase::class =>
                 new \App\Application\Booking\Operation\ExecuteCheckInUseCase(
                     $this->get(\App\Infrastructure\Booking\Persistence\PdoAppointmentRepository::class),
@@ -536,6 +542,11 @@ $lazyContainer = new class($logFilePath) {
             \App\Infrastructure\Booking\Http\CancelAppointmentController::class =>
                 new \App\Infrastructure\Booking\Http\CancelAppointmentController(
                     $this->get(\App\Application\Booking\CancelBooking\CancelAppointmentUseCase::class)
+                ),
+
+            \App\Infrastructure\Booking\Http\RescheduleAppointmentController::class =>
+                new \App\Infrastructure\Booking\Http\RescheduleAppointmentController(
+                    $this->get(\App\Application\Booking\RescheduleBooking\RescheduleAppointmentUseCase::class)
                 ),
 
             \App\Infrastructure\Booking\Http\OperationsController::class =>

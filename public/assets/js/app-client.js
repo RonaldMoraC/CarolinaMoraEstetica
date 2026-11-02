@@ -840,7 +840,7 @@ class CitasView {
             // Actions for non-past appointments
             if (!isPast) {
                 const actionsDiv = document.createElement('div');
-                actionsDiv.className = 'flex justify-end gap-2 pt-3 border-t border-slate-200 dark:border-white/10';
+                actionsDiv.className = 'flex justify-end gap-2 pt-3 border-t border-slate-200 dark:border-white/10 flex-wrap';
 
                 const cancelBtn = document.createElement('button');
                 cancelBtn.className = 'px-4 py-2 border-2 border-red-400 text-red-500 text-sm font-semibold rounded-xl hover:bg-red-500 hover:text-white transition';
@@ -848,10 +848,10 @@ class CitasView {
                 cancelBtn.addEventListener('click', () => this.cancelAppointment(id));
 
                 const rescheduleBtn = document.createElement('button');
-                rescheduleBtn.className = 'px-4 py-2 bg-brand-cyan text-white text-sm font-semibold rounded-xl hover:bg-brand-cyanHover transition';
-                rescheduleBtn.textContent = 'Reprogramar';
-                rescheduleBtn.addEventListener('click', () => this.rescheduleAppointment(id));
-
+                rescheduleBtn.className = 'px-4 py-2 bg-brand-cyan text-white text-sm font-semibold rounded-xl hover:bg-brand-cyanHover transition flex items-center gap-1.5';
+                rescheduleBtn.innerHTML = '<i class="fas fa-calendar-alt text-xs"></i> Reprogramar';
+                // Pasar datos de la cita para precalcular la duración en el modal
+                rescheduleBtn.addEventListener('click', () => this.rescheduleAppointment(id, appt));
                 actionsDiv.appendChild(cancelBtn);
                 actionsDiv.appendChild(rescheduleBtn);
                 card.appendChild(actionsDiv);
@@ -974,9 +974,202 @@ class CitasView {
         }
     }
 
-    rescheduleAppointment(id) {
-        sessionStorage.setItem('reprogramar_cita_id', String(id));
-        AppClient.getRouter().navigate('Catalog');
+    rescheduleAppointment(id, apptData) {
+        // Calcular la duración de la cita desde los datos disponibles
+        const duration = (apptData && apptData.duration_minutes) ? parseInt(apptData.duration_minutes, 10) : 30;
+        const serviceName = (apptData && (apptData.service_name || apptData.servicio_nombre || apptData.service)) || 'el servicio';
+        const professionalId = (apptData && (apptData.professional_profile_id || apptData.professional_id)) || null;
+
+        const today = new Date();
+        const minDate = new Date(today.getTime() + 60000).toISOString().split('T')[0]; // min: hoy
+        const maxDate = new Date(today.getTime() + 60 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // max: 60 días
+
+        // Estado interno del modal de reprogramación
+        let reschedSelectedTime = null;
+        let reschedSelectedDate = minDate;
+
+        const bodyHTML = `
+            <div class="space-y-4">
+                <!-- Información de la cita -->
+                <div class="flex items-center gap-3 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800/30">
+                    <i class="fas fa-calendar-alt text-amber-500 text-xl flex-shrink-0"></i>
+                    <div class="min-w-0">
+                        <p class="text-xs font-semibold text-amber-800 dark:text-amber-300 truncate">Reprogramar: ${escapeHtml(serviceName)}</p>
+                        <p class="text-[11px] text-amber-700 dark:text-amber-400 mt-0.5">Selecciona una nueva fecha y hora disponible</p>
+                    </div>
+                </div>
+
+                <!-- Selector de Fecha -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Nueva Fecha</label>
+                    <input type="date" id="reschedDate" min="${minDate}" max="${maxDate}" value="${minDate}"
+                        class="app-input w-full px-4 py-3 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-700 dark:text-slate-300 font-medium">
+                </div>
+
+                <!-- Horarios Disponibles -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Horarios Disponibles</label>
+                        <span class="text-[11px] text-slate-400">Turnos de ${duration} min</span>
+                    </div>
+                    <div class="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-44 overflow-y-auto p-1" id="reschedTimeSlots">
+                        <div class="col-span-3 sm:col-span-4 flex items-center justify-center gap-2 py-4 text-xs text-slate-500 dark:text-slate-400">
+                            <i class="fas fa-spinner fa-spin text-brand-cyan"></i> Consultando disponibilidad...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Motivo de reprogramación (opcional) -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Motivo (opcional)</label>
+                    <textarea id="reschedReason" rows="2" placeholder="Ej: Cambio en mis horarios laborales..."
+                        class="app-input w-full px-4 py-3 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-700 dark:text-slate-300 resize-none"></textarea>
+                </div>
+            </div>
+        `;
+
+        this.modal.open({
+            title: `<i class="fas fa-calendar-alt mr-2 text-brand-cyan"></i>Reprogramar Cita #${id}`,
+            body: bodyHTML,
+            buttons: [
+                {
+                    label: 'Cancelar',
+                    class: 'px-4 py-2 border-2 border-slate-300 dark:border-white/20 text-slate-600 dark:text-slate-300 text-sm font-semibold rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 transition'
+                },
+                {
+                    label: '<i class="fas fa-check mr-1.5"></i>Confirmar Reprogramación',
+                    class: 'px-4 py-2 bg-brand-cyan text-white font-semibold text-sm rounded-xl hover:bg-brand-cyanHover transition shadow-sm',
+                    onClick: async () => {
+                        const dateVal  = document.getElementById('reschedDate')?.value || '';
+                        const reasonEl = document.getElementById('reschedReason');
+                        const reason   = reasonEl ? reasonEl.value.trim() : '';
+
+                        if (!dateVal) {
+                            this.alerts.warning('Por favor selecciona una fecha.');
+                            return;
+                        }
+                        if (!reschedSelectedTime) {
+                            this.alerts.warning('Por favor selecciona un horario disponible.');
+                            return;
+                        }
+
+                        this.modal.close();
+                        this.alerts.info('Reprogramando tu cita...');
+
+                        try {
+                            await this.api.patch('/booking/appointments/' + id + '/reschedule', {
+                                scheduled_date: dateVal,
+                                scheduled_time: reschedSelectedTime,
+                                reason: reason || undefined
+                            });
+
+                            this.alerts.success(`¡Cita reprogramada para el ${escapeHtml(dateVal)} a las ${escapeHtml(reschedSelectedTime)}!`);
+                            this.citasLoaded = false;
+                            await this.load();
+                        } catch (error) {
+                            this.alerts.error(escapeHtml(error.message));
+                        }
+                    },
+                    close: false
+                }
+            ]
+        });
+
+        // Función auxiliar interna para cargar slots de reprogramación
+        const loadReschedSlots = async (date) => {
+            const container = document.getElementById('reschedTimeSlots');
+            if (!container) return;
+
+            if (!professionalId || !date) {
+                container.innerHTML = `
+                    <div class="col-span-3 sm:col-span-4 p-3 text-center text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/10">
+                        <i class="fas fa-info-circle mr-1 text-brand-cyan"></i> No se pudo identificar al profesional para consultar su disponibilidad.
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="col-span-3 sm:col-span-4 flex items-center justify-center gap-2 py-4 text-xs text-slate-500 dark:text-slate-400">
+                    <i class="fas fa-spinner fa-spin text-brand-cyan"></i> Consultando disponibilidad en tiempo real...
+                </div>
+            `;
+
+            try {
+                const endpoint = `/catalog/professionals/${professionalId}/schedules?date=${encodeURIComponent(date)}&duration=${duration}&branch_id=1`;
+                const response = await this.api.get(endpoint);
+                const slots = (response && response.data && Array.isArray(response.data.slots))
+                    ? response.data.slots
+                    : ((response && Array.isArray(response.slots)) ? response.slots : []);
+
+                if (slots.length === 0) {
+                    container.innerHTML = `
+                        <div class="col-span-3 sm:col-span-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 rounded-xl text-center">
+                            <p class="text-xs font-semibold text-amber-800 dark:text-amber-300">
+                                <i class="fas fa-clock mr-1"></i> Sin disponibilidad para esta fecha
+                            </p>
+                            <p class="text-[11px] text-amber-700 dark:text-amber-400 mt-1">El profesional no tiene turnos libres. Elige otra fecha.</p>
+                        </div>
+                    `;
+                    reschedSelectedTime = null;
+                    return;
+                }
+
+                container.innerHTML = slots.map(slot => `
+                    <button type="button"
+                        class="resched-slot-btn px-3 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-brand-cyanLight hover:text-brand-cyan hover:border-brand-cyan transition"
+                        data-slot="${slot}"
+                        onclick="CitasView._reschedSelectSlot('${slot}')">
+                        ${slot}
+                    </button>
+                `).join('');
+
+                // Mantener la hora previa seleccionada si sigue disponible
+                if (reschedSelectedTime && slots.includes(reschedSelectedTime)) {
+                    CitasView._reschedSelectSlot(reschedSelectedTime);
+                } else {
+                    reschedSelectedTime = null;
+                }
+
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="col-span-3 sm:col-span-4 p-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/30 rounded-xl text-center">
+                        <p class="text-xs font-semibold text-rose-700 dark:text-rose-300">
+                            <i class="fas fa-exclamation-triangle mr-1"></i> Error al consultar horarios
+                        </p>
+                        <p class="text-[11px] text-rose-600 dark:text-rose-400 mt-1">${escapeHtml(error.message)}</p>
+                    </div>
+                `;
+                reschedSelectedTime = null;
+            }
+        };
+
+        // Función estática accesible desde el HTML inline generado dinámicamente
+        CitasView._reschedSelectSlot = (slot) => {
+            reschedSelectedTime = slot;
+            document.querySelectorAll('.resched-slot-btn').forEach(btn => {
+                const isActive = btn.getAttribute('data-slot') === slot;
+                btn.classList.toggle('bg-brand-cyan', isActive);
+                btn.classList.toggle('text-white', isActive);
+                btn.classList.toggle('border-brand-cyan', isActive);
+                btn.classList.toggle('bg-brand-cyanLight', !isActive);
+                btn.classList.toggle('text-brand-cyan', !isActive && false); // reset
+            });
+        };
+
+        // Cargar slots al abrir el modal (fecha inicial = hoy)
+        setTimeout(() => {
+            loadReschedSlots(minDate);
+
+            // Listener reactivo para cambio de fecha
+            const dateInput = document.getElementById('reschedDate');
+            if (dateInput) {
+                dateInput.addEventListener('change', (e) => {
+                    reschedSelectedTime = null;
+                    loadReschedSlots(e.target.value);
+                });
+            }
+        }, 80);
     }
 }
 

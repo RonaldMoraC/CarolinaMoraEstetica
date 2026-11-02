@@ -15,6 +15,7 @@ use App\Infrastructure\Shared\Security\AuthMiddleware;
 use App\Infrastructure\Shared\Security\ViewAuthMiddleware;
 use App\Infrastructure\Booking\Http\GetAppointmentsController;
 use App\Infrastructure\Booking\Http\CancelAppointmentController;
+use App\Infrastructure\Booking\Http\RescheduleAppointmentController;
 use App\Infrastructure\Booking\Http\CreateAppointmentController;
 use App\Infrastructure\Booking\Http\OperationsController;
 use App\Infrastructure\Booking\Http\RatingController;
@@ -135,11 +136,14 @@ $router->group('/api/v1/app', function(Router $r) {
     $r->get('/appointments', [GetClientAppointmentsController::class, 'handle']);
 }, [AuthMiddleware::class]);
 
-// Rutas Protegidas para Booking (citas accesibles por admin y recepción)
+// Rutas Protegidas para Booking (citas accesibles por clientes, admin y recepción)
 $router->group('/api/v1/booking', function(Router $r) {
     $r->get('/appointments', [GetAppointmentsController::class, 'handle']);
     $r->post('/appointments', [CreateAppointmentController::class, 'handle']);
     $r->delete('/appointments/{id}', [CancelAppointmentController::class, 'handle']);
+    // Reprogramación autónoma de cita (cliente o staff)
+    $r->patch('/appointments/{id}/reschedule', [RescheduleAppointmentController::class, 'handle']);
+    $r->put('/appointments/{id}/reschedule', [RescheduleAppointmentController::class, 'handle']);
     // Rutas para operaciones de estado de citas (check-in, complete, cancel, noshow)
     $r->patch('/appointments/{id}/check-in', [OperationsController::class, 'checkIn']);
     $r->patch('/appointments/{id}/complete', [OperationsController::class, 'complete']);

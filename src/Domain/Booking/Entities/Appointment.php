@@ -94,6 +94,24 @@ class Appointment
         $this->appointmentStatus = $status;
     }
 
+    public function canBeRescheduled(): bool
+    {
+        return in_array($this->appointmentStatus, ['PENDING', 'CONFIRMED'], true);
+    }
+
+    public function reschedule(DateTimeImmutable $newStart, DateTimeImmutable $newEnd): void
+    {
+        if (!$this->canBeRescheduled()) {
+            throw new \DomainException("La cita #{$this->appointmentId} no puede ser reprogramada. Estado actual: '{$this->appointmentStatus}'.");
+        }
+        if ($newEnd <= $newStart) {
+            throw new \DomainException("La hora estimada de fin debe ser posterior a la fecha/hora de inicio.");
+        }
+        $this->scheduledTimestamp = $newStart;
+        $this->estimatedEndTimestamp = $newEnd;
+        $this->updatedAt = new DateTimeImmutable('now', new \DateTimeZone('America/Bogota'));
+    }
+
     public function canBeCancelled(): bool
     {
         return in_array($this->appointmentStatus, self::CANCELABLE_STATUSES, true);
