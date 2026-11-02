@@ -14,7 +14,10 @@ use PDO;
  * Recupera el perfil del usuario actualmente autenticado basándose en los datos
  * inyectados por el AuthMiddleware en el pipeline de la ruta.
  *
- * Cumple Skill 1 (Arquitectura Limpia) y Skill 4 (RFC 7807).
+ * Optimizado contra N+1 (Skill 12): ejecuta una única consulta con JOINs indexados
+ * entre user, user_role, role y client_profile en O(1).
+ *
+ * Cumple Skill 1 (Clean Code), Skill 4 (RFC 7807) y Skill 10 (Sentencias Preparadas).
  */
 final class MeController
 {
@@ -31,6 +34,7 @@ final class MeController
     public function handle(array $params): void
     {
         $claims = $params['auth_user'] ?? null;
+        $instance = $_SERVER['REQUEST_URI'] ?? '/api/v1/auth/me';
 
         if (!$claims || !isset($claims['user_id'])) {
             GlobalExceptionHandler::emitRfc7807Response(
@@ -38,56 +42,80 @@ final class MeController
                 type: 'https://carolinamoraestetica.com/errors/unauthorized',
                 title: 'Sesión no encontrada',
                 detail: 'No se pudo recuperar la identidad del usuario desde el contexto de seguridad.',
-                instance: '/api/v1/auth/me'
+                instance: $instance
             );
+            return;
         }
 
-        $user = $this->userRepository->findById((int) $claims['user_id']);
+        $userId = (int) $claims['user_id'];
+        if ($userId <= 0) {
+            GlobalExceptionHandler::emitRfc7807Response(
+                httpStatus: 400,
+                type: 'https://carolinamoraestetica.com/errors/invalid-user-id',
+                title: 'ID de usuario inválido',
+                detail: 'El identificador de usuario en el token no es válido.',
+                instance: $instance
+            );
+            return;
+        }
 
-        if (!$user) {
+        // Skill 12: Consulta única con JOIN indexado evitando problemas de N+1
+        $sql = "SELECT 
+                    u.user_id,
+                    u.email,
+                    u.auth_phone,
+                    u.first_name,
+                    u.last_name,
+                    u.account_status,
+                    r.role_code,
+                    cp.*
+                FROM `user` u
+                LEFT JOIN `user_role` ur ON u.user_id = ur.user_id
+                LEFT JOIN `role` r ON ur.role_id = r.role_id
+                LEFT JOIN `client_profile` cp ON cp.client_profile_id = u.user_id
+                WHERE u.user_id = :uid
+                LIMIT 1";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':uid', $userId, PDO::PARAM_INT);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$row) {
             GlobalExceptionHandler::emitRfc7807Response(
                 httpStatus: 404,
                 type: 'https://carolinamoraestetica.com/errors/user-not-found',
                 title: 'Usuario no encontrado',
                 detail: 'El usuario asociado al token ya no existe en el sistema.',
-                instance: '/api/v1/auth/me'
+                instance: $instance
             );
+            return;
         }
 
-        $userId = (int) $claims['user_id'];
-
-        // Obtener nombre completo desde client_profile
-        $displayName = '';
-        $stmt = $this->pdo->prepare(
-            "SELECT first_name, last_name FROM user WHERE user_id = :uid LIMIT 1"
-        );
-        $stmt->bindValue(':uid', $userId, PDO::PARAM_INT);
-        $stmt->execute();
-        $profile = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($profile) {
-            $displayName = trim(($profile['first_name'] ?? '') . ' ' . ($profile['last_name'] ?? ''));
+        $firstName = (string) ($row['first_name'] ?? '');
+        $lastName  = (string) ($row['last_name'] ?? '');
+        $displayName = trim($firstName . ' ' . $lastName);
+        if ($displayName === '') {
+            $displayName = (string) ($row['email'] ?? 'Cliente');
         }
 
-        // Obtener teléfono desde user.auth_phone
-        $stmt = $this->pdo->prepare(
-            "SELECT auth_phone FROM user WHERE user_id = :uid LIMIT 1"
-        );
-        $stmt->bindValue(':uid', $userId, PDO::PARAM_INT);
-        $stmt->execute();
-        $userRow = $stmt->fetch(PDO::FETCH_ASSOC);
-        $phone = $userRow ? ($userRow['auth_phone'] ?? '') : '';
+        $roleCode = (string) ($row['role_code'] ?? 'CLIENT');
+        $isActive = ($row['account_status'] ?? '') === 'ACTIVE';
 
         ResponseHelper::json(200, true, 'Perfil recuperado con éxito', [
             'user' => [
-                'id'            => $user->getUserId(),
-                'first_name'    => $profile ? ($profile['first_name'] ?? '') : '',
-                'last_name'     => $profile ? ($profile['last_name'] ?? '') : '',
-                'name'          => $displayName,
-                'username'      => $user->getEmail()->getValue(),
-                'email'         => $user->getEmail()->getValue(),
-                'phone'         => $phone,
-                'role'          => $user->getRole()->getName(),
-                'is_active'     => $user->isActive()
+                'id'                      => (int) $row['user_id'],
+                'first_name'              => $firstName,
+                'last_name'               => $lastName,
+                'name'                    => $displayName,
+                'username'                => (string) ($row['email'] ?? ''),
+                'email'                   => (string) ($row['email'] ?? ''),
+                'phone'                   => (string) ($row['auth_phone'] ?? ''),
+                'role'                    => $roleCode,
+                'is_active'               => $isActive,
+                'birth_date'              => $row['birth_date'] ?? null,
+                'medical_notes_allergies' => $row['medical_notes_allergies'] ?? null,
+                'preferences'             => $row['preferences'] ?? null,
             ]
         ]);
     }
