@@ -45,6 +45,17 @@ class LogoutController
             // 2. Ejecutar la invalidación persistente (Skill 6)
             $this->logoutUserUseCase->execute($userId);
 
+            // Invalida las cookies de sesión en el cliente (Skill 6: Hardening de sesión)
+            $clearCookieOptions = [
+                'expires'  => time() - 3600,
+                'path'     => '/',
+                'secure'   => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on',
+                'httponly' => true,
+                'samesite' => 'Lax'
+            ];
+            setcookie('auth_token', '', $clearCookieOptions);
+            setcookie('user_role', '', $clearCookieOptions);
+
             // 3. Responder con éxito (Skill 1)
             ResponseHelper::json(200, true, 'Sesión cerrada exitosamente.');
 

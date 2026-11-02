@@ -121,11 +121,12 @@ final class LoginController
             }
 
             // 4. Establecer cookies seguras para el backend (ViewAuthMiddleware y layouts)
+            // Skill 6: httponly = true para prevenir el robo del JWT vía XSS en el navegador
             $cookieOptions = [
                 'expires' => time() + (int) ($_ENV['JWT_EXPIRATION_SECONDS'] ?? 3600),
                 'path' => '/',
                 'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on',
-                'httponly' => false, // Permitir acceso desde JS si es necesario, o true por seguridad
+                'httponly' => true, // Skill 6: Blindaje contra robo de credenciales mediante scripts maliciosos (XSS)
                 'samesite' => 'Lax'
             ];
             setcookie('auth_token', $token, $cookieOptions);
