@@ -159,13 +159,15 @@ GlobalExceptionHandler::register(
 //  Si faltan variables de entorno para estos servicios, el sistema continuará
 //  funcionando de forma segura siempre que no se requieran esas rutas.
  
-$lazyContainer = new class($logFilePath) {
+$lazyContainer = new class($logFilePath, $isProduction) {
     private array $instances = [];
     private ?\PDO $pdo = null;
     private string $logFilePath;
+    private bool   $isProduction;
 
-    public function __construct(string $logFilePath) {
-        $this->logFilePath = $logFilePath;
+    public function __construct(string $logFilePath, bool $isProduction) {
+        $this->logFilePath  = $logFilePath;
+        $this->isProduction = $isProduction;
     }
 
     private function getPdo(): \PDO
@@ -247,7 +249,7 @@ $lazyContainer = new class($logFilePath) {
 
             // ── Logging ──────────────────────────────────────────────────
             \App\Infrastructure\Shared\Logging\AppLogger::class =>
-                new \App\Infrastructure\Shared\Logging\AppLogger($this->logFilePath),
+                new \App\Infrastructure\Shared\Logging\AppLogger($this->logFilePath, $this->isProduction),
 
             // Middlewares (Paso 8)
             \App\Infrastructure\Shared\Security\AuthMiddleware::class =>
@@ -438,7 +440,8 @@ $lazyContainer = new class($logFilePath) {
                 new \App\Infrastructure\IAM\Http\LoginController(
                     $this->get(\App\Application\IAM\Authenticate\AuthenticateUserUseCase::class),
                     $this->getSecurityJwtTokenManager(),
-                    $this->getPdo()
+                    $this->getPdo(),
+                    $this->get(\App\Infrastructure\Shared\Logging\AppLogger::class)
                 ),
 
             \App\Infrastructure\IAM\Http\RefreshTokenController::class =>
