@@ -705,30 +705,118 @@ class CatalogView {
             return;
         }
 
+        const scheduledDate = dateInput.value;
+        const scheduledTime = this.selectedBookingTime;
+        const notesVal = notesInput ? notesInput.value.trim() : null;
+
         this.modal.close();
-        this.alerts.info('Agendando tu cita...');
+        this.alerts.info('Asegurando tu cita...');
 
         try {
-            const scheduledDate = dateInput.value;
-            const scheduledTime = this.selectedBookingTime;
-
             const result = await this.api.post('/booking/appointments', {
                 service_id: serviceId,
                 professional_profile_id: this.selectedProfessionalId,
                 branch_id: 1,
                 scheduled_date: scheduledDate,
                 scheduled_time: scheduledTime,
-                notes: notesInput ? notesInput.value.trim() : null
+                notes: notesVal
             });
 
-            this.alerts.success(`¡Cita agendada exitosamente para el ${escapeHtml(scheduledDate)} a las ${escapeHtml(scheduledTime)}!`);
+            const apptData = result.data || result;
+            const apptId = apptData.appointment_id || 'OK';
+            const sName = apptData.service_name || name;
+            const pName = apptData.professional_name || 'Especialista Asignado';
+            const bName = apptData.branch_name || 'Carolina Mora Estética y SPA';
+            const dateStr = apptData.fecha_formateada || scheduledDate;
+            const timeStr = apptData.scheduled_time || scheduledTime;
+            const waUrl = apptData.whatsapp_direct_url || null;
+            const notificationQueued = apptData.notification_enqueued;
 
+            this.alerts.success(`¡Cita #${escapeHtml(String(apptId))} confirmada exitosamente!`);
+
+            // Limpieza de estado de reserva
             if (AppClient && AppClient.citasView) {
                 AppClient.citasView.citasLoaded = false;
             }
             sessionStorage.removeItem('servicio_seleccionado_id');
             sessionStorage.removeItem('servicio_seleccionado_nombre');
             sessionStorage.removeItem('servicio_seleccionado_precio');
+
+            // Feedback en Tiempo Real (MEDIO-03): Modal de Confirmación y Resumen de Cita
+            const successModalBody = `
+                <div class="text-center space-y-4 py-2">
+                    <div class="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-500 mx-auto flex items-center justify-center text-3xl shadow-inner">
+                        ✓
+                    </div>
+                    <div>
+                        <h4 class="text-base font-bold text-slate-900 dark:text-white">¡Tu turno ha sido asegurado!</h4>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                            Código de reserva: <strong class="text-brand-cyan">#${escapeHtml(String(apptId))}</strong>
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 rounded-2xl p-4 text-left space-y-2.5 text-xs">
+                        <div class="flex items-center justify-between pb-2 border-b border-slate-200/50 dark:border-white/5">
+                            <span class="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">Tratamiento</span>
+                            <span class="font-bold text-slate-800 dark:text-white">${escapeHtml(sName)}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">Especialista</span>
+                            <span class="font-semibold text-slate-700 dark:text-slate-200">${escapeHtml(pName)}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">Fecha y Hora</span>
+                            <span class="font-semibold text-slate-700 dark:text-slate-200">${escapeHtml(dateStr)} - ${escapeHtml(timeStr)}</span>
+                        </div>
+                        <div class="flex items-center justify-between pt-2 border-t border-slate-200/50 dark:border-white/5">
+                            <span class="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">Sede</span>
+                            <span class="font-semibold text-slate-700 dark:text-slate-200">${escapeHtml(bName)}</span>
+                        </div>
+                    </div>
+
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed bg-brand-cyanLight/20 dark:bg-brand-cyan/10 p-3 rounded-xl border border-brand-cyanLight/40">
+                        ${notificationQueued ? '📲 Hemos encolado la notificación de confirmación a tu WhatsApp registrado.' : '📲 Puedes abrir los detalles de tu confirmación en WhatsApp con nuestro equipo.'}
+                    </p>
+                </div>
+            `;
+
+            const modalButtons = [];
+
+            if (waUrl) {
+                modalButtons.push({
+                    label: 'Abrir WhatsApp',
+                    class: 'px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl transition shadow-sm flex items-center justify-center gap-1.5',
+                    onClick: () => {
+                        window.open(waUrl, '_blank', 'noopener,noreferrer');
+                    },
+                    close: false
+                });
+            }
+
+            modalButtons.push({
+                label: 'Ver en Mis Citas',
+                class: 'px-4 py-2.5 bg-brand-cyan hover:bg-brand-cyanHover text-white font-semibold text-xs rounded-xl transition shadow-sm',
+                onClick: () => {
+                    if (AppClient && AppClient.router) {
+                        AppClient.router.navigate('Citas');
+                        if (AppClient.citasView) {
+                            AppClient.citasView.load();
+                        }
+                    }
+                }
+            });
+
+            modalButtons.push({
+                label: 'Cerrar',
+                class: 'px-4 py-2.5 border border-slate-200 dark:border-white/10 text-slate-500 text-xs font-semibold rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition'
+            });
+
+            this.modal.open({
+                title: 'Confirmación de Reserva',
+                body: successModalBody,
+                buttons: modalButtons
+            });
+
         } catch (error) {
             this.alerts.error(escapeHtml(error.message));
         }

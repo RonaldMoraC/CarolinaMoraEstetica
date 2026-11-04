@@ -352,7 +352,8 @@ $lazyContainer = new class($logFilePath, $isProduction) {
                     $this->get(\App\Infrastructure\Catalog\Persistence\PdoServiceRepository::class),
                     $this->get(\App\Infrastructure\Staffing\Persistence\PdoStaffingRepository::class),
                     $this->get(\App\Application\Shared\Audit\AuditService::class),
-                    $this->getPdo()
+                    $this->getPdo(),
+                    $this->get(\App\Infrastructure\Integration\WhatsApp\Persistence\PdoWaNotificationQueueRepository::class)
                 ),
 
             \App\Application\Booking\CancelBooking\CancelAppointmentUseCase::class =>
@@ -648,6 +649,15 @@ $lazyContainer = new class($logFilePath, $isProduction) {
 
             \App\Domain\Staffing\Repositories\StaffingRepositoryInterface::class =>
                 $this->get(\App\Infrastructure\Staffing\Persistence\PdoStaffingRepository::class),
+
+            \App\Domain\Booking\Repositories\NotificationQueueRepositoryInterface::class =>
+                $this->get(\App\Infrastructure\Integration\WhatsApp\Persistence\PdoWaNotificationQueueRepository::class),
+
+            \App\Infrastructure\Integration\WhatsApp\Workers\NotificationQueueWorker::class =>
+                new \App\Infrastructure\Integration\WhatsApp\Workers\NotificationQueueWorker(
+                    $this->get(\App\Infrastructure\Integration\WhatsApp\Persistence\PdoWaNotificationQueueRepository::class),
+                    $this->get(\App\Infrastructure\Shared\Logging\AppLogger::class)
+                ),
             default => throw new \RuntimeException("El servicio '{$class}' no está registrado en el contenedor lazy."),
         };
     }

@@ -4,6 +4,7 @@ namespace App\Application\Booking\CreateBooking;
 
 use App\Domain\Booking\Entities\Appointment;
 use App\Domain\Booking\Repositories\AppointmentRepositoryInterface;
+use App\Domain\Booking\Repositories\NotificationQueueRepositoryInterface;
 use App\Domain\Catalog\Repositories\ServiceRepositoryInterface;
 use App\Domain\Staffing\Repositories\StaffingRepositoryInterface;
 use App\Application\Shared\Audit\AuditService;
@@ -16,13 +17,15 @@ use PDO;
 use PDOException;
 
 /**
- * CreateAppointmentUseCase â¬ Caso de Uso de Aplicación
+ * CreateAppointmentUseCase — Caso de Uso de Aplicación
  *
- * Orquesta la creación de una nueva cita con protección estricta anti-overbooking:
+ * Orquesta la creación de una nueva cita con protección estricta anti-overbooking
+ * y despacho desacoplado de confirmación omnicanal:
  *   1. Validación perimetral
  *   2. Bloqueo de transaccionalidad (REPEATABLE READ) y bloqueo pesimista en mallas horarias
  *   3. Verificación de excepciones de agenda y solapamientos
  *   4. Persistencia y auditoría forense
+ *   5. Encolamiento de notificación de confirmación de cita (Skill 5 y MEDIO-03)
  */
 class CreateAppointmentUseCase
 {
@@ -31,26 +34,29 @@ class CreateAppointmentUseCase
     private StaffingRepositoryInterface    $staffingRepo;
     private AuditService                   $auditService;
     private PDO                            $pdo;
+    private ?NotificationQueueRepositoryInterface $notificationQueueRepo;
 
     public function __construct(
         AppointmentRepositoryInterface $appointmentRepo,
         ServiceRepositoryInterface     $serviceRepo,
         StaffingRepositoryInterface    $staffingRepo,
         AuditService                   $auditService,
-        PDO                            $pdo
+        PDO                            $pdo,
+        ?NotificationQueueRepositoryInterface $notificationQueueRepo = null
     ) {
         $this->appointmentRepo = $appointmentRepo;
         $this->serviceRepo     = $serviceRepo;
         $this->staffingRepo    = $staffingRepo;
         $this->auditService    = $auditService;
         $this->pdo             = $pdo;
+        $this->notificationQueueRepo = $notificationQueueRepo;
     }
 
     /**
      * Ejecuta la creación de una cita de forma atómica y segura contra concurrencia.
      *
      * @param CreateAppointmentDTO $dto
-     * @return array Resultado con ID y datos de la cita creada
+     * @return array Resultado con ID, datos de la cita y feedback en tiempo real
      * @throws DomainException|ConflictException
      */
     public function execute(CreateAppointmentDTO $dto): array
@@ -155,14 +161,90 @@ class CreateAppointmentUseCase
                 ]
             );
 
+            // 7. Enriquecer datos para feedback en tiempo real (MEDIO-03)
+            $clientName = 'Cliente';
+            $clientPhone = '';
+            $clientEmail = '';
+            $profName = 'Especialista Asignado';
+            $branchName = 'Carolina Mora Estética y SPA';
+
+            // Obtener datos del cliente
+            $stmtClient = $this->pdo->prepare("SELECT first_name, last_name, auth_phone, email FROM user WHERE user_id = :uid LIMIT 1");
+            $stmtClient->bindValue(':uid', $dto->clientProfileId, PDO::PARAM_INT);
+            $stmtClient->execute();
+            $clientRow = $stmtClient->fetch(PDO::FETCH_ASSOC);
+            if ($clientRow) {
+                $clientName = trim(($clientRow['first_name'] ?? '') . ' ' . ($clientRow['last_name'] ?? '')) ?: 'Cliente';
+                $clientPhone = (string) ($clientRow['auth_phone'] ?? '');
+                $clientEmail = (string) ($clientRow['email'] ?? '');
+            }
+
+            // Obtener nombre del profesional
+            $stmtProf = $this->pdo->prepare("SELECT first_name, last_name FROM user WHERE user_id = :pid LIMIT 1");
+            $stmtProf->bindValue(':pid', $dto->professionalProfileId, PDO::PARAM_INT);
+            $stmtProf->execute();
+            $profRow = $stmtProf->fetch(PDO::FETCH_ASSOC);
+            if ($profRow) {
+                $profName = trim(($profRow['first_name'] ?? '') . ' ' . ($profRow['last_name'] ?? '')) ?: 'Especialista Asignado';
+            }
+
+            // Obtener nombre de la sede
+            $stmtBranch = $this->pdo->prepare("SELECT branch_name FROM branch WHERE branch_id = :bid LIMIT 1");
+            $stmtBranch->bindValue(':bid', $dto->branchId, PDO::PARAM_INT);
+            $stmtBranch->execute();
+            $branchRow = $stmtBranch->fetch(PDO::FETCH_ASSOC);
+            if ($branchRow) {
+                $branchName = (string) ($branchRow['branch_name'] ?? $branchName);
+            }
+
+            // 8. Encolar notificación WhatsApp si el repositorio está disponible y el cliente tiene teléfono
+            $notificationEnqueued = false;
+            if ($this->notificationQueueRepo !== null && $clientPhone !== '') {
+                try {
+                    $this->notificationQueueRepo->enqueue(
+                        templateId: 1,
+                        recipientPhone: $clientPhone,
+                        dynamicParameters: [
+                            'client_name'       => $clientName,
+                            'service_name'      => $service['name'] ?? 'Servicio',
+                            'date'              => $scheduledTs->format('Y-m-d'),
+                            'time'              => $scheduledTs->format('H:i'),
+                            'professional_name' => $profName,
+                            'appointment_id'    => $appointmentId,
+                            'branch_name'       => $branchName
+                        ]
+                    );
+                    $notificationEnqueued = true;
+                } catch (\Throwable) {
+                    // Silenciosamente continuar para no interrumpir la creación de la cita
+                    $notificationEnqueued = false;
+                }
+            }
+
+            // 9. Generar link directo de confirmación WhatsApp
+            $adminPhone = preg_replace('/\D/', '', (string)($_ENV['BUSINESS_WHATSAPP_PHONE'] ?? '573001234567'));
+            $dateFormatted = $scheduledTs->format('d/m/Y');
+            $timeFormatted = $scheduledTs->format('h:i A');
+            $serviceName = $service['name'] ?? 'Servicio';
+            $msgText = "¡Hola! Acabo de agendar mi cita #{$appointmentId} para *{$serviceName}* el día {$dateFormatted} a las {$timeFormatted} con {$profName} en Carolina Mora Estética. Por favor confirmar mi reserva.";
+            $whatsappDirectUrl = "https://wa.me/{$adminPhone}?text=" . rawurlencode($msgText);
+
             return [
-                'appointment_id' => $appointmentId,
-                'service_name'   => $service['name'] ?? 'Servicio',
-                'scheduled_date' => $scheduledTs->format('Y-m-d'),
-                'scheduled_time' => $scheduledTs->format('H:i'),
-                'status'         => 'PENDING',
-                'total_price'    => $basePrice,
-                'final_price'    => $basePrice
+                'appointment_id'          => $appointmentId,
+                'service_name'            => $serviceName,
+                'professional_name'       => $profName,
+                'client_name'             => $clientName,
+                'client_email'            => $clientEmail,
+                'client_phone'            => $clientPhone,
+                'scheduled_date'          => $scheduledTs->format('Y-m-d'),
+                'scheduled_time'          => $scheduledTs->format('H:i'),
+                'fecha_formateada'        => $scheduledTs->format('d \d\e F \d\e Y'),
+                'branch_name'             => $branchName,
+                'status'                  => 'PENDING',
+                'total_price'             => $basePrice,
+                'final_price'             => $basePrice,
+                'notification_enqueued'   => $notificationEnqueued,
+                'whatsapp_direct_url'     => $whatsappDirectUrl
             ];
 
         } catch (PDOException $e) {
