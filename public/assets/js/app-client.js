@@ -822,22 +822,64 @@ class CitasView {
 
             // Details
             const detailsDiv = document.createElement('div');
-            detailsDiv.className = 'text-xs text-slate-500 dark:text-slate-400 font-semibold space-y-1 mb-3';
+            detailsDiv.className = 'text-xs text-slate-600 dark:text-slate-300 space-y-2 mb-4';
 
-            const dateP = document.createElement('p');
-            dateP.textContent = '' + date;
-            const timeP = document.createElement('p');
-            timeP.textContent = '⏰ ' + time;
-            const priceP = document.createElement('p');
-            priceP.className = 'text-slate-700 dark:text-slate-300';
-            priceP.textContent = 'Costo: $' + price;
+            // Especialista / Profesional asignado (MEDIO-01)
+            const profName = appt.professional_name || appt.profesional || 'Especialista Asignado';
+            const profBio = appt.professional_bio ? ` · ${appt.professional_bio}` : '';
+            const profDiv = document.createElement('div');
+            profDiv.className = 'flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5';
+            profDiv.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-brand-cyanLight/40 dark:bg-brand-cyan/20 flex items-center justify-center text-brand-cyan font-bold text-sm flex-shrink-0">
+                    <i class="fas fa-user-md"></i>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Profesional Asignado</p>
+                    <p class="font-bold text-slate-800 dark:text-white truncate text-xs">
+                        ${escapeHtml(profName)}<span class="font-normal text-slate-400 text-[11px]">${escapeHtml(profBio)}</span>
+                    </p>
+                </div>
+            `;
+            detailsDiv.appendChild(profDiv);
 
-            detailsDiv.appendChild(dateP);
-            detailsDiv.appendChild(timeP);
-            detailsDiv.appendChild(priceP);
+            // Grid de información
+            const gridInfo = document.createElement('div');
+            gridInfo.className = 'grid grid-cols-2 gap-2 text-xs font-medium text-slate-500 dark:text-slate-400 pt-1';
+            
+            const durationTxt = appt.duration_minutes ? ` (${appt.duration_minutes} min)` : '';
+            gridInfo.innerHTML = `
+                <div class="flex items-center gap-1.5">
+                    <i class="far fa-calendar-alt text-brand-cyan text-xs"></i>
+                    <span class="truncate">${escapeHtml(date)}</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <i class="far fa-clock text-brand-cyan text-xs"></i>
+                    <span>${escapeHtml(time)}${escapeHtml(durationTxt)}</span>
+                </div>
+                ${appt.branch_name ? `
+                <div class="col-span-2 flex items-center gap-1.5 text-slate-400">
+                    <i class="fas fa-map-marker-alt text-brand-gold text-xs"></i>
+                    <span class="truncate">${escapeHtml(appt.branch_name)}</span>
+                </div>
+                ` : ''}
+                <div class="col-span-2 flex items-center gap-1.5 text-slate-800 dark:text-slate-200 font-bold pt-1.5 border-t border-slate-100 dark:border-white/5">
+                    <i class="fas fa-tag text-brand-gold text-xs"></i>
+                    <span>Inversión: $${escapeHtml(price)}</span>
+                </div>
+            `;
+            detailsDiv.appendChild(gridInfo);
+
+            // Notas del cliente si existen (MEDIO-02)
+            if (appt.notes && appt.notes.trim() !== '') {
+                const notesDiv = document.createElement('div');
+                notesDiv.className = 'text-[11px] text-slate-500 dark:text-slate-400 italic bg-amber-50/50 dark:bg-amber-950/10 border border-amber-200/40 dark:border-amber-900/30 rounded-lg p-2 flex items-start gap-1.5 mt-1';
+                notesDiv.innerHTML = `<i class="fas fa-sticky-note text-amber-500 mt-0.5 text-xs flex-shrink-0"></i> <span class="break-words">Notas: ${escapeHtml(appt.notes)}</span>`;
+                detailsDiv.appendChild(notesDiv);
+            }
+
             card.appendChild(detailsDiv);
 
-            // Actions for non-past appointments
+            // Actions
             if (!isPast) {
                 const actionsDiv = document.createElement('div');
                 actionsDiv.className = 'flex justify-end gap-2 pt-3 border-t border-slate-200 dark:border-white/10 flex-wrap';
@@ -854,6 +896,16 @@ class CitasView {
                 rescheduleBtn.addEventListener('click', () => this.rescheduleAppointment(id, appt));
                 actionsDiv.appendChild(cancelBtn);
                 actionsDiv.appendChild(rescheduleBtn);
+                card.appendChild(actionsDiv);
+            } else if (status === 'completada' || status === 'completed') {
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'flex justify-end gap-2 pt-3 border-t border-slate-200 dark:border-white/10';
+
+                const rateBtn = document.createElement('button');
+                rateBtn.className = 'px-4 py-2 bg-brand-gold/15 hover:bg-brand-gold text-brand-gold hover:text-white text-xs font-semibold rounded-xl transition flex items-center gap-1.5';
+                rateBtn.innerHTML = '⭐ Calificar Servicio';
+                rateBtn.addEventListener('click', () => this.openRatingModal(id, displayName));
+                actionsDiv.appendChild(rateBtn);
                 card.appendChild(actionsDiv);
             }
 

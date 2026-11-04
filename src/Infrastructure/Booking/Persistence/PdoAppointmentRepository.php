@@ -47,13 +47,13 @@ final class PdoAppointmentRepository implements AppointmentRepositoryInterface /
         $sql = "SELECT a.*, s.name AS service_name, s.base_price AS service_price,
                        s.duration_minutes, sc.name AS category_name,
                        pp.public_biography,
-                       CONCAT(u_prof.first_name, ' ', u_prof.last_name) AS professional_name,
+                       TRIM(CONCAT_WS(' ', u_prof.first_name, u_prof.last_name)) AS professional_name,
                        b.branch_name
                 FROM appointment a
                 LEFT JOIN service s ON s.service_id = a.service_id
                 LEFT JOIN service_category sc ON sc.category_id = s.category_id
                 LEFT JOIN professional_profile pp ON pp.professional_profile_id = a.professional_profile_id
-                LEFT JOIN user u_prof ON u_prof.user_id = pp.professional_profile_id
+                LEFT JOIN user u_prof ON (u_prof.user_id = pp.professional_profile_id OR u_prof.user_id = a.professional_profile_id)
                 LEFT JOIN branch b ON b.branch_id = a.branch_id
                 WHERE a.client_profile_id = :clientId
                 ORDER BY a.scheduled_timestamp DESC";
@@ -468,7 +468,8 @@ final class PdoAppointmentRepository implements AppointmentRepositoryInterface /
             'precio'             => (float) ($row['total_price'] ?? 0),
             'branch_name'        => $row['branch_name'] ?? '',
             'notes'              => $row['notes'],
-            'professional_name'  => trim((string)($row['professional_name'] ?? '')) ?: 'Especialista',
+            'professional_name'  => trim((string)($row['professional_name'] ?? '')) ?: 'Especialista Asignado',
+            'professional_profile_id' => (int)($row['professional_profile_id'] ?? 0),
             'duration_minutes'   => (int)($row['duration_minutes'] ?? 30),
             'professional_bio'   => $row['public_biography'] ?? '',
         ];
