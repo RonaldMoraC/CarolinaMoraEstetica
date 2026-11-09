@@ -13,7 +13,10 @@ use InvalidArgumentException;
 
 /**
  * UpdateProfileController
- * Maneja la actualización de datos personales del usuario autenticado.
+ *
+ * Maneja la actualización de datos personales y ficha clínica/estética del usuario autenticado.
+ * Soporta actualización integral de first_name, last_name, phone, email, medical_notes_allergies y preferences.
+ * (Cumple Skill 1, Skill 4, Skill 10).
  */
 final class UpdateProfileController
 {
@@ -31,7 +34,7 @@ final class UpdateProfileController
                 'https://carolinamoraestetica.com/errors/unauthorized',
                 'Sesión no válida',
                 'No se pudo identificar al usuario autenticado.',
-                '/api/v1/auth/me/profile'
+                '/api/v1/auth/me'
             );
             return;
         }
@@ -48,7 +51,7 @@ final class UpdateProfileController
                 'https://carolinamoraestetica.com/errors/invalid-json',
                 'JSON Inválido',
                 'El cuerpo de la petición debe ser un objeto JSON válido.',
-                '/api/v1/auth/me/profile'
+                '/api/v1/auth/me'
             );
             return;
         }
@@ -61,6 +64,15 @@ final class UpdateProfileController
             $email     = trim((string)($body['email'] ?? ''));
             $password  = isset($body['password']) && $body['password'] !== '' ? (string)$body['password'] : null;
 
+            // Ficha clínica y preferencias de estética (MEDIO-04)
+            $medicalNotesAllergies = array_key_exists('medical_notes_allergies', $body)
+                ? (is_null($body['medical_notes_allergies']) ? '' : trim((string)$body['medical_notes_allergies']))
+                : (array_key_exists('allergies', $body) ? trim((string)$body['allergies']) : null);
+
+            $preferences = array_key_exists('preferences', $body)
+                ? (is_null($body['preferences']) ? '' : trim((string)$body['preferences']))
+                : (array_key_exists('consumption_preferences', $body) ? trim((string)$body['consumption_preferences']) : null);
+
             if ($firstName === '' || $lastName === '' || $phone === '' || $email === '') {
                 throw new InvalidArgumentException('Faltan campos obligatorios para actualizar el perfil.');
             }
@@ -70,10 +82,19 @@ final class UpdateProfileController
             }
 
             // 4. Ejecución del Caso de Uso (Skill 1)
-            $dto = new UpdateProfileDTO($firstName, $lastName, $phone, $email, $password);
+            $dto = new UpdateProfileDTO(
+                firstName: $firstName,
+                lastName: $lastName,
+                phone: $phone,
+                email: $email,
+                password: $password,
+                medicalNotesAllergies: $medicalNotesAllergies,
+                preferences: $preferences
+            );
+
             $this->useCase->execute($userId, $dto);
 
-            ResponseHelper::json(200, true, 'Perfil actualizado correctamente.');
+            ResponseHelper::json(200, true, 'Perfil y preferencias actualizadas correctamente.');
 
         } catch (DomainException | NotFoundException | InvalidArgumentException $e) {
             // Skill 4: Manejo Estandarizado RFC 7807
@@ -82,7 +103,7 @@ final class UpdateProfileController
                 type: 'https://carolinamoraestetica.com/errors/' . strtolower((new \ReflectionClass($e))->getShortName()),
                 title: 'Error al actualizar perfil',
                 detail: $e->getMessage(),
-                instance: '/api/v1/auth/me/profile'
+                instance: '/api/v1/auth/me'
             );
         }
     }
