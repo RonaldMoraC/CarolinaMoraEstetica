@@ -115,7 +115,8 @@ final class MeController
                 'is_active'               => $isActive,
                 'birth_date'              => $row['birth_date'] ?? null,
                 'medical_notes_allergies' => $row['medical_notes_allergies'] ?? null,
-                'preferences'             => $row['preferences'] ?? null,
+                'preferences'             => $row['consumption_preferences'] ?? $row['preferences'] ?? null,
+                'consumption_preferences' => $row['consumption_preferences'] ?? null,
             ]
         ]);
     }
