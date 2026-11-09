@@ -5,7 +5,8 @@ namespace App\Application\IAM\UpdateProfile;
 
 /**
  * UpdateProfileDTO
- * Objeto de transferencia de datos inmutable para la actualización de perfil.
+ * Objeto de transferencia de datos inmutable para la actualización de perfil
+ * de usuario y ficha de salud/preferencias de estética.
  */
 final readonly class UpdateProfileDTO
 {
@@ -14,6 +15,8 @@ final readonly class UpdateProfileDTO
         public string $lastName,
         public string $phone,
         public string $email,
-        public ?string $password = null
+        public ?string $password = null,
+        public ?string $medicalNotesAllergies = null,
+        public ?string $preferences = null
     ) {}
 }
