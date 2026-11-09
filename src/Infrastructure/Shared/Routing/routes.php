@@ -12,6 +12,7 @@ use App\Infrastructure\Booking\Http\GetClientAppointmentsController;
 use App\Infrastructure\IAM\Http\UserController;
 use App\Infrastructure\IAM\Http\ProfessionalServiceController;
 use App\Infrastructure\Shared\Security\AuthMiddleware;
+use App\Infrastructure\Shared\Security\DeletePermissionMiddleware;
 use App\Infrastructure\Shared\Security\ViewAuthMiddleware;
 use App\Infrastructure\Booking\Http\GetAppointmentsController;
 use App\Infrastructure\Booking\Http\CancelAppointmentController;
@@ -107,6 +108,7 @@ $router->group('/api/v1/iam', function(Router $r) {
     $r->post('/users', [UserController::class, 'handle']);
     $r->put('/users/{id}', [UserController::class, 'handle']);
     $r->patch('/users/{id}', [UserController::class, 'handle']);
+    $r->delete('/users/{id}', [UserController::class, 'handle'], [DeletePermissionMiddleware::class]);
 }, [AuthMiddleware::class]);
 
 // --- RUTAS DE GESTIÃN DE CAPACIDADES TÃ0CNICAS (Staff & Skills) ---
@@ -140,7 +142,7 @@ $router->group('/api/v1/app', function(Router $r) {
 $router->group('/api/v1/booking', function(Router $r) {
     $r->get('/appointments', [GetAppointmentsController::class, 'handle']);
     $r->post('/appointments', [CreateAppointmentController::class, 'handle']);
-    $r->delete('/appointments/{id}', [CancelAppointmentController::class, 'handle']);
+    $r->delete('/appointments/{id}', [CancelAppointmentController::class, 'handle'], [DeletePermissionMiddleware::class]);
     // Reprogramación autónoma de cita (cliente o staff)
     $r->patch('/appointments/{id}/reschedule', [RescheduleAppointmentController::class, 'handle']);
     $r->put('/appointments/{id}/reschedule', [RescheduleAppointmentController::class, 'handle']);
@@ -183,5 +185,5 @@ $router->group('/api/v1/crm/ratings', function(Router $r) {
 $router->group('/api/v1/admin/inventory', function(Router $r) {
     $r->get('', [InventarioController::class, 'handle']);
     $r->post('', [InventarioController::class, 'handle']);
-    $r->delete('', [InventarioController::class, 'handle']);
+    $r->delete('', [InventarioController::class, 'handle'], [DeletePermissionMiddleware::class]);
 }, [AuthMiddleware::class]);

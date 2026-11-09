@@ -257,6 +257,9 @@ $lazyContainer = new class($logFilePath, $isProduction) {
                     $this->getSecurityJwtTokenManager()
                 ),
 
+            \App\Infrastructure\Shared\Security\DeletePermissionMiddleware::class =>
+                new \App\Infrastructure\Shared\Security\DeletePermissionMiddleware(),
+
             \App\Infrastructure\Shared\Security\ViewAuthMiddleware::class =>
                 new \App\Infrastructure\Shared\Security\ViewAuthMiddleware(),
 
