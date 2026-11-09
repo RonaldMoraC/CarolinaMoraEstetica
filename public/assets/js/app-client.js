@@ -1345,21 +1345,38 @@ class ProfileView {
             document.getElementById('profileName').textContent = name || 'Cliente';
             document.getElementById('headerUserName').textContent = firstName || name.split(' ')[0] || 'Cliente';
 
+            // Cargar Ficha de Salud y Preferencias (MEDIO-04)
+            const allergies = user.medical_notes_allergies || '';
+            const preferences = user.preferences || user.consumption_preferences || '';
+            const allergiesEl = document.getElementById('profileAllergies');
+            const preferencesEl = document.getElementById('profilePreferences');
+            if (allergiesEl) allergiesEl.value = allergies;
+            if (preferencesEl) preferencesEl.value = preferences;
+
             localStorage.setItem('user_name', name);
             localStorage.setItem('user_email', email);
+            localStorage.setItem('user_allergies', allergies);
+            localStorage.setItem('user_preferences', preferences);
 
-            this.store.setState({ profile: user, user: { name, email } });
+            this.store.setState({ profile: user, user: { name, email, allergies, preferences } });
             this.profileLoaded = true;
         } catch (error) {
             // Fallback to localStorage if API fails
             const name = localStorage.getItem('user_name') || '';
             const email = localStorage.getItem('user_email') || '';
+            const allergies = localStorage.getItem('user_allergies') || '';
+            const preferences = localStorage.getItem('user_preferences') || '';
 
             document.getElementById('profileFirstName').value = name.split(' ')[0] || '';
             document.getElementById('profileLastName').value = name.split(' ').slice(1).join(' ') || '';
             document.getElementById('profileCorreo').value = email;
             document.getElementById('profileName').textContent = name || 'Cliente';
             document.getElementById('headerUserName').textContent = name.split(' ')[0] || 'Cliente';
+
+            const allergiesEl = document.getElementById('profileAllergies');
+            const preferencesEl = document.getElementById('profilePreferences');
+            if (allergiesEl) allergiesEl.value = allergies;
+            if (preferencesEl) preferencesEl.value = preferences;
 
             this.profileLoaded = true;
         }
@@ -1368,11 +1385,14 @@ class ProfileView {
     async save() {
         const btnGuardar = document.getElementById('btnGuardarPerfil');
 
-        // Función auxiliar de sanitización local
         const newFirstName = document.getElementById('profileFirstName').value.trim();
         const newLastName = document.getElementById('profileLastName').value.trim();
         const newPhone = document.getElementById('profileTelefono').value.trim();
         const newEmail = document.getElementById('profileCorreo').value.trim();
+        const allergiesEl = document.getElementById('profileAllergies');
+        const preferencesEl = document.getElementById('profilePreferences');
+        const newAllergies = allergiesEl ? allergiesEl.value.trim() : '';
+        const newPreferences = preferencesEl ? preferencesEl.value.trim() : '';
 
         // Validaciones robustas del lado del cliente
         if (newFirstName.length < 2 || newLastName.length < 2) {
@@ -1396,18 +1416,29 @@ class ProfileView {
         btnGuardar.textContent = 'Actualizando...';
 
         try {
-            await this.api.patch('/auth/me', { first_name: newFirstName, last_name: newLastName, email: newEmail, phone: newPhone });
+            await this.api.patch('/auth/me', {
+                first_name: newFirstName,
+                last_name: newLastName,
+                email: newEmail,
+                phone: newPhone,
+                medical_notes_allergies: newAllergies,
+                preferences: newPreferences
+            });
 
             localStorage.setItem('user_name', newName);
             localStorage.setItem('user_email', newEmail);
+            localStorage.setItem('user_allergies', newAllergies);
+            localStorage.setItem('user_preferences', newPreferences);
             document.getElementById('profileName').textContent = newName;
             document.getElementById('headerUserName').textContent = newFirstName || newName;
 
-            this.alerts.success('¡Perfil actualizado con éxito!');
+            this.alerts.success('¡Perfil y ficha estética actualizados con éxito!');
         } catch (error) {
             // Fallback: save locally if API not available
             localStorage.setItem('user_name', newName);
             localStorage.setItem('user_email', newEmail);
+            localStorage.setItem('user_allergies', newAllergies);
+            localStorage.setItem('user_preferences', newPreferences);
             document.getElementById('profileName').textContent = newName;
             document.getElementById('headerUserName').textContent = newFirstName || newName;
 

@@ -68,11 +68,42 @@ ob_start();
                 <input type="tel" id="profileTelefono" class="app-input w-full px-4 py-3 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-700 dark:text-slate-300 focus:border-brand-cyan focus:ring-2 focus:ring-brand-cyan/15 transition"
                     placeholder="Ingrese su teléfono" pattern="[0-9+\-\\s()]{7,20}" maxlength="20">
             </div>
-            <div class="mb-5">
+            <div class="mb-4">
                 <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Correo Electrónico</label>
                 <input type="email" id="profileCorreo" class="app-input w-full px-4 py-3 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-700 dark:text-slate-300 focus:border-brand-cyan focus:ring-2 focus:ring-brand-cyan/15 transition"
                     placeholder="Ingrese su correo electrónico" required maxlength="100">
             </div>
+
+            <!-- Ficha Estética y de Seguridad (MEDIO-04) -->
+            <div class="pt-4 border-t border-slate-200/80 dark:border-white/10 mb-5">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="text-base text-brand-gold">🌿</span>
+                    <h3 class="text-xs font-bold text-slate-800 dark:text-white uppercase tracking-wider">Ficha de Bienestar y Preferencias</h3>
+                </div>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
+                    Información médica y de confort esencial para que nuestras profesionales adapten cada tratamiento a las necesidades únicas de tu piel.
+                </p>
+
+                <div class="mb-4">
+                    <label class="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                        <span>Alergias o Notas Médicas</span>
+                        <span class="text-[10px] text-amber-600 dark:text-amber-400 font-bold tracking-normal normal-case">⚠️ Vital para tu seguridad</span>
+                    </label>
+                    <textarea id="profileAllergies" rows="2"
+                        class="app-input w-full px-4 py-3 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-700 dark:text-slate-300 focus:border-brand-cyan focus:ring-2 focus:ring-brand-cyan/15 transition resize-none text-xs"
+                        placeholder="Ej. Alergia a tintes, productos con ácido glicólico, piel reactiva, embarazo, marcapasos, etc."></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
+                        Preferencias de Tratamiento y Confort
+                    </label>
+                    <textarea id="profilePreferences" rows="2"
+                        class="app-input w-full px-4 py-3 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-700 dark:text-slate-300 focus:border-brand-cyan focus:ring-2 focus:ring-brand-cyan/15 transition resize-none text-xs"
+                        placeholder="Ej. Prefiero aromas cítricos, música suave, temperatura ambiente fresca, presión suave en masajes..."></textarea>
+                </div>
+            </div>
+
             <button type="submit" id="btnGuardarPerfil"
                 class="w-full py-3 bg-brand-cyan text-white font-semibold rounded-xl hover:bg-brand-cyanHover transition transform hover:-translate-y-0.5">
                 Guardar Cambios
