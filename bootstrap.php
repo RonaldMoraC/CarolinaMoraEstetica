@@ -251,6 +251,12 @@ $lazyContainer = new class($logFilePath, $isProduction) {
             \App\Infrastructure\Shared\Logging\AppLogger::class =>
                 new \App\Infrastructure\Shared\Logging\AppLogger($this->logFilePath, $this->isProduction),
 
+            \App\Application\Inventory\ProductSaleService::class =>
+                new \App\Application\Inventory\ProductSaleService(
+                    $this->getPdo(),
+                    $this->get(\App\Infrastructure\Shared\Audit\SystemAuditLogRepository::class)
+                ),
+
             // Middlewares (Paso 8)
             \App\Infrastructure\Shared\Security\AuthMiddleware::class =>
                 new \App\Infrastructure\Shared\Security\AuthMiddleware(
@@ -615,7 +621,10 @@ $lazyContainer = new class($logFilePath, $isProduction) {
                 ),
 
             \App\Infrastructure\Inventory\Http\InventarioController::class =>
-                new \App\Infrastructure\Inventory\Http\InventarioController($this->getPdo()),
+                new \App\Infrastructure\Inventory\Http\InventarioController(
+                    $this->getPdo(),
+                    $this->get(\App\Application\Inventory\ProductSaleService::class)
+                ),
 
             \App\Infrastructure\Integration\WhatsApp\Http\WhatsAppWebhookController::class =>
                 new \App\Infrastructure\Integration\WhatsApp\Http\WhatsAppWebhookController(

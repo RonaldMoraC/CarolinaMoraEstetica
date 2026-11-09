@@ -5,6 +5,8 @@ namespace App\Infrastructure\Inventory\Http;
 
 use App\Domain\Inventory\Model\Producto;
 use App\Domain\Inventory\Model\MovimientoInventario;
+use App\Application\Inventory\ProductSaleService;
+use App\Domain\Inventory\Exceptions\InsufficientStockException;
 use App\Infrastructure\Shared\Errors\GlobalExceptionHandler;
 use PDO;
 use Exception;
@@ -14,12 +16,14 @@ class InventarioController
     private PDO $db;
     private Producto $productoModel;
     private MovimientoInventario $movimientoModel;
+    private ?ProductSaleService $saleService;
 
-    public function __construct(PDO $db)
+    public function __construct(PDO $db, ?ProductSaleService $saleService = null)
     {
         $this->db = $db;
         $this->productoModel = new Producto($this->db);
         $this->movimientoModel = new MovimientoInventario($this->db);
+        $this->saleService = $saleService;
     }
 
     public function handle(): void
@@ -183,6 +187,25 @@ class InventarioController
             return;
         }
 
+        $usuarioId = (int)($_SESSION['usuarioSesion']['id'] ?? $_POST['user_id'] ?? 1);
+
+        // Si es una salida por venta y disponemos del ProductSaleService, utilizarlo para validación transaccional con FOR UPDATE y RFC 7807
+        if ($tipo === 'SALIDA_VENTA' && $this->saleService !== null) {
+            try {
+                $this->saleService->sellProduct($productoId, $cantidad, $usuarioId);
+                echo json_encode(['status' => 'success', 'message' => 'Venta registrada y stock actualizado correctamente.']);
+                return;
+            } catch (InsufficientStockException $e) {
+                GlobalExceptionHandler::emitRfc7807Response(
+                    httpStatus: 409,
+                    type: 'https://carolinamoraestetica.com/errors/insufficient-stock',
+                    title: 'Stock insuficiente',
+                    detail: $e->getMessage(),
+                    instance: $_SERVER['REQUEST_URI'] ?? '/api/v1/admin/inventory'
+                );
+            }
+        }
+
         $producto = $this->productoModel->obtenerPorId($productoId);
         if (!$producto) {
             echo json_encode(['status' => 'error', 'message' => 'Producto no encontrado.']);
@@ -192,12 +215,18 @@ class InventarioController
         $stockActual = (int)$producto['current_stock'];
         $nuevoStock = $stockActual;
 
-        if (in_array($tipo, ['ENTRADA_COMPRA', 'AJUSTE'])) {
+        if (in_array($tipo, ['ENTRADA_COMPRA', 'AJUSTE'], true)) {
             $nuevoStock += $cantidad;
-        } elseif (in_array($tipo, ['SALIDA_VENTA', 'CONSUMO_INTERNO', 'MERMA'])) {
+        } elseif (in_array($tipo, ['SALIDA_VENTA', 'CONSUMO_INTERNO', 'MERMA'], true)) {
             $nuevoStock -= $cantidad;
             if ($nuevoStock < 0) {
-                echo json_encode(['status' => 'error', 'message' => 'Stock insuficiente para realizar esta salida. Stock actual: ' . $stockActual]);
+                GlobalExceptionHandler::emitRfc7807Response(
+                    httpStatus: 409,
+                    type: 'https://carolinamoraestetica.com/errors/insufficient-stock',
+                    title: 'Stock insuficiente',
+                    detail: 'Stock insuficiente para realizar esta salida. Stock actual: ' . $stockActual,
+                    instance: $_SERVER['REQUEST_URI'] ?? '/api/v1/admin/inventory'
+                );
                 return;
             }
         }
@@ -205,8 +234,7 @@ class InventarioController
         $this->db->beginTransaction();
         try {
             $this->productoModel->actualizarStock($productoId, $nuevoStock);
-            $usuarioId = $_SESSION['usuarioSesion']['id'] ?? null;
-            $this->movimientoModel->registrar($productoId, $usuarioId, $tipo, $cantidad, $razon);
+            $this->movimientoModel->registrar($productoId, $usuarioId > 0 ? $usuarioId : null, $tipo, $cantidad, $razon);
             $this->db->commit();
 
             echo json_encode(['status' => 'success', 'message' => 'Movimiento registrado correctamente. Stock actual: ' . $nuevoStock]);
